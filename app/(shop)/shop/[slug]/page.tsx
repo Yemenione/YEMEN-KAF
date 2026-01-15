@@ -117,7 +117,12 @@ export default function ProductPage() {
                             </div>
 
                             <button
-                                onClick={() => addToCart({ ...product, quantity })}
+                                onClick={() => addToCart({
+                                    id: product.id,
+                                    title: product.name,
+                                    price: product.price,
+                                    image: product.image_url || '/images/honey-jar.jpg'
+                                })}
                                 className="w-full bg-black text-white py-4 uppercase tracking-wider font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
                             >
                                 <ShoppingBag size={20} />

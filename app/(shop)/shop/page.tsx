@@ -172,7 +172,12 @@ export default function ShopPage() {
                                             <button
                                                 onClick={(e) => {
                                                     e.preventDefault();
-                                                    addToCart(product);
+                                                    addToCart({
+                                                        id: product.id,
+                                                        title: product.name,
+                                                        price: product.price,
+                                                        image: product.image_url || '/images/honey-jar.jpg'
+                                                    });
                                                 }}
                                                 className="px-6 py-3 bg-white text-black font-bold uppercase tracking-wider text-sm hover:bg-gray-100 transition-colors flex items-center gap-2 rounded-full"
                                             >
