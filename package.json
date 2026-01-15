@@ -26,7 +26,8 @@
     "react-dom": "19.2.3",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.4.0",
-    "three": "^0.182.0"
+    "three": "^0.182.0",
+    "@lightningcss/linux-x64-gnu": "^1.28.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -38,8 +39,5 @@
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"
-  },
-  "optionalDependencies": {
-    "@lightningcss/linux-x64-gnu": "^1.28.3"
   }
 }
