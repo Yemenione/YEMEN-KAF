@@ -27,7 +27,7 @@
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
-    "@lightningcss/linux-x64-gnu": "^1.28.3"
+    "lightningcss-linux-x64-gnu": "^1.28.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
