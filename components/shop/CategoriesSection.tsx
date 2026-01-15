@@ -33,10 +33,10 @@ export default function CategoriesSection() {
         <section className="py-24 bg-white">
             <div className="max-w-7xl mx-auto px-6">
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {CATEGORIES.map((cat, index) => (
-                        <Link key={cat.id} href={cat.link} className={`group block relative aspect-[3/4] overflow-hidden ${index === 1 ? 'md:-mt-12' : ''}`}>
-                            {/* Staggered Grid Effect */}
+                        <Link key={cat.id} href={cat.link} className="group block relative h-[60vh] w-full overflow-hidden rounded-2xl">
+                            {/* Image */}
                             <Image
                                 src={cat.image}
                                 alt={cat.title}
@@ -44,18 +44,18 @@ export default function CategoriesSection() {
                                 className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
                             />
 
-                            {/* Minimal Overlay - Text is always visible now but refined */}
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
+                            {/* Gradient Overlay for Text Visibility */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-500" />
 
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10">
-                                <span className="text-white/60 text-[10px] font-bold uppercase tracking-[0.3em] mb-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                            <div className="absolute bottom-0 left-0 w-full p-8 text-center flex flex-col items-center z-10">
+                                <span className="text-white/80 text-[10px] font-bold uppercase tracking-[0.3em] mb-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
                                     Explore Collection
                                 </span>
-                                <h3 className="text-4xl font-serif text-white mb-2">{cat.title}</h3>
-                                <p className="text-white/80 text-sm font-light tracking-wide">{cat.description}</p>
+                                <h3 className="text-3xl md:text-4xl font-serif text-white mb-2 shadow-sm">{cat.title}</h3>
+                                <p className="text-white/70 text-sm font-light tracking-wide max-w-[200px]">{cat.description}</p>
                             </div>
 
-                            <div className="absolute bottom-6 right-6">
+                            <div className="absolute top-6 right-6">
                                 <ArrowUpRight className="text-white w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             </div>
                         </Link>
