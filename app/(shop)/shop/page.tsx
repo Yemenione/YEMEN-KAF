@@ -97,7 +97,7 @@ export default function ShopPage() {
                         <div className="flex-1 w-full md:w-auto">
                             <div className="flex items-center gap-2 mb-2">
                                 <Filter size={16} className="text-gray-400" />
-                                <span className="text-xs font-semibold text-gray-500 uppercase">Catégories</span>
+                                <span className="text-xs font-semibold text-gray-500 uppercase">{t('shop.categories')}</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {categories.slice(0, 6).map((cat) => (
@@ -122,10 +122,10 @@ export default function ShopPage() {
                                 onChange={(e) => setSortBy(e.target.value)}
                                 className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
                             >
-                                <option value="newest">Plus récent</option>
-                                <option value="price-low">Prix croissant</option>
-                                <option value="price-high">Prix décroissant</option>
-                                <option value="name">Nom A-Z</option>
+                                <option value="newest">{t('shop.newest')}</option>
+                                <option value="price-low">{t('shop.priceLow')}</option>
+                                <option value="price-high">{t('shop.priceHigh')}</option>
+                                <option value="name">{t('shop.nameAZ')}</option>
                             </select>
 
                             <div className="flex gap-2 border border-gray-200 rounded-lg p-1">
@@ -150,7 +150,7 @@ export default function ShopPage() {
                 {!isLoading && (
                     <div className="mb-6">
                         <p className="text-sm text-gray-600">
-                            <span className="font-semibold">{sortedProducts.length}</span> produits trouvés
+                            <span className="font-semibold">{sortedProducts.length}</span> {t('shop.productsFound')}
                         </p>
                     </div>
                 )}
@@ -160,12 +160,12 @@ export default function ShopPage() {
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
                             <div className="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-gray-500">Chargement...</p>
+                            <p className="text-gray-500">{t('shop.loading')}</p>
                         </div>
                     </div>
                 ) : sortedProducts.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-lg">
-                        <p className="text-gray-500 text-lg">Aucun produit trouvé</p>
+                        <p className="text-gray-500 text-lg">{t('shop.noProducts')}</p>
                     </div>
                 ) : (
                     <div className={viewMode === 'grid'
@@ -201,7 +201,7 @@ export default function ShopPage() {
                                         {product.stock_quantity !== undefined && product.stock_quantity < 5 && product.stock_quantity > 0 && (
                                             <div className="absolute top-2 left-2">
                                                 <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded">
-                                                    Stock limité
+                                                    {t('shop.stockLimited')}
                                                 </span>
                                             </div>
                                         )}
