@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   /* Brand Colors - Minimalist Luxury */
@@ -13,19 +15,6 @@
 
   --background: var(--cream-white);
   --foreground: var(--coffee-brown);
-}
-
-@theme inline {
-  --color-coffee-brown: var(--coffee-brown);
-  --color-honey-gold: var(--honey-gold);
-  --color-cream-white: var(--cream-white);
-  --color-metallic-gold: var(--metallic-gold);
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-
-  --font-serif: var(--font-serif);
-  --font-sans: var(--font-sans);
 }
 
 /* Marquee Animation */
