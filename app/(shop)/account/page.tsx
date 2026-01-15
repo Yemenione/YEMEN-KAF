@@ -95,7 +95,7 @@ export default function AccountDashboard() {
                         <span className="text-sm uppercase tracking-wider text-gray-500">Total Spent / المبلغ الإجمالي</span>
                     </div>
                     <p className="text-3xl font-serif text-black">
-                        {isLoading ? '...' : `${stats.totalSpent.toLocaleString()} YER`}
+                        {isLoading ? '...' : `${Number(stats.totalSpent).toFixed(2)}€`}
                     </p>
                 </div>
 
@@ -149,7 +149,7 @@ export default function AccountDashboard() {
                                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
                                         {getStatusText(order.status)}
                                     </span>
-                                    <p className="font-serif text-lg text-black">{order.totalAmount.toLocaleString()} YER</p>
+                                    <p className="font-serif text-lg text-black">{Number(order.totalAmount).toFixed(2)}€</p>
                                 </div>
                             </div>
                         ))}

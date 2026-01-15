@@ -110,7 +110,7 @@ export default function OrdersPage() {
                                 </div>
                                 <div className="text-right">
                                     <p className="text-sm text-gray-500">الإجمالي</p>
-                                    <p className="text-xl font-serif text-black">{order.totalAmount.toLocaleString()} YER</p>
+                                    <p className="text-xl font-serif text-black">{Number(order.totalAmount).toFixed(2)}€</p>
                                 </div>
                             </div>
                         </div>
