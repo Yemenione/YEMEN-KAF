@@ -111,7 +111,12 @@ export default function ShopPage() {
                                 <button
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        addToCart({ ...product, quantity: 1 });
+                                        addToCart({
+                                            id: product.id,
+                                            title: product.title,
+                                            price: product.price,
+                                            image: product.image
+                                        });
                                     }}
                                     className="absolute bottom-6 right-6 w-12 h-12 bg-white flex items-center justify-center text-[var(--coffee-brown)] opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-[var(--coffee-brown)] hover:text-white shadow-xl rounded-full z-10"
                                     title="Add to Cart"
