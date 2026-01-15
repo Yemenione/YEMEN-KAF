@@ -40,6 +40,6 @@
     "typescript": "^5"
   },
   "optionalDependencies": {
-    "@lightningcss/linux-x64-gnu": "*"
+    "@lightningcss/linux-x64-gnu": "^1.28.3"
   }
 }
