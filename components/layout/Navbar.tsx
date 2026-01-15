@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 import TopMarquee from "./TopMarquee";
 
 const MEGA_MENU_ITEMS = [
