@@ -3,158 +3,164 @@
 import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { ChevronDown, ArrowRight, ShoppingBag, Star } from "lucide-react";
-import clsx from "clsx";
+import { useState, useEffect } from "react";
+import { ShoppingBag, Star } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
-// Mock Data
-const PRODUCTS = [
-    { id: 1, title: "Royal Sidr Honey", price: 180, category: "honey", image: "/images/honey-jar.jpg", slug: "royal-sidr-honey", rating: 5, reviews: 124 },
-    { id: 2, title: "Haraz Mocha Beans", price: 45, category: "coffee", image: "/images/coffee-beans.jpg", slug: "haraz-mocha-beans", rating: 4.8, reviews: 89 },
-    { id: 3, title: "Wild Mountain Comb", price: 220, category: "honey", image: "/images/honey-comb.jpg", slug: "wild-mountain-comb", rating: 5, reviews: 56 },
-    { id: 4, title: "Do'an White Honey", price: 160, category: "honey", image: "/images/honey-jar.jpg", slug: "doan-white-honey", rating: 4.9, reviews: 42 },
-    { id: 5, title: "Qishr (Coffee Cherry)", price: 35, category: "coffee", image: "/images/coffee-beans.jpg", slug: "qishr-cherry", rating: 4.7, reviews: 31 },
-    { id: 6, title: "Heritage Gift Box", price: 250, category: "gifts", image: "/images/honey-comb.jpg", slug: "heritage-box", rating: 5, reviews: 15 },
-];
+interface Product {
+    id: number;
+    name: string;
+    price: number;
+    slug: string;
+    image_url: string;
+    category_name: string;
+    category_slug: string;
+    description?: string;
+}
 
-const CATEGORIES = ["All", "Honey", "Coffee", "Gifts"];
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+}
 
 export default function ShopPage() {
     const { t } = useLanguage();
     const { addToCart } = useCart();
-    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState("all");
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredProducts = selectedCategory === "All"
-        ? PRODUCTS
-        : PRODUCTS.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
+    useEffect(() => {
+        fetchCategories();
+        fetchProducts();
+    }, []);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [selectedCategory]);
+
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch('/api/categories');
+            if (res.ok) {
+                const data = await res.json();
+                setCategories([{ id: 0, name: 'All', slug: 'all' }, ...data.categories]);
+            }
+        } catch (err) {
+            console.error('Failed to fetch categories', err);
+        }
+    };
+
+    const fetchProducts = async () => {
+        setIsLoading(true);
+        try {
+            const url = selectedCategory === 'all'
+                ? '/api/products'
+                : `/api/products?category=${selectedCategory}`;
+            const res = await fetch(url);
+            if (res.ok) {
+                const data = await res.json();
+                setProducts(data.products);
+            }
+        } catch (err) {
+            console.error('Failed to fetch products', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <main className="min-h-screen bg-white">
-
-            {/* Cinematic Hero Header - Matches Navbar Aesthetic */}
+            {/* Hero Header */}
             <div className="relative h-[60vh] w-full overflow-hidden">
                 <Image
-                    src="/images/coffee-beans.jpg" // Using an existing image as hero logic
+                    src="/images/coffee-beans.jpg"
                     alt="Shop Collection"
                     fill
                     className="object-cover"
                 />
-                <div className="absolute inset-0 bg-black/40" /> {/* Dark Overlay for text contrast */}
+                <div className="absolute inset-0 bg-black/40" />
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pt-20">
-                    <span className="text-[var(--honey-gold)] text-sm font-bold uppercase tracking-[0.4em] mb-4 animate-fade-in">
+                    <span className="text-gray-300 text-sm font-bold uppercase tracking-[0.4em] mb-4">
                         Est. 2024
                     </span>
-                    <h1 className="text-6xl md:text-8xl font-serif text-white mb-6 animate-fade-in-up">
+                    <h1 className="text-6xl md:text-8xl font-serif text-white mb-6">
                         The Atelier
                     </h1>
-                    <p className="text-white/80 text-lg font-light max-w-xl mx-auto leading-relaxed animate-fade-in-up delay-100">
-                        A curated selection of the world's rarest natural luxuries, harvested with reverence and packaged with elegance.
+                    <p className="text-white/80 max-w-xl text-lg">
+                        Curated Yemeni honey and coffee, sourced from heritage farms
                     </p>
                 </div>
             </div>
 
-            {/* Filters Toolbar */}
-            <div className="sticky top-[80px] z-30 bg-white/95 backdrop-blur-md border-b border-black/5 py-4 px-6 md:px-12 shadow-sm">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                    {/* Minimal Text Filters */}
-                    <div className="flex items-center gap-8 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 justify-center md:justify-start no-scrollbar">
-                        {CATEGORIES.map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={clsx(
-                                    "text-xs uppercase tracking-[0.2em] transition-all relative py-2 whitespace-nowrap",
-                                    selectedCategory === cat
-                                        ? "text-[var(--coffee-brown)] font-bold"
-                                        : "text-[var(--coffee-brown)]/40 hover:text-[var(--coffee-brown)]"
-                                )}
-                            >
-                                {cat}
-                                {/* Active Indicator Dot */}
-                                {selectedCategory === cat && (
-                                    <span className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-1 h-1 bg-[var(--coffee-brown)] rounded-full" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Count */}
-                    <div className="hidden md:block text-[10px] uppercase tracking-widest text-[var(--coffee-brown)]/40">
-                        {filteredProducts.length} Products Found
-                    </div>
-                </div>
-            </div>
-
-            <div className="max-w-7xl mx-auto px-6 md:px-12 py-16">
-                {/* Product Grid - "Gallery Style" */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-20">
-                    {filteredProducts.map((product) => (
-                        <div key={product.id} className="group flex flex-col gap-4">
-
-                            {/* Image Card */}
-                            <Link href={`/shop/${product.slug}`} className="relative aspect-[4/5] overflow-hidden bg-gray-100 block">
-                                <Image
-                                    src={product.image}
-                                    alt={product.title}
-                                    fill
-                                    className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
-                                />
-                                {/* Status Badge */}
-                                {product.category === 'honey' && (
-                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
-                                        Rare
-                                    </div>
-                                )}
-
-                                {/* Quick Add Button Floating */}
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        addToCart({
-                                            id: product.id,
-                                            title: product.title,
-                                            price: product.price,
-                                            image: product.image
-                                        });
-                                    }}
-                                    className="absolute bottom-6 right-6 w-12 h-12 bg-white flex items-center justify-center text-[var(--coffee-brown)] opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-[var(--coffee-brown)] hover:text-white shadow-xl rounded-full z-10"
-                                    title="Add to Cart"
-                                >
-                                    <ShoppingBag size={18} />
-                                </button>
-                            </Link>
-
-                            {/* Product Info */}
-                            <div className="space-y-1">
-                                <div className="flex justify-between items-start">
-                                    <Link href={`/shop/${product.slug}`}>
-                                        <h3 className="font-serif text-2xl text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors cursor-pointer">
-                                            {product.title}
-                                        </h3>
-                                    </Link>
-                                    <span className="text-lg font-medium text-[var(--coffee-brown)]">${product.price}</span>
-                                </div>
-
-                                <div className="flex items-center gap-1">
-                                    <div className="flex text-[var(--honey-gold)]">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={10} fill={i < Math.floor(product.rating) ? "currentColor" : "none"} className={i < Math.floor(product.rating) ? "" : "text-gray-300"} />
-                                        ))}
-                                    </div>
-                                    <span className="text-[10px] text-gray-400 uppercase tracking-wider ml-2">({product.reviews} Reviews)</span>
-                                </div>
-                            </div>
-                        </div>
+            {/* Category Filter */}
+            <div className="max-w-7xl mx-auto px-6 py-12">
+                <div className="flex flex-wrap gap-4 justify-center mb-12">
+                    {categories.map((cat) => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setSelectedCategory(cat.slug)}
+                            className={`px-6 py-2 uppercase tracking-wider text-sm font-bold transition-all ${selectedCategory === cat.slug
+                                    ? 'bg-black text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                        >
+                            {cat.name}
+                        </button>
                     ))}
                 </div>
 
-                {filteredProducts.length === 0 && (
-                    <div className="min-h-[40vh] flex flex-col items-center justify-center text-[var(--coffee-brown)]/40">
-                        <p className="text-2xl font-serif italic mb-4">Collection empty.</p>
-                        <button onClick={() => setSelectedCategory("All")} className="text-xs uppercase tracking-widest border-b border-[var(--coffee-brown)]/20 pb-1 hover:text-[var(--coffee-brown)]">
-                            Clear Filters
-                        </button>
+                {/* Products Grid */}
+                {isLoading ? (
+                    <div className="text-center py-12">
+                        <p className="text-gray-500">Loading products...</p>
+                    </div>
+                ) : products.length === 0 ? (
+                    <div className="text-center py-12">
+                        <p className="text-gray-500">No products found</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {products.map((product) => (
+                            <Link
+                                key={product.id}
+                                href={`/shop/${product.slug}`}
+                                className="group"
+                            >
+                                <div className="relative aspect-square overflow-hidden bg-gray-100 mb-4">
+                                    <Image
+                                        src={product.image_url || '/images/honey-jar.jpg'}
+                                        alt={product.name}
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-xs uppercase tracking-wider text-gray-500">
+                                        {product.category_name}
+                                    </p>
+                                    <h3 className="font-serif text-xl text-black group-hover:text-gray-600 transition-colors">
+                                        {product.name}
+                                    </h3>
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-lg font-bold text-black">
+                                            ${product.price}
+                                        </p>
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                addToCart(product);
+                                            }}
+                                            className="p-2 bg-black text-white hover:bg-gray-800 transition-colors"
+                                        >
+                                            <ShoppingBag size={18} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 )}
             </div>
