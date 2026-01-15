@@ -19,14 +19,14 @@ export async function POST(req: Request) {
             [email]
         );
 
-        if (existingRows.length \u003e 0) {
+        if (existingRows.length > 0) {
             return NextResponse.json({ error: 'User already exists' }, { status: 409 });
         }
 
         // Split name into first and last
         const nameParts = name.trim().split(' ');
         const firstName = nameParts[0];
-        const lastName = nameParts.length \u003e 1 ? nameParts.slice(1).join(' ') : '';
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
         // Create user using direct SQL
         const [result]: any = await pool.execute(
