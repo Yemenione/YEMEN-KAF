@@ -196,7 +196,7 @@ export default function ShopPage() {
 
                                         <div className="flex items-center justify-between pt-2">
                                             <p className="text-2xl font-bold text-black">
-                                                {product.price.toFixed(2)}€
+                                                {Number(product.price).toFixed(2)}€
                                             </p>
 
                                             {/* Rating Stars */}
