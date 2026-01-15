@@ -33,16 +33,20 @@ const PRODUCT_DATA = [
 
 export default function ProductShowcase() {
     return (
-        <section className="relative w-full py-32 bg-[var(--cream-white)] overflow-hidden">
-            <QamariyaPattern />
+        <section className="w-full py-32 bg-white">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                    <div>
+                        <span className="text-gray-400 uppercase tracking-[0.4em] text-xs font-semibold block mb-4">Curated Collection</span>
+                        <h2 className="text-4xl md:text-6xl font-serif text-black leading-tight">Taste the<br />Heritage</h2>
+                    </div>
 
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
-                <div className="text-center mb-16">
-                    <span className="text-[var(--coffee-brown)]/80 uppercase tracking-[0.4em] text-sm font-semibold block mb-4">Curated Collection</span>
-                    <h2 className="text-4xl md:text-5xl font-serif text-[var(--coffee-brown)]">Taste the Heritage</h2>
+                    <button className="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-widest font-medium border-b border-black pb-1 hover:text-gray-600 transition-colors">
+                        View Full Catalog
+                    </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
                     {PRODUCT_DATA.map((product) => (
                         <Link key={product.id} href={`/shop/${product.slug}`} className="block">
                             <ProductCard
@@ -55,9 +59,9 @@ export default function ProductShowcase() {
                     ))}
                 </div>
 
-                <div className="mt-16 text-center">
-                    <button className="px-10 py-4 border border-[var(--coffee-brown)] text-[var(--coffee-brown)] uppercase tracking-widest hover:bg-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-all duration-300 font-medium">
-                        View All Products
+                <div className="mt-16 text-center md:hidden">
+                    <button className="inline-flex items-center gap-2 text-sm uppercase tracking-widest font-medium border-b border-black pb-1">
+                        View Full Catalog
                     </button>
                 </div>
             </div>

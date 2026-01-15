@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowUpRight } from "lucide-react";
+import { Plus } from "lucide-react";
 
 interface ProductCardProps {
     title: string;
@@ -10,43 +10,39 @@ interface ProductCardProps {
 
 export default function ProductCard({ title, price, image, category }: ProductCardProps) {
     return (
-        <div className="group relative w-full h-[450px] rounded-2xl overflow-hidden backdrop-blur-md bg-white/5 border border-white/10 shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:bg-white/10 hover:border-[var(--honey-gold)]/50">
-
+        <div className="group relative w-full cursor-pointer">
             {/* Image Container */}
-            <div className="relative w-full h-[65%] overflow-hidden">
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-100 mb-6">
                 <Image
                     src={image}
                     alt={title}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 33vw"
                 />
-                {/* Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--coffee-brown)]/80 to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
 
-                {/* Category Badge */}
-                <span className="absolute top-4 left-4 px-3 py-1 text-xs uppercase tracking-widest text-[var(--coffee-brown)] bg-[var(--honey-gold)] font-bold rounded-full">
-                    {category}
-                </span>
+                {/* Minimal Overlay Badge */}
+                <div className="absolute top-4 left-4">
+                    <span className="inline-block px-3 py-1 text-[10px] uppercase tracking-widest bg-white text-black font-medium">
+                        {category}
+                    </span>
+                </div>
+
+                {/* 'Quick Add' Button - Appears on hover */}
+                <button className="absolute bottom-4 right-4 w-10 h-10 bg-white text-black flex items-center justify-center rounded-full translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black hover:text-white shadow-lg">
+                    <Plus size={20} />
+                </button>
             </div>
 
-            {/* Content */}
-            <div className="absolute bottom-0 w-full p-6 flex flex-col justify-end h-[35%] bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                <div className="flex justify-between items-end transform transition-transform duration-500 group-hover:-translate-y-2">
-                    <div>
-                        <h3 className="text-2xl font-serif text-[var(--cream-white)] mb-1 group-hover:text-[var(--honey-gold)] transition-colors">
-                            {title}
-                        </h3>
-                        <p className="text-sm text-[var(--cream-white)]/70 font-light">Origin: Haraz Mountains</p>
-                    </div>
-                    <span className="text-xl font-medium text-[var(--honey-gold)]">{price}</span>
+            {/* Content (Outside the image for cleanliness) */}
+            <div className="flex justify-between items-start px-2">
+                <div>
+                    <h3 className="text-xl font-serif text-black mb-1 group-hover:underline decoration-1 underline-offset-4">
+                        {title}
+                    </h3>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider">Premium Selection</p>
                 </div>
-
-                {/* Action Button (Slides up on hover) */}
-                <div className="mt-4 overflow-hidden h-0 group-hover:h-12 transition-all duration-500">
-                    <button className="flex items-center justify-between w-full px-4 py-2 bg-[var(--cream-white)] text-[var(--coffee-brown)] font-medium uppercase tracking-wider text-sm hover:bg-[var(--honey-gold)] transition-colors rounded">
-                        View Details <ArrowUpRight className="w-4 h-4" />
-                    </button>
-                </div>
+                <span className="text-sm font-medium text-black">{price}</span>
             </div>
         </div>
     );

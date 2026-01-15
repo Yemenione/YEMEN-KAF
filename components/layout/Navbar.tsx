@@ -130,7 +130,7 @@ export default function Navbar() {
                                     <Search className="w-5 h-5" />
                                 </button>
 
-                                <Link href="/login" className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300" title="Account">
+                                <Link href="/account" className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300" title="Account">
                                     <User className="w-5 h-5" />
                                 </Link>
 
@@ -217,7 +217,7 @@ export default function Navbar() {
 
                     <div className="w-12 h-[1px] bg-black/10 my-4" />
 
-                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">Login / Register</Link>
+                    <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">My Account</Link>
                 </nav>
             </div>
         </>

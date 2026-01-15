@@ -5,7 +5,7 @@ import { createContext, useContext, useState, ReactNode } from "react";
 export type CartItem = {
     id: string | number;
     title: string;
-    price: string;
+    price: string | number;
     image: string;
     quantity: number;
 };
@@ -46,8 +46,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems((prev) => prev.filter((i) => i.id !== id));
     };
 
-    // Helper to parse "$180.00" -> 180.00
-    const parsePrice = (priceStr: string) => parseFloat(priceStr.replace(/[^0-9.]/g, ""));
+    // Helper to parse "$180.00" -> 180.00 or handle numbers
+    const parsePrice = (price: string | number) => {
+        if (typeof price === 'number') return price;
+        return parseFloat(price.replace(/[^0-9.]/g, ""));
+    };
 
     const total = items.reduce((acc, item) => acc + parsePrice(item.price) * item.quantity, 0);
 
