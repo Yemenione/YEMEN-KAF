@@ -25,6 +25,12 @@ export async function GET(req: Request) {
             params.push(category);
         }
 
+        const search = searchParams.get('search');
+        if (search) {
+            query += ` AND (p.name LIKE ? OR p.description LIKE ?)`;
+            params.push(`%${search}%`, `%${search}%`);
+        }
+
         query += ` ORDER BY p.created_at DESC LIMIT ? OFFSET ?`;
         params.push(limit, offset);
 

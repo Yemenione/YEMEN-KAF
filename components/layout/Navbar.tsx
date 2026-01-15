@@ -77,6 +77,19 @@ export default function Navbar() {
         </Link>
     );
 
+    // Search Logic
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const router = useRouter();
+    const { t } = useLanguage();
+
+    const handleSearch = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && searchQuery.trim()) {
+            router.push(`/shop?search=${encodeURIComponent(searchQuery)}`);
+            setIsSearchOpen(false);
+        }
+    };
+
     return (
         <>
             <header className="fixed top-0 left-0 right-0 z-50 flex flex-col transition-all duration-500">
@@ -128,9 +141,30 @@ export default function Navbar() {
                             <div className="flex items-center space-x-4 pl-6 border-l border-black/10">
                                 <LanguageSelector />
 
-                                <button className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300">
-                                    <Search className="w-5 h-5" />
-                                </button>
+                                {/* Search Input */}
+                                <div className="relative group">
+                                    <div className={`flex items-center border border-black/10 rounded-full px-3 py-1 transition-all duration-300 ${isSearchOpen ? 'w-48 bg-white opacity-100' : 'w-8 border-transparent bg-transparent'}`}>
+                                        <button
+                                            onClick={() => setIsSearchOpen(!isSearchOpen)}
+                                            className="hover:text-[var(--honey-gold)] transition-colors"
+                                        >
+                                            <Search className="w-5 h-5" />
+                                        </button>
+                                        <input
+                                            type="text"
+                                            placeholder={t('nav.search')}
+                                            className={`ml-2 outline-none text-sm bg-transparent w-full ${isSearchOpen ? 'block' : 'hidden'}`}
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleSearch(e);
+                                                }
+                                            }}
+                                            autoFocus={isSearchOpen}
+                                        />
+                                    </div>
+                                </div>
 
                                 <Link
                                     href={user ? "/account" : "/login"}
