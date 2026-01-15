@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
-import { CartProvider } from "@/context/CartContext";
+import { CartProvider } from "@/context/CartProvider";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
 import Link from "next/link";
 import CartDrawer from "@/components/cart/CartDrawer";
 import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
 
 import "../globals.css";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
         <LanguageProvider>
           <AuthProvider>
             <CartProvider>
+              <Navbar />
               {children}
               <Footer />
               <CartDrawer />
