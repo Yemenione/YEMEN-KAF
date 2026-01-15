@@ -1,48 +1,41 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { TRANSLATIONS } from "@/utils/translations";
-
-type Locale = "en" | "fr" | "ar";
+import { createContext, useContext, useState, ReactNode } from "react";
+import { translations, Locale } from "@/lib/translations";
 
 interface LanguageContextType {
     locale: Locale;
     setLocale: (locale: Locale) => void;
     t: (key: string) => string;
-    isRTL: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [locale, setLocale] = useState<Locale>("en");
+    const [locale, setLocaleState] = useState<Locale>("fr");
 
-    // Handle RTL Direction
-    const isRTL = locale === "ar";
+    const setLocale = (newLocale: Locale) => {
+        setLocaleState(newLocale);
+        if (typeof window !== "undefined") {
+            localStorage.setItem("locale", newLocale);
+            document.documentElement.lang = newLocale;
+            document.documentElement.dir = newLocale === "ar" ? "rtl" : "ltr";
+        }
+    };
 
-    useEffect(() => {
-        document.documentElement.lang = locale;
-        document.documentElement.dir = isRTL ? "rtl" : "ltr";
-    }, [locale, isRTL]);
-
-    // Translation Helper (Nested keys supported e.g. "hero.title")
-    const t = (key: string) => {
+    const t = (key: string): string => {
         const keys = key.split(".");
-        let value: any = TRANSLATIONS[locale];
+        let value: any = translations[locale];
 
         for (const k of keys) {
-            if (value && typeof value === 'object' && k in value) {
-                value = value[k as keyof typeof value];
-            } else {
-                return key; // Fallback to key if not found
-            }
+            value = value?.[k];
         }
 
-        return typeof value === "string" ? value : key;
+        return value || key;
     };
 
     return (
-        <LanguageContext.Provider value={{ locale, setLocale, t, isRTL }}>
+        <LanguageContext.Provider value={{ locale, setLocale, t }}>
             {children}
         </LanguageContext.Provider>
     );
@@ -50,6 +43,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function useLanguage() {
     const context = useContext(LanguageContext);
-    if (!context) throw new Error("useLanguage must be used within a LanguageProvider");
+    if (!context) {
+        throw new Error("useLanguage must be used within LanguageProvider");
+    }
     return context;
 }
