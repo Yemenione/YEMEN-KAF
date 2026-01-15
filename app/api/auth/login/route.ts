@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
 import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
+import bcrypt from 'bcrypt';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
@@ -21,9 +22,14 @@ export async function POST(req: Request) {
 
         const user = rows[0];
 
-        // CRITICAL: We are using a simple string comparison for now as requested/seen in initial code, 
-        // but we should move to bcrypt soon.
-        if (!user || user.password_hash !== password) {
+        if (!user) {
+            return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
+        }
+
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+
+        if (!isValidPassword) {
             return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
         }
 

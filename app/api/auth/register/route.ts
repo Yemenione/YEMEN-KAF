@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
 import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
+import bcrypt from 'bcrypt';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
@@ -28,10 +29,13 @@ export async function POST(req: Request) {
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         // Create user using direct SQL
         const [result]: any = await pool.execute(
             'INSERT INTO customers (first_name, last_name, email, password_hash, created_at) VALUES (?, ?, ?, ?, NOW())',
-            [firstName, lastName, email, password]
+            [firstName, lastName, email, hashedPassword]
         );
 
         const userId = result.insertId;
