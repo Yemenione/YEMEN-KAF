@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User, Package, MapPin, LogOut, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 const MENU_ITEMS = [
     { label: "Overview", href: "/account", icon: LayoutDashboard },
@@ -13,17 +14,21 @@ const MENU_ITEMS = [
 
 export default function AccountSidebar() {
     const pathname = usePathname();
+    const { user, logout, isLoading } = useAuth();
+
+    if (isLoading) return <aside className="w-full lg:w-64 animate-pulse bg-gray-50 h-96" />;
+    if (!user) return null;
 
     return (
         <aside className="w-full lg:w-64 space-y-8">
             {/* User Brief */}
             <div className="flex items-center gap-4 pb-8 border-b border-black/5">
-                <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center font-serif text-xl">
-                    AL
+                <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center font-serif text-xl uppercase">
+                    {user.firstName[0]}{user.lastName ? user.lastName[0] : ''}
                 </div>
                 <div>
-                    <h3 className="font-serif text-lg leading-none">Ali Latif</h3>
-                    <p className="text-xs text-gray-500 mt-1">ali@example.com</p>
+                    <h3 className="font-serif text-lg leading-none uppercase">{user.firstName} {user.lastName}</h3>
+                    <p className="text-xs text-gray-500 mt-1">{user.email}</p>
                 </div>
             </div>
 
@@ -38,8 +43,8 @@ export default function AccountSidebar() {
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 text-sm uppercase tracking-wider transition-all duration-300 rounded-lg ${isActive
-                                    ? "bg-black text-white shadow-lg"
-                                    : "text-gray-500 hover:bg-gray-50 hover:text-black"
+                                ? "bg-black text-white shadow-lg"
+                                : "text-gray-500 hover:bg-gray-50 hover:text-black"
                                 }`}
                         >
                             <Icon size={18} />
@@ -48,9 +53,12 @@ export default function AccountSidebar() {
                     );
                 })}
 
-                <button className="w-full flex items-center gap-3 px-4 py-3 text-sm uppercase tracking-wider text-red-500 hover:bg-red-50 transition-all duration-300 rounded-lg mt-8">
+                <button
+                    onClick={logout}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm uppercase tracking-wider text-red-500 hover:bg-red-50 transition-all duration-300 rounded-lg mt-8"
+                >
                     <LogOut size={18} />
-                    Sign Out
+                    Sign Out / خروج
                 </button>
             </nav>
         </aside>

@@ -2,7 +2,10 @@ import { PrismaClient } from '@prisma/client';
 import 'server-only';
 
 const prismaClientSingleton = () => {
-    return new PrismaClient();
+    console.log('DEBUG: Initializing Prisma with URL:', process.env.MYSQL_DATABASE_URL ? 'DEFINED' : 'UNDEFINED');
+    return new PrismaClient({
+        log: ['query', 'info', 'warn', 'error'],
+    });
 };
 
 declare global {

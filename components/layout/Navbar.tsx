@@ -7,6 +7,7 @@ import { ShoppingBag, Menu, X, Search, User, ChevronDown, Globe } from "lucide-r
 import clsx from "clsx";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import TopMarquee from "./TopMarquee";
 
 const MEGA_MENU_ITEMS = [
@@ -59,6 +60,7 @@ export default function Navbar() {
     }, []);
 
     const { openCart, items } = useCart();
+    const { user, logout } = useAuth();
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
     // Dynamic Text Color based on Scroll Key
@@ -130,8 +132,18 @@ export default function Navbar() {
                                     <Search className="w-5 h-5" />
                                 </button>
 
-                                <Link href="/account" className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300" title="Account">
-                                    <User className="w-5 h-5" />
+                                <Link
+                                    href={user ? "/account" : "/login"}
+                                    className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 flex items-center justify-center"
+                                    title={user ? `Account (${user.firstName})` : "Login"}
+                                >
+                                    {user ? (
+                                        <div className="w-6 h-6 rounded-full bg-black text-white text-[10px] flex items-center justify-center font-bold uppercase">
+                                            {user.firstName[0]}{user.lastName ? user.lastName[0] : ''}
+                                        </div>
+                                    ) : (
+                                        <User className="w-5 h-5" />
+                                    )}
                                 </Link>
 
                                 <button onClick={openCart} className="relative hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300">
@@ -217,7 +229,19 @@ export default function Navbar() {
 
                     <div className="w-12 h-[1px] bg-black/10 my-4" />
 
-                    <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">My Account</Link>
+                    {user ? (
+                        <>
+                            <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">My Account</Link>
+                            <button
+                                onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                className="text-sm uppercase tracking-widest font-bold text-red-500 hover:text-red-700 pt-4"
+                            >
+                                Sign Out / خروج
+                            </button>
+                        </>
+                    ) : (
+                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">Login / تسجيل الدخول</Link>
+                    )}
                 </nav>
             </div>
         </>

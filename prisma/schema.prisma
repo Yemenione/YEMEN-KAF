@@ -1,12 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
+  engineType = "library"
 }
 
 datasource db {
-  provider = "mysql" // Change this to "postgresql" if you want to switch to PostgreSQL
+  provider = "mysql"
 }
 
 model Customer {
