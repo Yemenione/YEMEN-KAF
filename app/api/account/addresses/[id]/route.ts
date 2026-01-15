@@ -7,9 +7,10 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_
 
 export async function DELETE(
     req: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const token = (await cookies()).get('auth_token')?.value;
 
         if (!token) {
@@ -22,7 +23,7 @@ export async function DELETE(
         // Delete address (only if it belongs to the user)
         await pool.execute(
             'DELETE FROM addresses WHERE id = ? AND customer_id = ?',
-            [params.id, userId]
+            [id, userId]
         );
 
         return NextResponse.json({ success: true });
