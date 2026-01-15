@@ -1,32 +1,42 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import clsx from "clsx";
 
-const OFFERS = [
-    {
-        id: "bundle-1",
-        title: "The Royal Treatment",
-        description: "1kg Sidr Honey + 500g Haraz Mocha",
-        price: "$210.00",
-        originalPrice: "$225.00",
-        image: "/images/honey-jar.jpg",
-        slug: "royal-treatment-bundle"
-    },
-    {
-        id: "bundle-2",
-        title: "Morning Ritual",
-        description: "2x Haraz Mocha Beans + Ceramic Cup",
-        price: "$85.00",
-        originalPrice: "$100.00",
-        image: "/images/coffee-beans.jpg",
-        slug: "morning-ritual-bundle"
-    }
-];
+interface Product {
+    id: number;
+    name: string;
+    description: string;
+    price: string | number;
+    image_url: string;
+    slug: string;
+}
 
 export default function SpecialOffers() {
+    const [offers, setOffers] = useState<Product[]>([]);
+
+    useEffect(() => {
+        const fetchOffers = async () => {
+            try {
+                // Fetch 2 products to display as offers (offset 3 to avoid duplicates with Showcase)
+                const res = await fetch('/api/products?limit=2&offset=3');
+                if (res.ok) {
+                    const data = await res.json();
+                    setOffers(data.products || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch special offers:", error);
+            }
+        };
+
+        fetchOffers();
+    }, []);
+
+    if (offers.length === 0) return null;
+
     return (
         <section className="py-24 bg-white border-t border-black/5">
             <div className="max-w-7xl mx-auto px-6">
@@ -41,13 +51,13 @@ export default function SpecialOffers() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    {OFFERS.map((offer) => (
+                    {offers.map((offer) => (
                         <div key={offer.id} className="group relative">
                             {/* Image Part */}
                             <div className="relative aspect-[16/9] overflow-hidden bg-gray-100 mb-8">
                                 <Image
-                                    src={offer.image}
-                                    alt={offer.title}
+                                    src={offer.image_url || '/images/honey-jar.jpg'}
+                                    alt={offer.name}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-1000"
                                 />
@@ -59,12 +69,11 @@ export default function SpecialOffers() {
                             {/* Text Part */}
                             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                                 <div className="space-y-2">
-                                    <h3 className="font-serif text-3xl text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors">{offer.title}</h3>
-                                    <p className="text-[var(--coffee-brown)]/60 text-sm leading-relaxed">{offer.description}</p>
+                                    <h3 className="font-serif text-3xl text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors">{offer.name}</h3>
+                                    <p className="text-[var(--coffee-brown)]/60 text-sm leading-relaxed line-clamp-2">{offer.description}</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className="block text-xl font-serif text-[var(--coffee-brown)]">{offer.price}</span>
-                                    <span className="text-xs text-[var(--coffee-brown)]/40 line-through decoration-current">Was {offer.originalPrice}</span>
+                                    <span className="block text-xl font-serif text-[var(--coffee-brown)]">€{Number(offer.price).toFixed(2)}</span>
                                 </div>
                             </div>
 

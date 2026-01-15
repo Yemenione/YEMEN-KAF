@@ -1,37 +1,46 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
 import QamariyaPattern from "@/components/ui/QamariyaPattern";
 
-const PRODUCT_DATA = [
-    {
-        id: 1,
-        title: "Royal Sidr Honey",
-        price: "$180.00",
-        image: "/images/honey-jar.jpg",
-        category: "Honey",
-        slug: "royal-sidr-honey"
-    },
-    {
-        id: 2,
-        title: "Haraz Mocha Beans",
-        price: "$45.00",
-        image: "/images/coffee-beans.jpg",
-        category: "Coffee",
-        slug: "haraz-mocha-beans"
-    },
-    {
-        id: 3,
-        title: "Wild Mountain Comb",
-        price: "$220.00",
-        image: "/images/honey-comb.jpg",
-        category: "Reserve",
-        slug: "wild-mountain-comb"
-    }
-];
+interface Product {
+    id: number;
+    name: string;
+    description: string;
+    price: string | number;
+    image_url: string;
+    slug: string;
+    category_name: string;
+}
 
 export default function ProductShowcase() {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const res = await fetch('/api/products?limit=12');
+                if (res.ok) {
+                    const data = await res.json();
+                    setProducts(data.products || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch products:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProducts();
+    }, []);
+
+    if (loading) {
+        return <div className="w-full py-32 bg-white text-center">Loading...</div>;
+    }
+
     return (
         <section className="w-full py-32 bg-white">
             <div className="max-w-7xl mx-auto px-6">
@@ -46,17 +55,22 @@ export default function ProductShowcase() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-                    {PRODUCT_DATA.map((product) => (
-                        <Link key={product.id} href={`/shop/${product.slug}`} className="block">
-                            <ProductCard
-                                title={product.title}
-                                price={product.price}
-                                image={product.image}
-                                category={product.category}
-                            />
-                        </Link>
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+                    {products.length > 0 ? (
+                        products.map((product) => (
+                            <Link key={product.id} href={`/shop/${product.slug}`} className="block">
+                                <ProductCard
+                                    id={product.id}
+                                    title={product.name}
+                                    price={`€${Number(product.price).toFixed(2)}`}
+                                    image={product.image_url || '/images/honey-jar.jpg'}
+                                    category={product.category_name || 'Collection'}
+                                />
+                            </Link>
+                        ))
+                    ) : (
+                        <p className="col-span-full text-center text-gray-400">No products found.</p>
+                    )}
                 </div>
 
                 <div className="mt-16 text-center md:hidden">

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ShoppingBag, Star, Filter, Grid, List, Heart, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import WishlistButton from "@/components/shop/WishlistButton";
 
 interface Product {
     id: number;
@@ -185,13 +186,16 @@ export default function ShopPage() {
                                             alt={product.name}
                                             fill
                                             className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                         />
+
 
                                         {/* Wishlist & Quick View */}
                                         <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="p-2 bg-white rounded-full shadow-lg hover:bg-red-50">
-                                                <Heart size={16} className="text-gray-700" />
-                                            </button>
+                                            <WishlistButton
+                                                productId={product.id}
+                                                className="p-2 bg-white rounded-full shadow-lg hover:bg-red-50"
+                                            />
                                             <button className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50">
                                                 <Eye size={16} className="text-gray-700" />
                                             </button>

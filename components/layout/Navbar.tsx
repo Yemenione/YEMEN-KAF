@@ -3,19 +3,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Menu, X, Search, User, ChevronDown, Globe } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, ChevronDown, Globe, Heart } from "lucide-react";
 import clsx from "clsx";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { useRouter } from "next/navigation";
 import TopMarquee from "./TopMarquee";
-
-const MEGA_MENU_ITEMS = [
-    { title: "Royal Sidr Honey", price: "$180.00", image: "/images/honey-jar.jpg", slug: "royal-sidr-honey" },
-    { title: "Haraz Mocha Beans", price: "$45.00", image: "/images/coffee-beans.jpg", slug: "haraz-mocha-beans" },
-    { title: "Wild Mountain Comb", price: "$220.00", image: "/images/honey-comb.jpg", slug: "wild-mountain-comb" },
-];
 
 function LanguageSelector() {
     const { locale, setLocale } = useLanguage();
@@ -51,6 +46,22 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+    const [megaMenuItems, setMegaMenuItems] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchMegaMenuProducts = async () => {
+            try {
+                const res = await fetch('/api/products?limit=3');
+                if (res.ok) {
+                    const data = await res.json();
+                    setMegaMenuItems(data.products || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch mega menu products:", error);
+            }
+        };
+        fetchMegaMenuProducts();
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -62,6 +73,7 @@ export default function Navbar() {
 
     const { openCart, items } = useCart();
     const { user, logout } = useAuth();
+    const { wishlistCount } = useWishlist();
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
     // Dynamic Text Color based on Scroll Key
@@ -109,8 +121,8 @@ export default function Navbar() {
                     <div className="max-w-7xl mx-auto flex items-center justify-between">
                         {/* Left: Navigation (Desktop) */}
                         <div className="hidden md:flex items-center space-x-8">
-                            <NavLink href="/our-story">Our Story</NavLink>
-                            <NavLink href="/the-farms">The Farms</NavLink>
+                            <NavLink href="/our-story">{t("nav.ourStory")}</NavLink>
+                            <NavLink href="/the-farms">{t("nav.farms")}</NavLink>
                         </div>
 
                         {/* Center: Brand Logo */}
@@ -122,6 +134,7 @@ export default function Navbar() {
                                     fill
                                     className="object-contain"
                                     priority
+                                    sizes="150px"
                                 />
                             </div>
                             <span className={clsx("text-base font-serif tracking-widest uppercase transition-colors duration-300", textColorClass)}>Yemeni Market</span>
@@ -135,7 +148,7 @@ export default function Navbar() {
                                 onMouseEnter={() => setIsMegaMenuOpen(true)}
                             >
                                 <Link href="/shop" className="flex items-center gap-1 text-xs uppercase tracking-[0.2em] font-bold hover:text-[var(--honey-gold)] transition-colors">
-                                    Shop <ChevronDown className={clsx("w-3 h-3 transition-transform duration-300", isMegaMenuOpen ? "rotate-180" : "")} />
+                                    {t("nav.shop")} <ChevronDown className={clsx("w-3 h-3 transition-transform duration-300", isMegaMenuOpen ? "rotate-180" : "")} />
                                 </Link>
                             </div>
 
@@ -181,6 +194,19 @@ export default function Navbar() {
                                     )}
                                 </Link>
 
+                                <Link
+                                    href="/account/wishlist"
+                                    className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 relative"
+                                    title="My Wishlist"
+                                >
+                                    <Heart className="w-5 h-5" />
+                                    {wishlistCount > 0 && (
+                                        <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--coffee-brown)] text-[10px] text-white font-bold">
+                                            {wishlistCount}
+                                        </span>
+                                    )}
+                                </Link>
+
                                 <button onClick={openCart} className="relative hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300">
                                     <ShoppingBag className="w-5 h-5" />
                                     {itemCount > 0 && (
@@ -223,22 +249,29 @@ export default function Navbar() {
                             </div>
 
                             {/* Products Grid */}
-                            {MEGA_MENU_ITEMS.map((item) => (
-                                <Link key={item.slug} href={`/shop/${item.slug}`} className="group col-span-1 block" onClick={() => setIsMegaMenuOpen(false)}>
-                                    <div className="relative aspect-square overflow-hidden bg-gray-50 mb-4">
-                                        <Image
-                                            src={item.image}
-                                            alt={item.title}
-                                            fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
-                                        />
-                                    </div>
-                                    <div className="space-y-1 text-center">
-                                        <h4 className="font-serif text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors">{item.title}</h4>
-                                        <span className="text-xs font-bold text-[var(--honey-gold)] uppercase tracking-widest">{item.price}</span>
-                                    </div>
-                                </Link>
-                            ))}
+                            {/* Products Grid */}
+                            {megaMenuItems.length > 0 ? (
+                                megaMenuItems.map((item) => (
+                                    <Link key={item.id} href={`/shop/${item.slug}`} className="group col-span-1 block" onClick={() => setIsMegaMenuOpen(false)}>
+                                        <div className="relative aspect-square overflow-hidden bg-gray-50 mb-4">
+                                            <Image
+                                                src={item.image_url || '/images/honey-jar.jpg'}
+                                                alt={item.name}
+                                                fill
+                                                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                            />
+                                        </div>
+                                        <div className="space-y-1 text-center">
+                                            <h4 className="font-serif text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-1">{item.name}</h4>
+                                            <span className="text-xs font-bold text-[var(--honey-gold)] uppercase tracking-widest">€{Number(item.price).toFixed(2)}</span>
+                                        </div>
+                                    </Link>
+                                ))
+                            ) : (
+                                <div className="col-span-3 text-center text-gray-400 py-10">
+                                    <p>Loading...</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </nav>
@@ -257,10 +290,10 @@ export default function Navbar() {
                 </button>
 
                 <nav className="flex flex-col items-center space-y-6 text-center">
-                    <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">Home</Link>
-                    <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">Shop</Link>
-                    <Link href="/our-story" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">Our Story</Link>
-                    <Link href="/the-farms" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">The Farms</Link>
+                    <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">{t("home.hero.title")}</Link>
+                    <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">{t("nav.shop")}</Link>
+                    <Link href="/our-story" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">{t("nav.ourStory")}</Link>
+                    <Link href="/the-farms" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">{t("nav.farms")}</Link>
 
                     <div className="w-12 h-[1px] bg-black/10 my-4" />
 

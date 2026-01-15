@@ -13,18 +13,63 @@ export default function CheckoutPage() {
     const { items, total } = useCart();
     const { t } = useLanguage();
     const router = useRouter();
+    const [formData, setFormData] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "France"
+    });
     const [selectedShippingMethod, setSelectedShippingMethod] = useState("standard");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Redirect if cart is empty
     useEffect(() => {
         if (items.length === 0) {
-            // router.push("/shop"); 
+            router.push("/shop");
         }
     }, [items, router]);
 
     const formatPrice = (price: string | number) => {
-        if (typeof price === 'number') return `$${price.toFixed(2)}`;
+        if (typeof price === 'number') return `€${price.toFixed(2)}`;
         return price;
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async () => {
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    shippingAddress: formData,
+                    paymentMethod: 'cash_on_delivery', // Mock for now
+                    shippingMethod: selectedShippingMethod,
+                    items: items.map(item => ({ id: item.id, quantity: item.quantity }))
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                router.push(`/order-confirmation/${data.orderNumber}`);
+            } else {
+                alert("Failed to place order. Please try again.");
+            }
+        } catch (error) {
+            console.error("Checkout error:", error);
+            alert("An error occurred.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -68,50 +113,50 @@ export default function CheckoutPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">First Name</label>
-                                <input type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="John" />
+                                <input name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="John" />
                             </div>
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Last Name</label>
-                                <input type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="Doe" />
+                                <input name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="Doe" />
                             </div>
 
                             <div className="md:col-span-2 group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Email Address</label>
-                                <input type="email" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="john@example.com" />
+                                <input name="email" value={formData.email} onChange={handleInputChange} type="email" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="john@example.com" />
                             </div>
 
                             <div className="md:col-span-2 group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Phone Number</label>
-                                <input type="tel" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="+1 (555) 000-0000" />
+                                <input name="phone" value={formData.phone} onChange={handleInputChange} type="tel" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="+1 (555) 000-0000" />
                             </div>
 
                             <div className="md:col-span-2 group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Street Address</label>
-                                <input type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="123 Luxury Blvd, Apt 4B" />
+                                <input name="address" value={formData.address} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="123 Luxury Blvd, Apt 4B" />
                             </div>
 
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">City</label>
-                                <input type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="New York" />
+                                <input name="city" value={formData.city} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="New York" />
                             </div>
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">State / Province</label>
-                                <input type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="NY" />
+                                <input name="state" value={formData.state} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="NY" />
                             </div>
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Postal / Zip Code</label>
-                                <input type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="10001" />
+                                <input name="zip" value={formData.zip} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="10001" />
                             </div>
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Country</label>
-                                <select className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent appearance-none cursor-pointer">
+                                <select name="country" value={formData.country} onChange={handleInputChange} className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent appearance-none cursor-pointer">
                                     <option>Select Country</option>
-                                    <option>France</option>
-                                    <option>United Kingdom</option>
-                                    <option>United States</option>
-                                    <option>UAE</option>
-                                    <option>Saudi Arabia</option>
-                                    <option>Yemen</option>
+                                    <option value="France">France</option>
+                                    <option value="United Kingdom">United Kingdom</option>
+                                    <option value="United States">United States</option>
+                                    <option value="UAE">UAE</option>
+                                    <option value="Saudi Arabia">Saudi Arabia</option>
+                                    <option value="Yemen">Yemen</option>
                                 </select>
                             </div>
                         </div>
@@ -137,7 +182,7 @@ export default function CheckoutPage() {
                                 <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
                                 <div className="relative flex items-center justify-between mb-2">
                                     <Truck className="w-6 h-6 text-gray-400 peer-checked:text-black" />
-                                    <span className="font-bold text-lg">$0.00</span>
+                                    <span className="font-bold text-lg">€0.00</span>
                                 </div>
                                 <h3 className="font-serif text-lg text-black mb-1">Standard Delivery</h3>
                                 <p className="text-sm text-gray-500">5-7 Business Days</p>
@@ -154,7 +199,7 @@ export default function CheckoutPage() {
                                 <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
                                 <div className="relative flex items-center justify-between mb-2">
                                     <div className="p-1 bg-black text-white text-[10px] uppercase font-bold px-2 rounded">Express</div>
-                                    <span className="font-bold text-lg">$25.00</span>
+                                    <span className="font-bold text-lg">€25.00</span>
                                 </div>
                                 <h3 className="font-serif text-lg text-black mb-1">Express Courier</h3>
                                 <p className="text-sm text-gray-500">1-3 Business Days (DHL/FedEx)</p>
@@ -206,20 +251,24 @@ export default function CheckoutPage() {
                         <div className="space-y-4 pt-6 border-t border-black/10">
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>Subtotal</span>
-                                <span>${total.toFixed(2)}</span>
+                                <span>€{total.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>Shipping</span>
-                                <span>{selectedShippingMethod === "express" ? "$25.00" : "Free"}</span>
+                                <span>{selectedShippingMethod === "express" ? "€25.00" : "Free"}</span>
                             </div>
                             <div className="flex justify-between text-2xl font-serif text-black pt-4">
                                 <span>Total</span>
-                                <span>${(total + (selectedShippingMethod === "express" ? 25 : 0)).toFixed(2)}</span>
+                                <span>€{(total + (selectedShippingMethod === "express" ? 25 : 0)).toFixed(2)}</span>
                             </div>
                         </div>
 
-                        <button className="w-full mt-8 py-5 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 rounded-xl shadow-xl flex items-center justify-center gap-3">
-                            Process Payment <ChevronRight size={18} />
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                            className={`w-full mt-8 py-5 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 rounded-xl shadow-xl flex items-center justify-center gap-3 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                        >
+                            {isSubmitting ? 'Processing...' : 'Process Payment'} <ChevronRight size={18} />
                         </button>
 
                         <p className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-2">

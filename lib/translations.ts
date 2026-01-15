@@ -11,12 +11,16 @@ export const translations = {
             logout: "Logout",
             cart: "Cart",
             search: "Search...",
+            ourStory: "Our Story",
+            farms: "The Farms",
         },
         // Home
         home: {
             hero: {
                 title: "Discover Our Collection",
                 subtitle: "Authentic Yemeni products of superior quality",
+                tagline: "Premium Quality",
+                cta: "Shop Now",
             },
         },
         // Shop
@@ -141,12 +145,16 @@ export const translations = {
             logout: "Déconnexion",
             cart: "Panier",
             search: "Rechercher...",
+            ourStory: "Notre Histoire",
+            farms: "Les Fermes",
         },
         // Home
         home: {
             hero: {
                 title: "Découvrez Notre Collection",
                 subtitle: "Produits yéménites authentiques de qualité supérieure",
+                tagline: "Qualité Premium",
+                cta: "Acheter Maintenant",
             },
         },
         // Shop
@@ -271,12 +279,16 @@ export const translations = {
             logout: "تسجيل الخروج",
             cart: "السلة",
             search: "بحث...",
+            ourStory: "قصتنا",
+            farms: "المزارع",
         },
         // Home
         home: {
             hero: {
                 title: "اكتشف مجموعتنا",
                 subtitle: "منتجات يمنية أصيلة ذات جودة عالية",
+                tagline: "جودة عالية",
+                cta: "تسوق الان",
             },
         },
         // Shop

@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import Link from "next/link";
 import CartDrawer from "@/components/cart/CartDrawer";
 import Footer from "@/components/layout/Footer";
@@ -43,10 +44,12 @@ export default function RootLayout({
         <LanguageProvider>
           <AuthProvider>
             <CartProvider>
-              <Navbar />
-              {children}
-              <Footer />
-              <CartDrawer />
+              <WishlistProvider>
+                <Navbar />
+                {children}
+                <Footer />
+                <CartDrawer />
+              </WishlistProvider>
             </CartProvider>
           </AuthProvider>
         </LanguageProvider>
