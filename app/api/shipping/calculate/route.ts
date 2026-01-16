@@ -27,8 +27,9 @@ export async function POST(req: Request) {
         // Since we can't easily alter the DB here without risk, let's fetch products and IF weight is missing, default to 0.5.
         // Actually, to be safe, let's just fetch p.*
 
+        // Fetch product details (using * to be safe if weight column is missing, defaulting to 0.5kg later)
         const [products]: any = await pool.execute(
-            `SELECT id, weight FROM products WHERE id IN (${placeholders})`,
+            `SELECT * FROM products WHERE id IN (${placeholders})`,
             ids
         );
 
