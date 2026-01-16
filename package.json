@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@prisma/client": "^7.2.0",
+    "@prisma/client": "^5.22.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@stripe/react-stripe-js": "^5.4.1",
@@ -52,4 +52,3 @@
     "typescript": "^5"
   }
 }
-```
