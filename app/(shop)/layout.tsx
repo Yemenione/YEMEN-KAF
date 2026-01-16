@@ -4,43 +4,29 @@ import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import CookieBanner from "@/components/layout/CookieBanner";
 import Link from "next/link";
 import CartDrawer from "@/components/cart/CartDrawer";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
-
 import "../globals.css";
 
-const playfair = Playfair_Display({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Yemeni Market | Luxury Sidr Honey & Mocha Coffee",
-  description: "Experience the heritage of Yemen with authentic Sidr Honey and premium Mocha Coffee. A journey of luxury and tradition.",
-  icons: {
-    icon: "/images/logo.png",
-  },
+  title: "Yemeni Market - Authentic Goods",
+  description: "Premium Yemeni products including Sidr Honey and Coffee.",
 };
 
-export default function RootLayout({
+export default function ShopLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)]`}
-      >
+      <body className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)]`}>
         <LanguageProvider>
           <AuthProvider>
             <CartProvider>
@@ -49,6 +35,7 @@ export default function RootLayout({
                 {children}
                 <Footer />
                 <CartDrawer />
+                <CookieBanner />
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>

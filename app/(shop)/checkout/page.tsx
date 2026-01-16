@@ -4,28 +4,102 @@ import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CreditCard, ChevronRight, ShoppingBag, MapPin, Truck } from "lucide-react";
+import { ArrowLeft, CreditCard, ChevronRight, ShoppingBag, MapPin, Truck, Banknote } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import StripePaymentForm from "@/components/checkout/StripePaymentForm";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+// Initialize Stripe outside to avoid re-initializing on render
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutPage() {
     const { items, total } = useCart();
     const { t } = useLanguage();
     const router = useRouter();
-    const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        zip: "",
-        country: "France"
-    });
     const [selectedShippingMethod, setSelectedShippingMethod] = useState("standard");
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("stripe");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [clientSecret, setClientSecret] = useState("");
+
+    const [shippingRates, setShippingRates] = useState<any[]>([]);
+    const [cartWeight, setCartWeight] = useState(0);
+    const [selectedShippingRate, setSelectedShippingRate] = useState<any>(null);
+
+    const checkoutSchema = z.object({
+        firstName: z.string().min(2, t('validation.firstNameRequired') || "First name is required"),
+        lastName: z.string().min(2, t('validation.lastNameRequired') || "Last name is required"),
+        email: z.string().email(t('validation.emailInvalid') || "Invalid email address"),
+        phone: z.string().min(8, t('validation.phoneRequired') || "Phone number is required"),
+        address: z.string().min(5, t('validation.addressRequired') || "Address is required"),
+        city: z.string().min(2, t('validation.cityRequired') || "City is required"),
+        state: z.string().min(2, t('validation.stateRequired') || "State/Province is required"),
+        zip: z.string().min(4, t('validation.zipRequired') || "ZIP code is required"),
+        country: z.string().min(2, t('validation.countryRequired') || "Country is required"),
+    });
+
+    type CheckoutFormValues = z.infer<typeof checkoutSchema>;
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isValid },
+        getValues,
+        trigger,
+        control
+    } = useForm<CheckoutFormValues>({
+        resolver: zodResolver(checkoutSchema),
+        mode: "onChange",
+        defaultValues: {
+            firstName: "",
+            lastName: "",
+            email: "",
+            phone: "",
+            address: "",
+            city: "",
+            state: "",
+            zip: "",
+            country: "France"
+        }
+    });
+
+    // Watch country change to re-fetch rates
+    const selectedCountry = useWatch({ control, name: "country" });
+
+    useEffect(() => {
+        if (items.length > 0 && selectedCountry) {
+            fetch("/api/shipping/calculate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ items, country: selectedCountry }),
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    setShippingRates(data.rates || []);
+                    setCartWeight(data.totalWeight || 0);
+                    // Default to first option if current selection is invalid or null
+                    if (data.rates && data.rates.length > 0) {
+                        // Keep current if exists in new list, else set first
+                        setSelectedShippingRate((prev: any) => {
+                            const exists = data.rates.find((r: any) => r.id === prev?.id);
+                            return exists || data.rates[0];
+                        });
+                        setSelectedShippingMethod(data.rates[0].id); // Legacy support for string ID
+                    } else {
+                        setShippingRates([]);
+                        setSelectedShippingRate(null);
+                    }
+                })
+                .catch(err => console.error("Failed to fetch shipping rates", err));
+        }
+    }, [items, selectedCountry]);
+
+    const orderTotal = total + (selectedShippingRate?.price || 0);
 
     // Redirect if cart is empty
     useEffect(() => {
@@ -34,17 +108,38 @@ export default function CheckoutPage() {
         }
     }, [items, router]);
 
+    // Create PaymentIntent as soon as the page loads OR total changes
+    useEffect(() => {
+        if (orderTotal > 0) {
+            // Debounce slightly to avoid too many intent updates?
+            const timeoutId = setTimeout(() => {
+                fetch("/api/stripe/create-payment-intent", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: orderTotal, currency: "eur" }),
+                })
+                    .then((res) => res.json())
+                    .then((data) => setClientSecret(data.clientSecret));
+            }, 500);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [orderTotal]);
+
     const formatPrice = (price: string | number) => {
         if (typeof price === 'number') return `${price.toFixed(2)}€`;
         return price;
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+    const handlePlaceOrder = async (paymentId?: string) => {
+        // Validate form one last time if called manually
+        const isFormValid = await trigger();
+        if (!isFormValid) {
+            alert("Please correct the errors in the form.");
+            return;
+        }
 
-    const handleSubmit = async () => {
+        const formData = getValues();
+
         setIsSubmitting(true);
         try {
             const res = await fetch('/api/orders', {
@@ -52,7 +147,8 @@ export default function CheckoutPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     shippingAddress: formData,
-                    paymentMethod: 'cash_on_delivery', // Mock for now
+                    paymentMethod: selectedPaymentMethod,
+                    paymentId: paymentId || null, // Store Stripe Payment ID
                     shippingMethod: selectedShippingMethod,
                     items: items.map(item => ({ id: item.id, quantity: item.quantity }))
                 })
@@ -70,6 +166,17 @@ export default function CheckoutPage() {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const appearance = {
+        theme: 'stripe' as const,
+        variables: {
+            colorPrimary: '#000000',
+        },
+    };
+    const options = {
+        clientSecret,
+        appearance,
     };
 
     return (
@@ -113,44 +220,52 @@ export default function CheckoutPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.firstName')}</label>
-                                <input name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
+                                <input {...register("firstName")} type="text" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
+                                {errors.firstName && <span className="text-red-500 text-xs">{errors.firstName.message}</span>}
                             </div>
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.lastName')}</label>
-                                <input name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
+                                <input {...register("lastName")} type="text" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.lastName ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
+                                {errors.lastName && <span className="text-red-500 text-xs">{errors.lastName.message}</span>}
                             </div>
 
                             <div className="md:col-span-2 group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.email')}</label>
-                                <input name="email" value={formData.email} onChange={handleInputChange} type="email" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
+                                <input {...register("email")} type="email" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.email ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
+                                {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
                             </div>
 
                             <div className="md:col-span-2 group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.phone')}</label>
-                                <input name="phone" value={formData.phone} onChange={handleInputChange} type="tel" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
+                                <input {...register("phone")} type="tel" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.phone ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
+                                {errors.phone && <span className="text-red-500 text-xs">{errors.phone.message}</span>}
                             </div>
 
                             <div className="md:col-span-2 group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.street')}</label>
-                                <input name="address" value={formData.address} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
+                                <input {...register("address")} type="text" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.address ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
+                                {errors.address && <span className="text-red-500 text-xs">{errors.address.message}</span>}
                             </div>
 
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.city')}</label>
-                                <input name="city" value={formData.city} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
+                                <input {...register("city")} type="text" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.city ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
+                                {errors.city && <span className="text-red-500 text-xs">{errors.city.message}</span>}
                             </div>
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.state')}</label>
-                                <input name="state" value={formData.state} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
+                                <input {...register("state")} type="text" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.state ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
+                                {errors.state && <span className="text-red-500 text-xs">{errors.state.message}</span>}
                             </div>
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.zip')}</label>
-                                <input name="zip" value={formData.zip} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
+                                <input {...register("zip")} type="text" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.zip ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
+                                {errors.zip && <span className="text-red-500 text-xs">{errors.zip.message}</span>}
                             </div>
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.country')}</label>
-                                <select name="country" value={formData.country} onChange={handleInputChange} className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent appearance-none cursor-pointer">
-                                    <option>Select Country</option>
+                                <select {...register("country")} className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent appearance-none cursor-pointer ${errors.country ? 'border-red-500' : 'border-gray-200 focus:border-black'}`}>
+                                    <option value="">Select Country</option>
                                     <option value="France">France</option>
                                     <option value="United Kingdom">United Kingdom</option>
                                     <option value="United States">United States</option>
@@ -158,6 +273,7 @@ export default function CheckoutPage() {
                                     <option value="Saudi Arabia">Saudi Arabia</option>
                                     <option value="Yemen">Yemen</option>
                                 </select>
+                                {errors.country && <span className="text-red-500 text-xs">{errors.country.message}</span>}
                             </div>
                         </div>
                     </section>
@@ -169,55 +285,104 @@ export default function CheckoutPage() {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-full border border-black text-black text-sm font-bold">2</span>
                                 {t('checkout.deliveryMethod')}
                             </h2>
+                            {cartWeight > 0 && (
+                                <span className="text-xs text-gray-500 font-medium">
+                                    Total Weight: {cartWeight}kg
+                                </span>
+                            )}
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
-                                <input
-                                    type="radio"
-                                    name="shipping"
-                                    className="peer sr-only"
-                                    checked={selectedShippingMethod === "standard"}
-                                    onChange={() => setSelectedShippingMethod("standard")}
-                                />
-                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
-                                <div className="relative flex items-center justify-between mb-2">
-                                    <Truck className="w-6 h-6 text-gray-400 peer-checked:text-black" />
-                                    <span className="font-bold text-lg">{t('checkout.free')}</span>
-                                </div>
-                                <h3 className="font-serif text-lg text-black mb-1">{t('checkout.standard')}</h3>
-                                <p className="text-sm text-gray-500">5-7 {t('checkout.businessDays')}</p>
-                            </label>
-
-                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
-                                <input
-                                    type="radio"
-                                    name="shipping"
-                                    className="peer sr-only"
-                                    checked={selectedShippingMethod === "express"}
-                                    onChange={() => setSelectedShippingMethod("express")}
-                                />
-                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
-                                <div className="relative flex items-center justify-between mb-2">
-                                    <div className="p-1 bg-black text-white text-[10px] uppercase font-bold px-2 rounded">Express</div>
-                                    <span className="font-bold text-lg">25.00€</span>
-                                </div>
-                                <h3 className="font-serif text-lg text-black mb-1">{t('checkout.express')}</h3>
-                                <p className="text-sm text-gray-500">1-3 {t('checkout.businessDays')} (DHL/FedEx)</p>
-                            </label>
+                            {shippingRates.length > 0 ? (
+                                shippingRates.map((rate) => (
+                                    <label key={rate.id} className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
+                                        <input
+                                            type="radio"
+                                            name="shipping"
+                                            className="peer sr-only"
+                                            checked={selectedShippingRate?.id === rate.id}
+                                            onChange={() => {
+                                                setSelectedShippingRate(rate);
+                                                setSelectedShippingMethod(rate.id);
+                                            }}
+                                        />
+                                        <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
+                                        <div className="relative flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <Truck className="w-6 h-6 text-gray-400 peer-checked:text-black" />
+                                                <span className="font-bold text-lg">{rate.price === 0 ? t('checkout.free') : `${rate.price.toFixed(2)}€`}</span>
+                                            </div>
+                                        </div>
+                                        <h3 className="font-serif text-lg text-black mb-1">{rate.name}</h3>
+                                        <p className="text-sm text-gray-500">{rate.estimatedDays}</p>
+                                    </label>
+                                ))
+                            ) : (
+                                <p className="text-gray-500 text-sm">Please select a country to see shipping options.</p>
+                            )}
                         </div>
                     </section>
 
-                    {/* Step 3: Payment Mockup */}
-                    <section className="space-y-8 opacity-50 pointer-events-none grayscale">
+                    {/* Step 3: Payment Method */}
+                    <section className="space-y-8">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-medium tracking-wide flex items-center gap-3">
-                                <span className="flex items-center justify-center w-8 h-8 rounded-full border border-black/20 text-black/50 text-sm font-bold">3</span>
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full border border-black/20 text-black text-sm font-bold">3</span>
                                 {t('checkout.paymentMethod')}
                             </h2>
                         </div>
-                        <div className="p-6 border border-gray-100 rounded-xl flex items-center gap-4">
-                            <CreditCard className="w-6 h-6 text-gray-400" />
-                            <span>Payment details will be collected securely in the next step.</span>
+
+                        {/* Payment Method Selector */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
+                                <input
+                                    type="radio"
+                                    name="payment"
+                                    className="peer sr-only"
+                                    checked={selectedPaymentMethod === "stripe"}
+                                    onChange={() => setSelectedPaymentMethod("stripe")}
+                                />
+                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
+                                <div className="relative flex items-center gap-3 mb-2">
+                                    <CreditCard className="w-6 h-6 text-gray-400 peer-checked:text-black" />
+                                    <h3 className="font-serif text-lg text-black">Credit Card</h3>
+                                </div>
+                            </label>
+
+                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
+                                <input
+                                    type="radio"
+                                    name="payment"
+                                    className="peer sr-only"
+                                    checked={selectedPaymentMethod === "cod"}
+                                    onChange={() => setSelectedPaymentMethod("cod")}
+                                />
+                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
+                                <div className="relative flex items-center gap-3 mb-2">
+                                    <Banknote className="w-6 h-6 text-gray-400 peer-checked:text-black" />
+                                    <h3 className="font-serif text-lg text-black">Cash on Delivery</h3>
+                                </div>
+                            </label>
+                        </div>
+
+                        {/* Payment Content */}
+                        <div className="p-6 border border-gray-100 rounded-xl bg-gray-50/50">
+                            {selectedPaymentMethod === "stripe" && clientSecret && (
+                                <Elements options={options} stripe={stripePromise}>
+                                    <StripePaymentForm amount={orderTotal} onSuccess={handlePlaceOrder} isFormValid={isValid} />
+                                </Elements>
+                            )}
+                            {selectedPaymentMethod === "cod" && (
+                                <div className="text-center py-4">
+                                    <p className="text-gray-600 mb-6">Pay properly upon delivery. Additional fees may apply depending on the carrier.</p>
+                                    <button
+                                        onClick={() => handlePlaceOrder()} // No payment ID for COD
+                                        disabled={isSubmitting}
+                                        className={`w-full py-5 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 rounded-xl shadow-xl flex items-center justify-center gap-3 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                                    >
+                                        {isSubmitting ? t('checkout.processing') : "Place Order (COD)"} <ChevronRight size={18} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </section>
                 </div>
@@ -255,23 +420,15 @@ export default function CheckoutPage() {
                             </div>
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>{t('checkout.shipping')}</span>
-                                <span>{selectedShippingMethod === "express" ? "25.00€" : t('checkout.free')}</span>
+                                <span>{selectedShippingRate ? `${selectedShippingRate.price.toFixed(2)}€` : '--'}</span>
                             </div>
                             <div className="flex justify-between text-2xl font-serif text-black pt-4">
                                 <span>{t('checkout.total')}</span>
-                                <span>{(total + (selectedShippingMethod === "express" ? 25 : 0)).toFixed(2)}€</span>
+                                <span>{orderTotal.toFixed(2)}€</span>
                             </div>
                         </div>
 
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSubmitting}
-                            className={`w-full mt-8 py-5 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 rounded-xl shadow-xl flex items-center justify-center gap-3 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
-                        >
-                            {isSubmitting ? t('checkout.processing') : t('checkout.processPayment')} <ChevronRight size={18} />
-                        </button>
-
-                        <p className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-2">
+                        <p className="text-center text-xs text-gray-400 mt-8 flex items-center justify-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-green-500 animation-pulse"></span> {t('checkout.secureCheckout')}
                         </p>
                     </div>
