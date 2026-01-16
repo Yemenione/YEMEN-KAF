@@ -226,7 +226,8 @@ export const translations = {
             error: {
                 login: "Login failed. Please check your credentials.",
                 register: "Registration failed. Please try again.",
-            }
+            },
+            continueWithGoogle: "Continue with Google",
         },
     },
     fr: {
@@ -456,7 +457,8 @@ export const translations = {
             error: {
                 login: "Échec de la connexion. Veuillez vérifier vos identifiants.",
                 register: "Échec de l'inscription. Veuillez réessayer.",
-            }
+            },
+            continueWithGoogle: "Continuer avec Google",
         },
     },
     ar: {
@@ -686,7 +688,8 @@ export const translations = {
             error: {
                 login: "فشل تسجيل الدخول. يرجى التحقق من بياناتك.",
                 register: "فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.",
-            }
+            },
+            continueWithGoogle: "تسجيل الدخول عن طريق جوجل",
         },
     },
 };
