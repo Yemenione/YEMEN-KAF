@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
+import { useToast } from "@/context/ToastContext";
 
 export type CartItem = {
     id: string | number;
@@ -29,6 +30,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const openCart = () => setIsOpen(true);
     const closeCart = () => setIsOpen(false);
 
+    const { showToast } = useToast();
+
     const addToCart = (newItem: Omit<CartItem, "quantity">) => {
         setItems((prev) => {
             const existing = prev.find((i) => i.id === newItem.id);
@@ -40,6 +43,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             return [...prev, { ...newItem, quantity: 1 }];
         });
         setIsOpen(true);
+        showToast(`${newItem.title} added to cart!`, "success");
     };
 
     const removeFromCart = (id: string | number) => {

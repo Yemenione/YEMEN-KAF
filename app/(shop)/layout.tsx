@@ -4,6 +4,7 @@ import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { ToastProvider } from "@/context/ToastContext";
 import CookieBanner from "@/components/layout/CookieBanner";
 import Link from "next/link";
 import CartDrawer from "@/components/cart/CartDrawer";
@@ -28,17 +29,19 @@ export default function ShopLayout({
     <html lang="en">
       <body className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)]`}>
         <LanguageProvider>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <Navbar />
-                {children}
-                <Footer />
-                <CartDrawer />
-                <CookieBanner />
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <Navbar />
+                  {children}
+                  <Footer />
+                  <CartDrawer />
+                  <CookieBanner />
+                </WishlistProvider>
+              </CartProvider>
+            </AuthProvider>
+          </ToastProvider>
         </LanguageProvider>
       </body>
     </html>

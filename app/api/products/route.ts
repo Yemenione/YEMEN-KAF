@@ -7,6 +7,9 @@ export async function GET(req: Request) {
         const category = searchParams.get('category');
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
+        const sort = searchParams.get('sort') || 'newest';
+        const minPrice = searchParams.get('minPrice');
+        const maxPrice = searchParams.get('maxPrice');
 
         let query = `
             SELECT 
@@ -31,7 +34,37 @@ export async function GET(req: Request) {
             params.push(`%${search}%`, `%${search}%`);
         }
 
-        query += ` ORDER BY p.created_at DESC LIMIT ? OFFSET ?`;
+        // Price Filtering
+        if (minPrice) {
+            query += ` AND p.price >= ?`;
+            params.push(minPrice);
+        }
+        if (maxPrice) {
+            query += ` AND p.price <= ?`;
+            params.push(maxPrice);
+        }
+
+        // Sorting
+        switch (sort) {
+            case 'price-low':
+                query += ` ORDER BY p.price ASC`;
+                break;
+            case 'price-high':
+                query += ` ORDER BY p.price DESC`;
+                break;
+            case 'name-asc':
+                query += ` ORDER BY p.name ASC`;
+                break;
+            case 'name-desc':
+                query += ` ORDER BY p.name DESC`;
+                break;
+            case 'newest':
+            default:
+                query += ` ORDER BY p.created_at DESC`;
+                break;
+        }
+
+        query += ` LIMIT ? OFFSET ?`;
         params.push(limit, offset);
 
         const [products]: any = await pool.execute(query, params);

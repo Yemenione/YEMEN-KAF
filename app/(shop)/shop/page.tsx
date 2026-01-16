@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { ShoppingBag, Star, Filter, Grid, List, Heart, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import WishlistButton from "@/components/shop/WishlistButton";
+import ProductSkeleton from "@/components/shop/ProductSkeleton";
 
 interface Product {
     id: number;
@@ -35,15 +36,30 @@ export default function ShopPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [sortBy, setSortBy] = useState('newest');
+    const [minPrice, setMinPrice] = useState("");
+    const [maxPrice, setMaxPrice] = useState("");
 
+    // Read URL query params on mount
     useEffect(() => {
-        fetchCategories();
-        fetchProducts();
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('search');
+        const cat = params.get('category');
+        if (cat) setSelectedCategory(cat);
+        // If there's a search term, we could perhaps set it back to a search state,
+        // but for now relying on fetchProducts sending the current URL params or derived state
     }, []);
 
     useEffect(() => {
-        fetchProducts();
-    }, [selectedCategory]);
+        fetchCategories();
+    }, []);
+
+    // Debounce price filter
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchProducts();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [selectedCategory, sortBy, minPrice, maxPrice]); // Re-fetch on any filter change
 
     const fetchCategories = async () => {
         try {
@@ -60,10 +76,21 @@ export default function ShopPage() {
     const fetchProducts = async () => {
         setIsLoading(true);
         try {
-            const url = selectedCategory === 'all'
-                ? '/api/products'
-                : `/api/products?category=${selectedCategory}`;
-            const res = await fetch(url);
+            const params = new URLSearchParams(window.location.search);
+            // If explicit category state is different from 'all', use state, else check URL
+            // Actually, simpler to just use the state:
+            if (selectedCategory !== 'all') {
+                params.set('category', selectedCategory);
+            } else {
+                params.delete('category');
+            }
+
+            // Add sort and filter params
+            params.set('sort', sortBy);
+            if (minPrice) params.set('minPrice', minPrice);
+            if (maxPrice) params.set('maxPrice', maxPrice);
+
+            const res = await fetch(`/api/products?${params.toString()}`);
             if (res.ok) {
                 const data = await res.json();
                 setProducts(data.products);
@@ -75,18 +102,8 @@ export default function ShopPage() {
         }
     };
 
-    const sortedProducts = [...products].sort((a, b) => {
-        switch (sortBy) {
-            case 'price-low':
-                return Number(a.price) - Number(b.price);
-            case 'price-high':
-                return Number(b.price) - Number(a.price);
-            case 'name':
-                return a.name.localeCompare(b.name);
-            default:
-                return 0;
-        }
-    });
+    // Derived state for display - no longer client-side sorting!
+    const displayProducts = products;
 
     const displayCategories = [
         { id: 0, name: t('shop.allProducts'), slug: 'all' },
@@ -122,31 +139,54 @@ export default function ShopPage() {
                         </div>
 
                         {/* Sort & View */}
-                        <div className="flex items-center gap-4">
-                            <select
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value)}
-                                className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                            >
-                                <option value="newest">{t('shop.newest')}</option>
-                                <option value="price-low">{t('shop.priceLow')}</option>
-                                <option value="price-high">{t('shop.priceHigh')}</option>
-                                <option value="name">{t('shop.nameAZ')}</option>
-                            </select>
+                        {/* Sort & View */}
+                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                            {/* Price Inputs */}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="number"
+                                    placeholder="Min €"
+                                    className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                    value={minPrice}
+                                    onChange={(e) => setMinPrice(e.target.value)}
+                                />
+                                <span className="text-gray-400">-</span>
+                                <input
+                                    type="number"
+                                    placeholder="Max €"
+                                    className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                    value={maxPrice}
+                                    onChange={(e) => setMaxPrice(e.target.value)}
+                                />
+                            </div>
 
-                            <div className="flex gap-2 border border-gray-200 rounded-lg p-1">
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`p-2 rounded ${viewMode === 'grid' ? 'bg-black text-white' : 'text-gray-400'}`}
+                            <div className="flex items-center gap-2">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
                                 >
-                                    <Grid size={18} />
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('list')}
-                                    className={`p-2 rounded ${viewMode === 'list' ? 'bg-black text-white' : 'text-gray-400'}`}
-                                >
-                                    <List size={18} />
-                                </button>
+                                    <option value="newest">{t('shop.newest')}</option>
+                                    <option value="price-low">{t('shop.priceLow')}</option>
+                                    <option value="price-high">{t('shop.priceHigh')}</option>
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="name-desc">Name (Z-A)</option>
+                                </select>
+
+                                <div className="flex gap-2 border border-gray-200 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setViewMode('grid')}
+                                        className={`p-2 rounded ${viewMode === 'grid' ? 'bg-black text-white' : 'text-gray-400'}`}
+                                    >
+                                        <Grid size={18} />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('list')}
+                                        className={`p-2 rounded ${viewMode === 'list' ? 'bg-black text-white' : 'text-gray-400'}`}
+                                    >
+                                        <List size={18} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -156,20 +196,19 @@ export default function ShopPage() {
                 {!isLoading && (
                     <div className="mb-6">
                         <p className="text-sm text-gray-600">
-                            <span className="font-semibold">{sortedProducts.length}</span> {t('shop.productsFound')}
+                            <span className="font-semibold">{displayProducts.length}</span> {t('shop.productsFound')}
                         </p>
                     </div>
                 )}
 
                 {/* Products Grid/List */}
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-20">
-                        <div className="text-center">
-                            <div className="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-gray-500">{t('shop.loading')}</p>
-                        </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {[...Array(8)].map((_, i) => (
+                            <ProductSkeleton key={i} />
+                        ))}
                     </div>
-                ) : sortedProducts.length === 0 ? (
+                ) : displayProducts.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-lg">
                         <p className="text-gray-500 text-lg">{t('shop.noProducts')}</p>
                     </div>
@@ -178,7 +217,7 @@ export default function ShopPage() {
                         ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
                         : 'flex flex-col gap-4'
                     }>
-                        {sortedProducts.map((product) => (
+                        {displayProducts.map((product) => (
                             <div
                                 key={product.id}
                                 className={`group bg-white rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 ${viewMode === 'list' ? 'flex flex-row' : 'flex flex-col'
