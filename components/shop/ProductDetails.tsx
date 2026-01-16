@@ -90,7 +90,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                                         : 'opacity-60 hover:opacity-100'
                                         }`}
                                 >
-                                    <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
+                                    <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" sizes="(max-width: 768px) 25vw, 10vw" />
                                 </button>
                             ))}
                         </div>

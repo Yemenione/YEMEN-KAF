@@ -229,6 +229,18 @@ export const translations = {
             },
             continueWithGoogle: "Continue with Google",
         },
+        contact: {
+            title: "Contact Us",
+            subtitle: "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+            name: "Full Name",
+            email: "Email Address",
+            phone: "Phone Number",
+            subject: "Subject",
+            message: "Message",
+            send: "Send Message",
+            success: "Message sent successfully! We'll get back to you soon.",
+            error: "Failed to send message. Please try again or email us directly."
+        }
     },
     fr: {
         // Navbar
@@ -460,6 +472,18 @@ export const translations = {
             },
             continueWithGoogle: "Continuer avec Google",
         },
+        contact: {
+            title: "Contactez-nous",
+            subtitle: "Des questions? Nous serions ravis de vous entendre. Envoyez-nous un message et nous vous répondrons dès que possible.",
+            name: "Nom complet",
+            email: "Adresse e-mail",
+            phone: "Numéro de téléphone",
+            subject: "Sujet",
+            message: "Message",
+            send: "Envoyer le message",
+            success: "Message envoyé avec succès! Nous vous répondrons bientôt.",
+            error: "Échec de l'envoi du message. Veuillez réessayer ou nous envoyer un e-mail directement."
+        }
     },
     ar: {
         // Navbar
@@ -691,8 +715,20 @@ export const translations = {
             },
             continueWithGoogle: "تسجيل الدخول عن طريق جوجل",
         },
+        contact: {
+            title: "اتصل بنا",
+            subtitle: "هل لديك أسئلة؟ نحن نحب أن نسمع منك. أرسل لنا رسالة وسنرد في أقرب وقت ممكن.",
+            name: "الاسم الكامل",
+            email: "البريد الإلكتروني",
+            phone: "رقم الهاتف",
+            subject: "الموضوع",
+            message: "الرسالة",
+            send: "إرسال الرسالة",
+            success: "تم إرسال الرسالة بنجاح! سنرد عليك قريباً.",
+            error: "فشل إرسال الرسالة. يرجى المحاولة مرة أخرى أو مراسلتنا مباشرة."
+        }
     },
 };
 
-export type Locale = keyof typeof translations;
+export type Locale = "en" | "fr" | "ar";
 export type TranslationKey = keyof typeof translations.en;

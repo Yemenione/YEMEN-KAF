@@ -73,7 +73,8 @@ export async function GET(req: Request) {
     try {
         const userId = await getUserId();
         if (!userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            // Guest users have empty wishlist (stored in localStorage)
+            return NextResponse.json({ wishlist: [] });
         }
 
         const [rows] = await pool.execute<RowDataPacket[]>(

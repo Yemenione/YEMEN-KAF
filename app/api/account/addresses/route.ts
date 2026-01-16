@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
         // Create new address
         const [result]: any = await pool.execute(
-            'INSERT INTO addresses (customer_id, street, city, state, postal_code, country, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO addresses (customer_id, street_address, city, state, postal_code, country, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [userId, street, city, state || null, postalCode || null, country, isDefault ? 1 : 0]
         );
 

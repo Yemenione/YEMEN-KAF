@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import pool from '@/lib/mysql';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
             console.log('Verifying items:', items);
             for (const item of items) {
                 const [rows]: any = await pool.execute(
-                    'SELECT id, price, stock_quantity FROM products WHERE id = ?',
+                    'SELECT * FROM products WHERE id = ?',
                     [item.id]
                 );
 
@@ -119,11 +120,44 @@ export async function POST(req: Request) {
             );
         }
 
-        // Clear cart if it was used (or just clear it anyway to be safe)
-        await pool.execute(
-            'DELETE FROM cart_items WHERE customer_id = ?',
-            [userId]
-        );
+        // Clear cart for logged-in users (cart_items table now exists)
+        if (userId) {
+            try {
+                await pool.execute(
+                    'DELETE FROM cart_items WHERE customer_id = ?',
+                    [userId]
+                );
+            } catch (cartError) {
+                // Log but don't fail the order if cart clearing fails
+                console.warn('Failed to clear cart:', cartError);
+            }
+        }
+
+        // Send order confirmation email
+        try {
+            // Extract shipping address from the stored JSON
+            const shippingData = JSON.parse(shippingAddress);
+
+            await sendOrderConfirmationEmail({
+                orderNumber,
+                customerName: `${shippingData.firstName || ''} ${shippingData.lastName || ''}`,
+                customerEmail: shippingData.email || '',
+                items: orderItems.map((item: any) => ({
+                    title: item.product_title || 'Product',
+                    quantity: item.quantity,
+                    price: parseFloat(item.price) * item.quantity
+                })),
+                subtotal: totalAmount - shippingCost,
+                shipping: shippingCost,
+                total: totalAmount,
+                shippingAddress: `${shippingData.address || ''}\n${shippingData.city || ''}, ${shippingData.state || ''} ${shippingData.zip || ''}\n${shippingData.country || ''}`,
+                paymentMethod: paymentMethod === 'stripe' ? 'Credit Card (Stripe)' : 'Cash on Delivery'
+            });
+            console.log('✅ Order confirmation email sent successfully');
+        } catch (emailError) {
+            console.error('❌ Failed to send order confirmation email:', emailError);
+            // Don't fail the order if email fails
+        }
 
         return NextResponse.json({
             success: true,
@@ -134,6 +168,19 @@ export async function POST(req: Request) {
 
     } catch (error) {
         console.error('Order creation error:', error);
-        return NextResponse.json({ error: 'Failed to create order', details: (error as Error).message }, { status: 500 });
+        console.error('Error details:', {
+            message: (error as Error).message,
+            stack: (error as Error).stack,
+            name: (error as any).name,
+            code: (error as any).code,
+            errno: (error as any).errno,
+            sql: (error as any).sql,
+            sqlMessage: (error as any).sqlMessage
+        });
+        return NextResponse.json({
+            error: 'Failed to create order',
+            details: (error as Error).message,
+            sqlError: (error as any).sqlMessage || 'No SQL error message'
+        }, { status: 500 });
     }
 }

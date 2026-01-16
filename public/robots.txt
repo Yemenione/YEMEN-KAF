@@ -1,0 +1,19 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /api/
+Disallow: /account/
+Disallow: /checkout
+Disallow: /login
+Disallow: /register
+
+# Allow important pages
+Allow: /
+Allow: /shop
+Allow: /our-story
+Allow: /the-farms
+
+# Sitemap
+Sitemap: https://yemeni-market.com/sitemap.xml

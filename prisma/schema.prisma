@@ -5,18 +5,21 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Customer {
-  id            Int       @id @default(autoincrement())
-  firstName     String?   @map("first_name")
-  lastName      String?   @map("last_name")
-  email         String    @unique
-  passwordHash  String?   @map("password_hash")
+  id            Int         @id @default(autoincrement())
+  firstName     String?     @map("first_name")
+  lastName      String?     @map("last_name")
+  email         String      @unique
+  passwordHash  String?     @map("password_hash")
   phone         String?
   addresses     Address[]
+  cartItems     CartItem[]
+  wishlists     Wishlist[]
   orders        Order[]
-  createdAt     DateTime  @default(now()) @map("created_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
 
   @@map("customers")
 }
@@ -25,7 +28,7 @@ model Address {
   id            Int      @id @default(autoincrement())
   customerId    Int      @map("customer_id")
   customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  label         String?  // e.g., 'Home', 'Office'
+  label         String?
   isDefault     Boolean  @default(false) @map("is_default")
   streetAddress String   @map("street_address") @db.Text
   city          String
@@ -38,15 +41,29 @@ model Address {
   @@map("addresses")
 }
 
+model CartItem {
+  id         Int      @id @default(autoincrement())
+  customerId Int      @map("customer_id")
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  Int      @map("product_id")
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  @@map("cart_items")
+}
+
 model Order {
   id              Int         @id @default(autoincrement())
   customerId      Int?        @map("customer_id")
   customer        Customer?   @relation(fields: [customerId], references: [id])
   orderNumber     String      @unique @map("order_number")
-  status          String      @default("Processing") // Processing, Shipped, Delivered, Cancelled
+  status          String      @default("Processing")
   totalAmount     Decimal     @map("total_amount") @db.Decimal(10, 2)
   shippingMethod  String?     @map("shipping_method")
   shippingCost    Decimal     @default(0) @map("shipping_cost") @db.Decimal(10, 2)
+  shippingAddress String?     @map("shipping_address") @db.Text
+  paymentMethod   String?     @map("payment_method")
   items           OrderItem[]
   createdAt       DateTime    @default(now()) @map("created_at")
 
@@ -57,11 +74,61 @@ model OrderItem {
   id           Int     @id @default(autoincrement())
   orderId      Int     @map("order_id")
   order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productSlug  String  @map("product_slug")
-  productTitle String  @map("product_title")
+  productSlug  String? @map("product_slug")
+  productTitle String? @map("product_title")
+  imageUrl     String? @map("image_url") @db.Text
   quantity     Int
   price        Decimal @db.Decimal(10, 2)
-  imageUrl     String? @map("image_url") @db.Text
+  productId    Int?    @map("product_id")
+  product      Product? @relation(fields: [productId], references: [id])
 
   @@map("order_items")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  imageUrl    String?   @map("image_url")
+  isActive    Boolean   @default(true) @map("is_active")
+  displayOrder Int      @default(0) @map("display_order")
+  products    Product[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("categories")
+}
+
+model Product {
+  id            Int                @id @default(autoincrement())
+  categoryId    Int?               @map("category_id")
+  category      Category?          @relation(fields: [categoryId], references: [id])
+  name          String
+  slug          String             @unique
+  description   String?            @db.Text
+  price         Decimal            @db.Decimal(10, 2)
+  stockQuantity Int                @default(0) @map("stock_quantity")
+  weight        Decimal?           @default(0.5) @db.Decimal(10, 3)
+  images        String?            @db.Text
+  isActive      Boolean            @default(true) @map("is_active")
+  isFeatured    Boolean            @default(false) @map("is_featured")
+  cartItems     CartItem[]
+  wishlists     Wishlist[]
+  orderItems    OrderItem[]
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+
+  @@map("products")
+}
+
+model Wishlist {
+  id         Int      @id @default(autoincrement())
+  customerId Int      @map("customer_id")
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  Int      @map("product_id")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([customerId, productId])
+  @@map("wishlists")
 }

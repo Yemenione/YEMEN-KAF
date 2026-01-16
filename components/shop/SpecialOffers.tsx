@@ -59,7 +59,10 @@ export default function SpecialOffers() {
                                     src={offer.image_url || '/images/honey-jar.jpg'}
                                     alt={offer.name}
                                     fill
-                                    className="object-cover group-hover:scale-105 transition-transform duration-1000"
+                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                    loading="eager"
+                                    priority
                                 />
                                 <div className="absolute top-0 left-0 bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-[var(--coffee-brown)] z-10">
                                     {t('home.offers.limited')}

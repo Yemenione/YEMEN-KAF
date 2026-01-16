@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
 
 interface WishlistContextType {
     wishlistCount: number;
@@ -9,14 +10,22 @@ interface WishlistContextType {
     isInWishlist: (productId: number) => boolean;
     toggleWishlist: (productId: number) => Promise<void>;
     loading: boolean;
+    isOpen: boolean;
+    openWishlist: () => void;
+    closeWishlist: () => void;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
     const { isAuthenticated } = useAuth();
+    const { showToast } = useToast();
     const [wishlistIds, setWishlistIds] = useState<number[]>([]);
     const [loading, setLoading] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+
+    const openWishlist = () => setIsOpen(true);
+    const closeWishlist = () => setIsOpen(false);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -72,6 +81,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         if (!isAuthenticated) {
             // Guest mode: Save to local storage
             localStorage.setItem('guest_wishlist', JSON.stringify(newIds));
+            showToast(isCurrentlyIn ? 'Removed from wishlist' : 'Added to wishlist', 'success');
             return;
         }
 
@@ -95,6 +105,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             if (!res.ok) {
                 throw new Error("Failed to toggle");
             }
+            showToast(isCurrentlyIn ? 'Removed from wishlist' : 'Added to wishlist', 'success');
         } catch (error) {
             console.error("Error toggling wishlist", error);
             // Revert on error
@@ -108,7 +119,10 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             wishlistIds,
             isInWishlist,
             toggleWishlist,
-            loading
+            loading,
+            isOpen,
+            openWishlist,
+            closeWishlist
         }}>
             {children}
         </WishlistContext.Provider>

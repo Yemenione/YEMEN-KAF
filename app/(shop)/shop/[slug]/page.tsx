@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import ProductDetails from '@/components/shop/ProductDetails';
+import ProductSpecs from '@/components/shop/ProductSpecs';
 import pool from '@/lib/mysql';
+import { RowDataPacket } from 'mysql2';
 
 async function getProduct(slug: string) {
     // Determine if slug is numeric ID or string slug
@@ -63,11 +65,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
-    console.log("Page params promise:", params);
-    const resolvedParams = await params;
-    console.log("Resolved params:", resolvedParams);
-    const { slug } = resolvedParams;
-    console.log("Fetching product with slug:", slug);
+    const { slug } = await params;
 
     const product = await getProduct(slug);
 
@@ -75,5 +73,18 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         notFound();
     }
 
-    return <ProductDetails product={product} />;
+    return (
+        <main className="min-h-screen">
+            <ProductDetails product={product} />
+            <div className="max-w-7xl mx-auto px-6 pb-20">
+                <ProductSpecs
+                    weight={parseFloat(product.weight) || 0.5}
+                    origin="Yemen"
+                    shelfLife="24 months"
+                    description={product.description || ''}
+                    category={product.category?.slug || 'honey'}
+                />
+            </div>
+        </main>
+    );
 }

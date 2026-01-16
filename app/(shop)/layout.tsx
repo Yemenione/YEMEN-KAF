@@ -8,6 +8,7 @@ import { ToastProvider } from "@/context/ToastContext";
 import CookieBanner from "@/components/layout/CookieBanner";
 import Link from "next/link";
 import CartDrawer from "@/components/cart/CartDrawer";
+import WishlistDrawer from "@/components/wishlist/WishlistDrawer";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import "../globals.css";
@@ -37,6 +38,7 @@ export default function ShopLayout({
                   {children}
                   <Footer />
                   <CartDrawer />
+                  <WishlistDrawer />
                   <CookieBanner />
                 </WishlistProvider>
               </CartProvider>

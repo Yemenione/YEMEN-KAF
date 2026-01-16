@@ -74,7 +74,7 @@ export default function Navbar() {
 
     const { openCart, items } = useCart();
     const { user, logout } = useAuth();
-    const { wishlistCount } = useWishlist();
+    const { wishlistCount, openWishlist } = useWishlist();
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
     // Dynamic Text Color based on Scroll Key
@@ -164,8 +164,8 @@ export default function Navbar() {
                                     )}
                                 </Link>
 
-                                <Link
-                                    href="/account/wishlist"
+                                <button
+                                    onClick={openWishlist}
                                     className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 relative"
                                     title="My Wishlist"
                                 >
@@ -175,7 +175,7 @@ export default function Navbar() {
                                             {wishlistCount}
                                         </span>
                                     )}
-                                </Link>
+                                </button>
 
                                 <button onClick={openCart} className="relative hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300">
                                     <ShoppingBag className="w-5 h-5" />
@@ -227,6 +227,7 @@ export default function Navbar() {
                                                 src={item.image_url || '/images/honey-jar.jpg'}
                                                 alt={item.name}
                                                 fill
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                                 className="object-cover transition-transform duration-700 group-hover:scale-105"
                                             />
                                         </div>

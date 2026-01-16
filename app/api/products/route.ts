@@ -44,6 +44,12 @@ export async function GET(req: Request) {
             params.push(maxPrice);
         }
 
+        // Stock Filtering
+        const inStock = searchParams.get('inStock');
+        if (inStock === 'true') {
+            query += ` AND p.stock_quantity > 0`;
+        }
+
         // Sorting
         switch (sort) {
             case 'price-low':

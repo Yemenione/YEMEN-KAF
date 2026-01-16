@@ -31,6 +31,7 @@ export default function Footer() {
                         <li><Link href="/shop" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.shopAll')}</Link></li>
                         <li><Link href="/our-story" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.ourStory')}</Link></li>
                         <li><Link href="/the-farms" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.theFarms')}</Link></li>
+                        <li><Link href="/contact" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.contact')}</Link></li>
                         <li><Link href="/track-order" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.trackOrder')}</Link></li>
                     </ul>
                 </div>

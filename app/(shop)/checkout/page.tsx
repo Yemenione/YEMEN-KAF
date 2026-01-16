@@ -8,7 +8,7 @@ import { ArrowLeft, CreditCard, ChevronRight, ShoppingBag, MapPin, Truck, Bankno
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
-import { loadStripe } from "@stripe/stripe-js";
+import { getStripe } from "@/lib/stripe";
 import { Elements } from "@stripe/react-stripe-js";
 import StripePaymentForm from "@/components/checkout/StripePaymentForm";
 import { useForm, useWatch } from "react-hook-form";
@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 // Initialize Stripe outside to avoid re-initializing on render
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = getStripe();
 
 export default function CheckoutPage() {
     const { items, total } = useCart();
@@ -30,6 +30,8 @@ export default function CheckoutPage() {
     const [shippingRates, setShippingRates] = useState<any[]>([]);
     const [cartWeight, setCartWeight] = useState(0);
     const [selectedShippingRate, setSelectedShippingRate] = useState<any>(null);
+    const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+    const [selectedAddressId, setSelectedAddressId] = useState<string>("");
 
     const checkoutSchema = z.object({
         firstName: z.string().min(2, t('validation.firstNameRequired') || "First name is required"),
@@ -99,6 +101,63 @@ export default function CheckoutPage() {
         }
     }, [items, selectedCountry]);
 
+    // Fetch saved addresses for logged-in users
+    useEffect(() => {
+        const fetchAddresses = async () => {
+            try {
+                const res = await fetch('/api/account/addresses');
+                if (res.ok) {
+                    const data = await res.json();
+                    setSavedAddresses(data.addresses || []);
+                    // Auto-select default address if exists
+                    const defaultAddr = data.addresses?.find((a: any) => a.is_default);
+                    if (defaultAddr) {
+                        setSelectedAddressId(defaultAddr.id.toString());
+                        fillFormWithAddress(defaultAddr);
+                    }
+                }
+            } catch (error) {
+                console.log('Not logged in or no addresses');
+            }
+        };
+        fetchAddresses();
+    }, []);
+
+    // Fill form with selected address
+    const fillFormWithAddress = (address: any) => {
+        const names = (address.label || '').split(' ');
+        const formData = {
+            firstName: names[0] || '',
+            lastName: names.slice(1).join(' ') || '',
+            email: '', // Keep existing email
+            phone: address.phone || '',
+            address: address.street_address || '',
+            city: address.city || '',
+            state: address.state || '',
+            zip: address.postal_code || '',
+            country: address.country || 'France'
+        };
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value) {
+                (document.querySelector(`[name="${key}"]`) as HTMLInputElement)?.setAttribute('value', value);
+            }
+        });
+    };
+
+    // Handle address selection
+    const handleAddressSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const addressId = e.target.value;
+        setSelectedAddressId(addressId);
+        if (addressId === 'new') {
+            // Clear form for new address
+            return;
+        }
+        const address = savedAddresses.find(a => a.id.toString() === addressId);
+        if (address) {
+            fillFormWithAddress(address);
+        }
+    };
+
     const orderTotal = total + (selectedShippingRate?.price || 0);
 
     // Redirect if cart is empty
@@ -110,20 +169,33 @@ export default function CheckoutPage() {
 
     // Create PaymentIntent as soon as the page loads OR total changes
     useEffect(() => {
-        if (orderTotal > 0) {
-            // Debounce slightly to avoid too many intent updates?
+        // Only create intent if order total > 0 AND checking out with Stripe
+        // Also don't retry if we know it failed due to configuration (optional optimization)
+        if (orderTotal > 0 && selectedPaymentMethod === "stripe") {
             const timeoutId = setTimeout(() => {
                 fetch("/api/stripe/create-payment-intent", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ amount: orderTotal, currency: "eur" }),
                 })
-                    .then((res) => res.json())
-                    .then((data) => setClientSecret(data.clientSecret));
+                    .then(async (res) => {
+                        if (!res.ok) {
+                            const err = await res.json();
+                            console.warn("Stripe unavailable:", err);
+                            return null;
+                        }
+                        return res.json();
+                    })
+                    .then((data) => {
+                        if (data?.clientSecret) {
+                            setClientSecret(data.clientSecret);
+                        }
+                    })
+                    .catch(err => console.error("Failed to init Stripe:", err));
             }, 500);
             return () => clearTimeout(timeoutId);
         }
-    }, [orderTotal]);
+    }, [orderTotal, selectedPaymentMethod]);
 
     const formatPrice = (price: string | number) => {
         if (typeof price === 'number') return `${price.toFixed(2)}€`;
@@ -131,14 +203,20 @@ export default function CheckoutPage() {
     };
 
     const handlePlaceOrder = async (paymentId?: string) => {
+        console.log("handlePlaceOrder initiated", { paymentMethod: selectedPaymentMethod, paymentId });
+
         // Validate form one last time if called manually
         const isFormValid = await trigger();
+        console.log("Form validation result:", isFormValid, errors);
+
         if (!isFormValid) {
-            alert("Please correct the errors in the form.");
+            const errorFields = Object.keys(errors).join(", ");
+            alert(`Please correct the errors in the following fields: ${errorFields}`);
             return;
         }
 
         const formData = getValues();
+        console.log("Submitting order with data:", formData);
 
         setIsSubmitting(true);
         try {
@@ -153,6 +231,8 @@ export default function CheckoutPage() {
                     items: items.map(item => ({ id: item.id, quantity: item.quantity }))
                 })
             });
+
+            console.log("Order API response status:", res.status);
 
             if (res.ok) {
                 const data = await res.json();
@@ -379,7 +459,7 @@ export default function CheckoutPage() {
                                         disabled={isSubmitting}
                                         className={`w-full py-5 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 rounded-xl shadow-xl flex items-center justify-center gap-3 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
                                     >
-                                        {isSubmitting ? t('checkout.processing') : "Place Order (COD)"} <ChevronRight size={18} />
+                                        {isSubmitting ? t('checkout.processing') : t('checkout.placeOrder')} <ChevronRight size={18} />
                                     </button>
                                 </div>
                             )}

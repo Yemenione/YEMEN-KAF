@@ -47,7 +47,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
 
     const removeFromCart = (id: string | number) => {
+        const item = items.find((i) => i.id === id);
         setItems((prev) => prev.filter((i) => i.id !== id));
+        if (item) {
+            showToast(`${item.title} removed from cart`, "info");
+        }
     };
 
     // Helper to parse "$180.00" -> 180.00 or handle numbers
