@@ -1,5 +1,4 @@
-"use client";
-
+import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +16,7 @@ interface Product {
 
 export default function SpecialOffers() {
     const [offers, setOffers] = useState<Product[]>([]);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchOffers = async () => {
@@ -42,11 +42,11 @@ export default function SpecialOffers() {
             <div className="max-w-7xl mx-auto px-6">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                     <div className="space-y-4">
-                        <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold block">Exclusive Bundles</span>
-                        <h2 className="text-4xl md:text-5xl font-serif text-[var(--coffee-brown)]">Curated Offers</h2>
+                        <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold block">{t('home.offers.exclusive')}</span>
+                        <h2 className="text-4xl md:text-5xl font-serif text-[var(--coffee-brown)]">{t('home.offers.title')}</h2>
                     </div>
                     <Link href="/shop" className="group flex items-center gap-2 text-[var(--coffee-brown)] border-b border-[var(--coffee-brown)] pb-1 hover:text-[var(--honey-gold)] transition-colors uppercase tracking-widest text-xs font-bold">
-                        View All Collections <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                        {t('home.offers.viewAll')} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
 
@@ -62,7 +62,7 @@ export default function SpecialOffers() {
                                     className="object-cover group-hover:scale-105 transition-transform duration-1000"
                                 />
                                 <div className="absolute top-0 left-0 bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-[var(--coffee-brown)] z-10">
-                                    Limited Edition
+                                    {t('home.offers.limited')}
                                 </div>
                             </div>
 
@@ -78,7 +78,7 @@ export default function SpecialOffers() {
                             </div>
 
                             <button className="mt-6 w-full md:w-auto px-8 py-3 bg-[var(--coffee-brown)] text-white text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500 hover:bg-[var(--coffee-brown)]/90">
-                                Shop Bundle
+                                {t('home.offers.shopBundle')}
                             </button>
                         </div>
                     ))}

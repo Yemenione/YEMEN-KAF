@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
-    const { register } = useAuth();
+    const { register, loginWithGoogle } = useAuth();
+    const { t } = useLanguage();
     const router = useRouter();
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -24,19 +26,19 @@ export default function RegisterPage() {
         if (result.success) {
             router.push('/account');
         } else {
-            setError(result.error || "فشل تسجيل الحساب. يرجى المحاولة مرة أخرى.");
+            setError(result.error || t('auth.error.register'));
         }
         setIsLoading(false);
     };
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-white px-6">
+        <main className="min-h-screen flex items-center justify-center bg-white px-6 pt-32">
             <div className="w-full max-w-md space-y-12 animate-fade-in text-center">
 
                 {/* Branding */}
                 <div className="space-y-4">
                     <h1 className="text-3xl font-serif text-black uppercase tracking-widest">Yemeni Market</h1>
-                    <p className="text-gray-400 text-sm uppercase tracking-[0.2em] font-medium">Create Account / إنشاء حساب</p>
+                    <p className="text-gray-400 text-sm uppercase tracking-[0.2em] font-medium">{t('auth.createAccount')}</p>
                 </div>
 
                 {/* Form */}
@@ -47,20 +49,46 @@ export default function RegisterPage() {
                         </div>
                     )}
 
-                    <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-black/60">Full Name / الاسم الكامل</label>
-                        <input
-                            type="text"
-                            required
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full bg-transparent border-b border-black/20 py-3 text-black placeholder-black/20 focus:border-black outline-none transition-colors"
-                            placeholder="John Doe"
-                        />
+                    <div className="space-y-4">
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                setIsLoading(true);
+                                const result = await loginWithGoogle();
+                                if (result.success) {
+                                    router.push('/account');
+                                } else {
+                                    setError(result.error || 'Google Sign In Failed');
+                                    setIsLoading(false);
+                                }
+                            }}
+                            className="w-full py-4 border border-black/10 text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
+                        >
+                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+                            {t('auth.continueWithGoogle') || "Continue with Google"}
+                        </button>
+
+                        <div className="relative flex items-center py-2">
+                            <div className="flex-grow border-t border-gray-200"></div>
+                            <span className="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-widest">Or</span>
+                            <div className="flex-grow border-t border-gray-200"></div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs uppercase tracking-wider text-black/60">{t('auth.fullName')}</label>
+                            <input
+                                type="text"
+                                required
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full bg-transparent border-b border-black/20 py-3 text-black placeholder-black/20 focus:border-black outline-none transition-colors"
+                                placeholder="John Doe"
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-black/60">Email Address / البريد الإلكتروني</label>
+                        <label className="text-xs uppercase tracking-wider text-black/60">{t('auth.email')}</label>
                         <input
                             type="email"
                             required
@@ -72,7 +100,7 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-black/60">Password (Code) / الرمز</label>
+                        <label className="text-xs uppercase tracking-wider text-black/60">{t('auth.passwordCode')}</label>
                         <input
                             type="password"
                             required
@@ -86,7 +114,7 @@ export default function RegisterPage() {
                     <div className="flex items-start gap-3 pt-2">
                         <input type="checkbox" required className="mt-1" />
                         <p className="text-xs text-black/60">
-                            I agree to the <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Privacy Policy</a>.
+                            {t('auth.terms')}
                         </p>
                     </div>
 
@@ -95,18 +123,18 @@ export default function RegisterPage() {
                         disabled={isLoading}
                         className="w-full py-4 bg-black text-white font-bold uppercase tracking-widest text-xs hover:bg-black/90 transition-colors disabled:bg-black/50"
                     >
-                        {isLoading ? "Creating Account..." : "Create Account / إنشاء الحساب"}
+                        {isLoading ? t('auth.creatingAccount') : t('auth.createAccount')}
                     </button>
                 </form>
 
                 {/* Footer */}
                 <div className="text-sm text-black/60">
-                    <p>Already have an account? <Link href="/login" className="text-black font-bold border-b border-black/20 hover:border-black transition-colors">Sign In</Link></p>
+                    <p>{t('auth.alreadyHaveAccount')} <Link href="/login" className="text-black font-bold border-b border-black/20 hover:border-black transition-colors">{t('auth.signIn')}</Link></p>
                 </div>
 
                 <div className="pt-12 border-t border-black/5">
                     <Link href="/" className="text-xs uppercase tracking-widest text-black/40 hover:text-black transition-colors">
-                        Return to Store / العودة للمتجر
+                        {t('auth.returnToStore')}
                     </Link>
                 </div>
             </div>

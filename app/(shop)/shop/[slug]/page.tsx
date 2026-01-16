@@ -1,11 +1,10 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { ShoppingBag, Heart, Share2, Star, Check, Truck, Shield, ArrowLeft } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Product {
     id: number;
@@ -25,6 +24,7 @@ export default function ProductPage() {
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
     const { addToCart } = useCart();
+    const { t } = useLanguage();
 
     useEffect(() => {
         if (slug) {
@@ -51,7 +51,7 @@ export default function ProductPage() {
             <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-24">
                 <div className="text-center">
                     <div className="w-16 h-16 border-4 border-gray-200 border-t-black rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-500">Chargement...</p>
+                    <p className="text-gray-500">{t('shop.loading')}</p>
                 </div>
             </div>
         );
@@ -61,8 +61,8 @@ export default function ProductPage() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-24">
                 <div className="text-center">
-                    <p className="text-gray-500 text-xl mb-4">Produit introuvable</p>
-                    <Link href="/shop" className="text-black underline">Retour à la boutique</Link>
+                    <p className="text-gray-500 text-xl mb-4">{t('shop.productNotFound')}</p>
+                    <Link href="/shop" className="text-black underline">{t('shop.returnToShop')}</Link>
                 </div>
             </div>
         );
@@ -81,9 +81,9 @@ export default function ProductPage() {
             <div className="bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Link href="/" className="hover:text-black transition-colors">Accueil</Link>
+                        <Link href="/" className="hover:text-black transition-colors">{t('nav.home')}</Link>
                         <span>/</span>
-                        <Link href="/shop" className="hover:text-black transition-colors">Boutique</Link>
+                        <Link href="/shop" className="hover:text-black transition-colors">{t('nav.shop')}</Link>
                         <span>/</span>
                         <span className="text-black">{product.name}</span>
                     </div>
@@ -118,7 +118,7 @@ export default function ProductPage() {
                             {product.stock_quantity < 5 && product.stock_quantity > 0 && (
                                 <div className="absolute top-4 left-4">
                                     <span className="px-4 py-2 bg-orange-500 text-white text-sm font-bold rounded-full shadow-lg">
-                                        Stock limité - {product.stock_quantity} restants
+                                        {t('shop.stockLimited')} - {product.stock_quantity} {t('product.stockRemaining')}
                                     </span>
                                 </div>
                             )}
@@ -131,8 +131,8 @@ export default function ProductPage() {
                                     key={idx}
                                     onClick={() => setSelectedImage(idx)}
                                     className={`relative aspect-square rounded-lg overflow-hidden transition-all ${selectedImage === idx
-                                            ? 'ring-2 ring-black shadow-lg'
-                                            : 'opacity-60 hover:opacity-100'
+                                        ? 'ring-2 ring-black shadow-lg'
+                                        : 'opacity-60 hover:opacity-100'
                                         }`}
                                 >
                                     <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
@@ -161,7 +161,7 @@ export default function ProductPage() {
                                         <Star key={i} size={18} className="fill-yellow-400 text-yellow-400" />
                                     ))}
                                 </div>
-                                <span className="text-sm text-gray-500">(4.8) • 127 avis</span>
+                                <span className="text-sm text-gray-500">(4.8) • 127 {t('product.reviews')}</span>
                             </div>
                         </div>
 
@@ -183,7 +183,7 @@ export default function ProductPage() {
                         {/* Description */}
                         <div className="prose prose-sm max-w-none">
                             <p className="text-gray-600 leading-relaxed">
-                                {product.description || "Produit yéménite authentique de qualité supérieure, soigneusement sélectionné pour vous offrir une expérience unique."}
+                                {product.description || t('product.defaultDescription')}
                             </p>
                         </div>
 
@@ -193,31 +193,31 @@ export default function ProductPage() {
                                 <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center">
                                     <Check size={20} className="text-green-600" />
                                 </div>
-                                <span className="text-sm font-medium text-gray-700">100% Authentique</span>
+                                <span className="text-sm font-medium text-gray-700">{t('product.authentic')}</span>
                             </div>
                             <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-100">
                                 <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
                                     <Truck size={20} className="text-blue-600" />
                                 </div>
-                                <span className="text-sm font-medium text-gray-700">Livraison rapide</span>
+                                <span className="text-sm font-medium text-gray-700">{t('product.fastShipping')}</span>
                             </div>
                             <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-100">
                                 <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center">
                                     <Shield size={20} className="text-purple-600" />
                                 </div>
-                                <span className="text-sm font-medium text-gray-700">Qualité garantie</span>
+                                <span className="text-sm font-medium text-gray-700">{t('product.qualityGuaranteed')}</span>
                             </div>
                             <div className="flex items-center gap-3 p-4 bg-white rounded-lg border border-gray-100">
                                 <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center">
                                     <Star size={20} className="text-orange-600" />
                                 </div>
-                                <span className="text-sm font-medium text-gray-700">Premium</span>
+                                <span className="text-sm font-medium text-gray-700">{t('product.premium')}</span>
                             </div>
                         </div>
 
                         {/* Quantity Selector */}
                         <div className="space-y-3">
-                            <label className="text-sm font-medium text-gray-700 uppercase tracking-wider">Quantité</label>
+                            <label className="text-sm font-medium text-gray-700 uppercase tracking-wider">{t('product.quantity')}</label>
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden">
                                     <button
@@ -237,7 +237,7 @@ export default function ProductPage() {
                                     </button>
                                 </div>
                                 <span className="text-sm text-gray-500">
-                                    {product.stock_quantity} en stock
+                                    {product.stock_quantity} {t('product.inStock')}
                                 </span>
                             </div>
                         </div>
@@ -253,13 +253,13 @@ export default function ProductPage() {
                             className="w-full bg-black text-white py-5 rounded-lg uppercase tracking-wider font-bold text-lg hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
                         >
                             <ShoppingBag size={24} />
-                            Ajouter au panier
+                            {t('product.addToCart')}
                         </button>
 
                         {/* Back to Shop */}
                         <Link href="/shop" className="flex items-center gap-2 text-gray-600 hover:text-black transition-colors">
                             <ArrowLeft size={18} />
-                            <span className="text-sm font-medium">Retour à la boutique</span>
+                            <span className="text-sm font-medium">{t('shop.returnToShop')}</span>
                         </Link>
                     </div>
                 </div>

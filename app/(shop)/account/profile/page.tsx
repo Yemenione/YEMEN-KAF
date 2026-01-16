@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ProfilePage() {
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [phone, setPhone] = useState("");
@@ -47,14 +49,14 @@ export default function ProfilePage() {
             });
 
             if (res.ok) {
-                setMessage("تم حفظ التغييرات بنجاح!");
+                setMessage(t('profile.success'));
                 setTimeout(() => setMessage(""), 3000);
             } else {
                 const data = await res.json();
-                setError(data.error || "فشل حفظ التغييرات");
+                setError(data.error || "Failed to save");
             }
         } catch (err) {
-            setError("حدث خطأ غير متوقع");
+            setError("Unexpected error");
         } finally {
             setIsLoading(false);
         }
@@ -63,8 +65,8 @@ export default function ProfilePage() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-3xl font-serif text-black mb-2">Profile Details / الملف الشخصي</h1>
-                <p className="text-gray-500">Update your personal information / تحديث معلوماتك الشخصية</p>
+                <h1 className="text-3xl font-serif text-black mb-2">{t('profile.title')}</h1>
+                <p className="text-gray-500">{t('account.updateInfo')}</p>
             </div>
 
             {message && (
@@ -82,10 +84,10 @@ export default function ProfilePage() {
             <form onSubmit={handleSubmit} className="max-w-2xl space-y-8">
                 {/* Personal Info */}
                 <div className="space-y-6">
-                    <h2 className="text-xl font-serif text-black border-b border-gray-100 pb-2">Personal Information</h2>
+                    <h2 className="text-xl font-serif text-black border-b border-gray-100 pb-2">{t('account.updateInfo')}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="group">
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">First Name / الاسم الأول</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('profile.firstName')}</label>
                             <input
                                 type="text"
                                 className="w-full border-b border-gray-200 py-2 text-base focus:border-black outline-none transition-colors"
@@ -95,7 +97,7 @@ export default function ProfilePage() {
                             />
                         </div>
                         <div className="group">
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">Last Name / اسم العائلة</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('profile.lastName')}</label>
                             <input
                                 type="text"
                                 className="w-full border-b border-gray-200 py-2 text-base focus:border-black outline-none transition-colors"
@@ -105,17 +107,17 @@ export default function ProfilePage() {
                             />
                         </div>
                         <div className="group md:col-span-2">
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">Email Address / البريد الإلكتروني</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('profile.email')}</label>
                             <input
                                 type="email"
                                 className="w-full border-b border-gray-200 py-2 text-base bg-gray-50 cursor-not-allowed"
                                 value={user?.email || ""}
                                 disabled
                             />
-                            <p className="text-xs text-gray-400 mt-1">Email cannot be changed / لا يمكن تغيير البريد الإلكتروني</p>
+                            <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
                         </div>
                         <div className="group md:col-span-2">
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">Phone Number / رقم الهاتف</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('profile.phone')}</label>
                             <input
                                 type="tel"
                                 className="w-full border-b border-gray-200 py-2 text-base focus:border-black outline-none transition-colors"
@@ -133,7 +135,7 @@ export default function ProfilePage() {
                         disabled={isLoading}
                         className="px-8 py-3 bg-black text-white uppercase tracking-widest text-sm font-bold hover:bg-gray-800 transition-colors disabled:bg-gray-400"
                     >
-                        {isLoading ? "جاري الحفظ..." : "Save Changes / حفظ التغييرات"}
+                        {isLoading ? t('profile.saving') : t('profile.save')}
                     </button>
                 </div>
             </form>

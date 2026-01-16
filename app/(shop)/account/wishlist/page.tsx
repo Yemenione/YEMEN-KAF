@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface WishlistItem {
     id: number;
@@ -18,6 +19,7 @@ interface WishlistItem {
 
 export default function WishlistPage() {
     const { isAuthenticated, isLoading } = useAuth();
+    const { t } = useLanguage();
     const router = useRouter();
     const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
     const [fetching, setFetching] = useState(true);
@@ -60,7 +62,7 @@ export default function WishlistPage() {
     if (isLoading || fetching) {
         return (
             <div className="min-h-screen bg-[var(--cream-white)] pt-32 pb-20 px-6 flex items-center justify-center">
-                <p>Loading your favorites...</p>
+                <p>{t('wishlist.loading')}</p>
             </div>
         );
     }
@@ -68,14 +70,14 @@ export default function WishlistPage() {
     return (
         <div className="min-h-screen bg-[var(--cream-white)] pt-32 pb-20 px-6">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-4xl font-serif text-[var(--coffee-brown)] mb-2">My Wishlist</h1>
-                <p className="text-gray-500 mb-12">Your curated collection of Yemeni treasures.</p>
+                <h1 className="text-4xl font-serif text-[var(--coffee-brown)] mb-2">{t('wishlist.title')}</h1>
+                <p className="text-gray-500 mb-12">{t('wishlist.subtitle')}</p>
 
                 {wishlist.length === 0 ? (
                     <div className="text-center py-20 border border-dashed border-gray-300 rounded-lg">
-                        <p className="text-gray-400 mb-6">Your wishlist is empty.</p>
+                        <p className="text-gray-400 mb-6">{t('wishlist.empty')}</p>
                         <Link href="/shop" className="px-8 py-3 bg-[var(--coffee-brown)] text-white text-sm uppercase tracking-widest hover:bg-[var(--coffee-brown)]/90 transition-colors">
-                            Continue Shopping
+                            {t('cart.continueShopping')}
                         </Link>
                     </div>
                 ) : (
@@ -100,13 +102,13 @@ export default function WishlistPage() {
                                             </h3>
                                         </Link>
                                         <p className="text-sm font-medium bg-[var(--honey-gold)]/10 text-[var(--honey-gold)] inline-block px-2 py-0.5 rounded">
-                                            €{Number(item.price).toFixed(2)}
+                                            {Number(item.price).toFixed(2)}€
                                         </p>
                                     </div>
                                     <button
                                         onClick={() => removeFromWishlist(item.id)}
                                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                                        title="Remove from wishlist"
+                                        title={t('account.form.delete')}
                                     >
                                         <Trash2 size={18} />
                                     </button>

@@ -239,16 +239,15 @@ export default function Navbar() {
                         <div className="max-w-7xl mx-auto px-12 py-12 grid grid-cols-4 gap-12">
                             {/* Collection Info */}
                             <div className="col-span-1 space-y-6 border-r border-black/5">
-                                <h3 className="text-[var(--coffee-brown)] uppercase tracking-widest text-sm font-bold">Collections</h3>
+                                <h3 className="text-[var(--coffee-brown)] uppercase tracking-widest text-sm font-bold">{t('footer.collections')}</h3>
                                 <ul className="space-y-4 text-[var(--coffee-brown)]/80 text-sm">
-                                    <li><Link href="/shop?category=honey" className="hover:text-[var(--honey-gold)] transition-colors hover:pl-2 duration-300">Rare Sidr Honey</Link></li>
-                                    <li><Link href="/shop?category=coffee" className="hover:text-[var(--honey-gold)] transition-colors hover:pl-2 duration-300">Haraz Mocha Coffee</Link></li>
-                                    <li><Link href="/shop?category=gifts" className="hover:text-[var(--honey-gold)] transition-colors hover:pl-2 duration-300">Luxury Gift Sets</Link></li>
-                                    <li><Link href="/shop?category=wholesale" className="hover:text-[var(--honey-gold)] transition-colors hover:pl-2 duration-300">Wholesale</Link></li>
+                                    <li><Link href="/shop?category=honey" className="hover:text-[var(--honey-gold)] transition-colors hover:pl-2 duration-300">{t('footer.honey')}</Link></li>
+                                    <li><Link href="/shop?category=coffee" className="hover:text-[var(--honey-gold)] transition-colors hover:pl-2 duration-300">{t('footer.coffee')}</Link></li>
+                                    <li><Link href="/shop?category=gifts" className="hover:text-[var(--honey-gold)] transition-colors hover:pl-2 duration-300">{t('footer.gifts')}</Link></li>
+                                    <li><Link href="/shop?category=wholesale" className="hover:text-[var(--honey-gold)] transition-colors hover:pl-2 duration-300">{t('footer.wholesale')}</Link></li>
                                 </ul>
                             </div>
 
-                            {/* Products Grid */}
                             {/* Products Grid */}
                             {megaMenuItems.length > 0 ? (
                                 megaMenuItems.map((item) => (
@@ -263,13 +262,13 @@ export default function Navbar() {
                                         </div>
                                         <div className="space-y-1 text-center">
                                             <h4 className="font-serif text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-1">{item.name}</h4>
-                                            <span className="text-xs font-bold text-[var(--honey-gold)] uppercase tracking-widest">€{Number(item.price).toFixed(2)}</span>
+                                            <span className="text-xs font-bold text-[var(--honey-gold)] uppercase tracking-widest">{Number(item.price).toFixed(2)}€</span>
                                         </div>
                                     </Link>
                                 ))
                             ) : (
                                 <div className="col-span-3 text-center text-gray-400 py-10">
-                                    <p>Loading...</p>
+                                    <p>{t('shop.loading')}</p>
                                 </div>
                             )}
                         </div>
@@ -299,16 +298,16 @@ export default function Navbar() {
 
                     {user ? (
                         <>
-                            <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">My Account</Link>
+                            <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">{t('nav.account')}</Link>
                             <button
                                 onClick={() => { logout(); setIsMobileMenuOpen(false); }}
                                 className="text-sm uppercase tracking-widest font-bold text-red-500 hover:text-red-700 pt-4"
                             >
-                                Sign Out / خروج
+                                {t('nav.logout')}
                             </button>
                         </>
                     ) : (
-                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">Login / تسجيل الدخول</Link>
+                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">{t('nav.login')}</Link>
                     )}
                 </nav>
             </div>

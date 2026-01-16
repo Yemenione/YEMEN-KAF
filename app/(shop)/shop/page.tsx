@@ -50,7 +50,7 @@ export default function ShopPage() {
             const res = await fetch('/api/categories');
             if (res.ok) {
                 const data = await res.json();
-                setCategories([{ id: 0, name: 'Tous les produits', slug: 'all' }, ...data.categories]);
+                setCategories(data.categories || []);
             }
         } catch (err) {
             console.error('Failed to fetch categories', err);
@@ -88,6 +88,11 @@ export default function ShopPage() {
         }
     });
 
+    const displayCategories = [
+        { id: 0, name: t('shop.allProducts'), slug: 'all' },
+        ...categories
+    ];
+
     return (
         <main className="min-h-screen bg-gray-50 pt-24">
             <div className="max-w-7xl mx-auto px-6 py-8">
@@ -101,7 +106,7 @@ export default function ShopPage() {
                                 <span className="text-xs font-semibold text-gray-500 uppercase">{t('shop.categories')}</span>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {categories.slice(0, 6).map((cat) => (
+                                {displayCategories.slice(0, 6).map((cat) => (
                                     <button
                                         key={cat.id}
                                         onClick={() => setSelectedCategory(cat.slug)}

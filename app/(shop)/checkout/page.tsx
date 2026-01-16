@@ -35,7 +35,7 @@ export default function CheckoutPage() {
     }, [items, router]);
 
     const formatPrice = (price: string | number) => {
-        if (typeof price === 'number') return `€${price.toFixed(2)}`;
+        if (typeof price === 'number') return `${price.toFixed(2)}€`;
         return price;
     };
 
@@ -83,9 +83,9 @@ export default function CheckoutPage() {
                     {/* Header */}
                     <div className="space-y-4 border-b border-black/10 pb-8">
                         <Link href="/shop" className="inline-flex items-center gap-2 text-gray-500 hover:text-black transition-colors text-xs uppercase tracking-widest font-medium">
-                            <ArrowLeft size={14} /> Continue Shopping
+                            <ArrowLeft size={14} /> {t('checkout.continueShopping')}
                         </Link>
-                        <h1 className="text-4xl md:text-5xl font-serif text-black">{t("cart.checkout")}</h1>
+                        <h1 className="text-4xl md:text-5xl font-serif text-black">{t("checkout.title")}</h1>
                     </div>
 
                     {/* Step 1: Shipping */}
@@ -93,7 +93,7 @@ export default function CheckoutPage() {
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-medium tracking-wide flex items-center gap-3">
                                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white text-sm font-bold">1</span>
-                                Shipping Details
+                                {t('checkout.shippingDetails')}
                             </h2>
                             <button
                                 onClick={() => {
@@ -106,49 +106,49 @@ export default function CheckoutPage() {
                                 }}
                                 className="text-xs uppercase tracking-wider font-bold text-black border-b border-black pb-0.5 hover:text-gray-600 transition-colors flex items-center gap-1"
                             >
-                                <MapPin size={12} /> Use Smart Location
+                                <MapPin size={12} /> {t('checkout.smartLocation')}
                             </button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
                             <div className="group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">First Name</label>
-                                <input name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="John" />
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.firstName')}</label>
+                                <input name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
                             </div>
                             <div className="group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Last Name</label>
-                                <input name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="Doe" />
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.lastName')}</label>
+                                <input name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
                             </div>
 
                             <div className="md:col-span-2 group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Email Address</label>
-                                <input name="email" value={formData.email} onChange={handleInputChange} type="email" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="john@example.com" />
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.email')}</label>
+                                <input name="email" value={formData.email} onChange={handleInputChange} type="email" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
                             </div>
 
                             <div className="md:col-span-2 group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Phone Number</label>
-                                <input name="phone" value={formData.phone} onChange={handleInputChange} type="tel" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="+1 (555) 000-0000" />
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.phone')}</label>
+                                <input name="phone" value={formData.phone} onChange={handleInputChange} type="tel" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
                             </div>
 
                             <div className="md:col-span-2 group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Street Address</label>
-                                <input name="address" value={formData.address} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="123 Luxury Blvd, Apt 4B" />
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.street')}</label>
+                                <input name="address" value={formData.address} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
                             </div>
 
                             <div className="group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">City</label>
-                                <input name="city" value={formData.city} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="New York" />
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.city')}</label>
+                                <input name="city" value={formData.city} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
                             </div>
                             <div className="group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">State / Province</label>
-                                <input name="state" value={formData.state} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="NY" />
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.state')}</label>
+                                <input name="state" value={formData.state} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
                             </div>
                             <div className="group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Postal / Zip Code</label>
-                                <input name="zip" value={formData.zip} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="10001" />
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.zip')}</label>
+                                <input name="zip" value={formData.zip} onChange={handleInputChange} type="text" className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300" placeholder="" />
                             </div>
                             <div className="group">
-                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">Country</label>
+                                <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.country')}</label>
                                 <select name="country" value={formData.country} onChange={handleInputChange} className="w-full border-b border-gray-200 py-3 text-lg focus:border-black outline-none transition-colors bg-transparent appearance-none cursor-pointer">
                                     <option>Select Country</option>
                                     <option value="France">France</option>
@@ -167,7 +167,7 @@ export default function CheckoutPage() {
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-medium tracking-wide flex items-center gap-3">
                                 <span className="flex items-center justify-center w-8 h-8 rounded-full border border-black text-black text-sm font-bold">2</span>
-                                Delivery Method
+                                {t('checkout.deliveryMethod')}
                             </h2>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -182,10 +182,10 @@ export default function CheckoutPage() {
                                 <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
                                 <div className="relative flex items-center justify-between mb-2">
                                     <Truck className="w-6 h-6 text-gray-400 peer-checked:text-black" />
-                                    <span className="font-bold text-lg">€0.00</span>
+                                    <span className="font-bold text-lg">{t('checkout.free')}</span>
                                 </div>
-                                <h3 className="font-serif text-lg text-black mb-1">Standard Delivery</h3>
-                                <p className="text-sm text-gray-500">5-7 Business Days</p>
+                                <h3 className="font-serif text-lg text-black mb-1">{t('checkout.standard')}</h3>
+                                <p className="text-sm text-gray-500">5-7 {t('checkout.businessDays')}</p>
                             </label>
 
                             <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
@@ -199,10 +199,10 @@ export default function CheckoutPage() {
                                 <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
                                 <div className="relative flex items-center justify-between mb-2">
                                     <div className="p-1 bg-black text-white text-[10px] uppercase font-bold px-2 rounded">Express</div>
-                                    <span className="font-bold text-lg">€25.00</span>
+                                    <span className="font-bold text-lg">25.00€</span>
                                 </div>
-                                <h3 className="font-serif text-lg text-black mb-1">Express Courier</h3>
-                                <p className="text-sm text-gray-500">1-3 Business Days (DHL/FedEx)</p>
+                                <h3 className="font-serif text-lg text-black mb-1">{t('checkout.express')}</h3>
+                                <p className="text-sm text-gray-500">1-3 {t('checkout.businessDays')} (DHL/FedEx)</p>
                             </label>
                         </div>
                     </section>
@@ -212,7 +212,7 @@ export default function CheckoutPage() {
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-medium tracking-wide flex items-center gap-3">
                                 <span className="flex items-center justify-center w-8 h-8 rounded-full border border-black/20 text-black/50 text-sm font-bold">3</span>
-                                Payment Method
+                                {t('checkout.paymentMethod')}
                             </h2>
                         </div>
                         <div className="p-6 border border-gray-100 rounded-xl flex items-center gap-4">
@@ -226,12 +226,12 @@ export default function CheckoutPage() {
                 <div className="lg:col-span-5 relative">
                     <div className="sticky top-32 p-8 md:p-10 bg-gray-50 rounded-3xl">
                         <h2 className="text-2xl font-serif text-black mb-8 flex items-center gap-3">
-                            <ShoppingBag className="w-5 h-5" /> Your Order
+                            <ShoppingBag className="w-5 h-5" /> {t('checkout.yourOrder')}
                         </h2>
 
                         <div className="space-y-6 mb-8 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                             {items.length === 0 ? (
-                                <p className="text-gray-400 italic py-8 text-center">Your bag is currently empty.</p>
+                                <p className="text-gray-400 italic py-8 text-center">{t('checkout.emptyBag')}</p>
                             ) : (
                                 items.map((item) => (
                                     <div key={item.id} className="flex gap-4 items-start pb-6 border-b border-black/5 last:border-0">
@@ -250,16 +250,16 @@ export default function CheckoutPage() {
 
                         <div className="space-y-4 pt-6 border-t border-black/10">
                             <div className="flex justify-between text-sm text-gray-600">
-                                <span>Subtotal</span>
-                                <span>€{total.toFixed(2)}</span>
+                                <span>{t('checkout.subtotal')}</span>
+                                <span>{total.toFixed(2)}€</span>
                             </div>
                             <div className="flex justify-between text-sm text-gray-600">
-                                <span>Shipping</span>
-                                <span>{selectedShippingMethod === "express" ? "€25.00" : "Free"}</span>
+                                <span>{t('checkout.shipping')}</span>
+                                <span>{selectedShippingMethod === "express" ? "25.00€" : t('checkout.free')}</span>
                             </div>
                             <div className="flex justify-between text-2xl font-serif text-black pt-4">
-                                <span>Total</span>
-                                <span>€{(total + (selectedShippingMethod === "express" ? 25 : 0)).toFixed(2)}</span>
+                                <span>{t('checkout.total')}</span>
+                                <span>{(total + (selectedShippingMethod === "express" ? 25 : 0)).toFixed(2)}€</span>
                             </div>
                         </div>
 
@@ -268,11 +268,11 @@ export default function CheckoutPage() {
                             disabled={isSubmitting}
                             className={`w-full mt-8 py-5 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 hover:scale-[1.02] transition-all duration-300 rounded-xl shadow-xl flex items-center justify-center gap-3 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
                         >
-                            {isSubmitting ? 'Processing...' : 'Process Payment'} <ChevronRight size={18} />
+                            {isSubmitting ? t('checkout.processing') : t('checkout.processPayment')} <ChevronRight size={18} />
                         </button>
 
                         <p className="text-center text-xs text-gray-400 mt-4 flex items-center justify-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-green-500 animation-pulse"></span> Secure Encrypted Checkout
+                            <span className="w-2 h-2 rounded-full bg-green-500 animation-pulse"></span> {t('checkout.secureCheckout')}
                         </p>
                     </div>
                 </div>

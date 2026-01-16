@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 interface User {
     id: number;
@@ -15,6 +17,7 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, passwordCode: string) => Promise<{ success: boolean; error?: string }>;
+    loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
     register: (data: { name: string; email: string; passwordCode: string }) => Promise<{ success: boolean; error?: string }>;
     logout: () => Promise<void>;
     checkAuth: () => Promise<void>;
@@ -68,6 +71,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const loginWithGoogle = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            // Extract name details
+            const displayName = user.displayName || '';
+            const firstName = displayName.split(' ')[0] || 'User';
+            const lastName = displayName.split(' ').slice(1).join(' ') || 'User';
+
+            // Send to backend to create session
+            const res = await fetch('/api/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: user.email,
+                    firstName,
+                    lastName,
+                    photoUrl: user.photoURL
+                }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setUser(data.user);
+                return { success: true };
+            } else {
+                return { success: false, error: 'Failed to authenticate with backend' };
+            }
+        } catch (error: any) {
+            console.error("Google Sign In Error", error);
+            return { success: false, error: error.message || 'Google Sign In failed' };
+        }
+    };
+
     const register = async (data: { name: string; email: string; passwordCode: string }) => {
         try {
             const res = await fetch('/api/auth/register', {
@@ -100,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, register, logout, checkAuth }}>
+        <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, loginWithGoogle, register, logout, checkAuth }}>
             {children}
         </AuthContext.Provider>
     );

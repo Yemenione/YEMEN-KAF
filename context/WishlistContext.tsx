@@ -22,7 +22,18 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         if (isAuthenticated) {
             fetchWishlistIds();
         } else {
-            setWishlistIds([]);
+            // Load from local storage
+            const stored = localStorage.getItem('guest_wishlist');
+            if (stored) {
+                try {
+                    setWishlistIds(JSON.parse(stored));
+                } catch (e) {
+                    console.error("Failed to parse guest wishlist", e);
+                    setWishlistIds([]);
+                }
+            } else {
+                setWishlistIds([]);
+            }
         }
     }, [isAuthenticated]);
 
@@ -46,28 +57,32 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     };
 
     const toggleWishlist = async (productId: number) => {
-        if (!isAuthenticated) return;
-
         // Optimistic update
         const isCurrentlyIn = isInWishlist(productId);
         const originalIds = [...wishlistIds];
 
+        let newIds;
         if (isCurrentlyIn) {
-            setWishlistIds(prev => prev.filter(id => id !== productId));
+            newIds = wishlistIds.filter(id => id !== productId);
         } else {
-            setWishlistIds(prev => [...prev, productId]);
+            newIds = [...wishlistIds, productId];
+        }
+        setWishlistIds(newIds);
+
+        if (!isAuthenticated) {
+            // Guest mode: Save to local storage
+            localStorage.setItem('guest_wishlist', JSON.stringify(newIds));
+            return;
         }
 
+        // Authenticated mode: Sync with server
         try {
-            const method = isCurrentlyIn ? 'DELETE' : 'POST';
             const body = isCurrentlyIn ? undefined : JSON.stringify({ productId });
-            // For DELETE we need query param, for POST we used body in previous implementation
-            // Checking route.ts: 
-            // POST expects body { productId }
-            // DELETE expects query param ?productId=...
 
             let res;
             if (isCurrentlyIn) {
+                // Determine if API supports query param for delete or body
+                // Base on previous code: fetch(`/api/wishlist?productId=${productId}`, { method: 'DELETE' });
                 res = await fetch(`/api/wishlist?productId=${productId}`, { method: 'DELETE' });
             } else {
                 res = await fetch('/api/wishlist', {

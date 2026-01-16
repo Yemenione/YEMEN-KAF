@@ -1,5 +1,4 @@
-"use client";
-
+import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
@@ -18,6 +17,7 @@ interface Product {
 export default function ProductShowcase() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -38,7 +38,7 @@ export default function ProductShowcase() {
     }, []);
 
     if (loading) {
-        return <div className="w-full py-32 bg-white text-center">Loading...</div>;
+        return <div className="w-full py-32 bg-white text-center">{t('shop.loading')}</div>;
     }
 
     return (
@@ -46,12 +46,12 @@ export default function ProductShowcase() {
             <div className="max-w-7xl mx-auto px-6">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
                     <div>
-                        <span className="text-gray-400 uppercase tracking-[0.4em] text-xs font-semibold block mb-4">Curated Collection</span>
-                        <h2 className="text-4xl md:text-6xl font-serif text-black leading-tight">Taste the<br />Heritage</h2>
+                        <span className="text-gray-400 uppercase tracking-[0.4em] text-xs font-semibold block mb-4">{t('home.showcase.curated')}</span>
+                        <h2 className="text-4xl md:text-6xl font-serif text-black leading-tight">{t('home.showcase.title')}</h2>
                     </div>
 
                     <button className="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-widest font-medium border-b border-black pb-1 hover:text-gray-600 transition-colors">
-                        View Full Catalog
+                        {t('home.showcase.viewAll')}
                     </button>
                 </div>
 
@@ -69,13 +69,13 @@ export default function ProductShowcase() {
                             </Link>
                         ))
                     ) : (
-                        <p className="col-span-full text-center text-gray-400">No products found.</p>
+                        <p className="col-span-full text-center text-gray-400">{t('shop.noProducts')}</p>
                     )}
                 </div>
 
                 <div className="mt-16 text-center md:hidden">
                     <button className="inline-flex items-center gap-2 text-sm uppercase tracking-widest font-medium border-b border-black pb-1">
-                        View Full Catalog
+                        {t('home.showcase.viewAll')}
                     </button>
                 </div>
             </div>

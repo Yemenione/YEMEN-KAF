@@ -1,5 +1,4 @@
-"use client";
-
+import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,6 +14,7 @@ interface Category {
 
 export default function CategoriesSection() {
     const [categories, setCategories] = useState<Category[]>([]);
+    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -39,12 +39,12 @@ export default function CategoriesSection() {
         <section className="py-24 bg-white overflow-hidden">
             <div className="max-w-7xl mx-auto px-6 mb-12 flex justify-between items-end">
                 <div>
-                    <span className="text-gray-400 uppercase tracking-[0.4em] text-xs font-semibold block mb-4">Discover</span>
-                    <h2 className="text-4xl md:text-5xl font-serif text-black leading-tight">Our Collections</h2>
+                    <span className="text-gray-400 uppercase tracking-[0.4em] text-xs font-semibold block mb-4">{t('home.categories.discover')}</span>
+                    <h2 className="text-4xl md:text-5xl font-serif text-black leading-tight">{t('home.categories.title')}</h2>
                 </div>
                 {/* Scroll Indicators (Visual only, native scroll used) */}
                 <div className="hidden md:flex gap-2">
-                    <span className="text-sm font-medium text-gray-400">Scroll to explore</span>
+                    <span className="text-sm font-medium text-gray-400">{t('home.categories.scroll')}</span>
                     <ArrowUpRight className="w-5 h-5 text-gray-400 rotate-90" />
                 </div>
             </div>
@@ -72,7 +72,7 @@ export default function CategoriesSection() {
                             {/* Content */}
                             <div className="absolute inset-0 flex flex-col justify-end p-8 text-white z-10">
                                 <span className="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--honey-gold)] mb-2">
-                                    Explore
+                                    {t('home.categories.explore')}
                                 </span>
                                 <h3 className="text-2xl font-serif mb-2 transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-500">{cat.name}</h3>
                                 <p className="text-white/70 text-sm font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 line-clamp-2">

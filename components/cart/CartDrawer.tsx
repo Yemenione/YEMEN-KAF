@@ -5,13 +5,14 @@ import { X, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function CartDrawer() {
     const { items, isOpen, closeCart, removeFromCart, total } = useCart();
+    const { t } = useLanguage();
 
     const formatPrice = (price: string | number) => {
-        if (typeof price === 'number') return `$${price.toFixed(2)}`;
-        return price;
+        return `${Number(price).toFixed(2)}€`;
     };
 
     return (
@@ -35,8 +36,8 @@ export default function CartDrawer() {
                 {/* Header */}
                 <div className="p-8 border-b border-black/5 flex items-center justify-between">
                     <div>
-                        <h2 className="text-2xl font-serif text-black">Your Bag</h2>
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-gray-400">{items.length} Items</span>
+                        <h2 className="text-2xl font-serif text-black">{t('cart.yourBag')}</h2>
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-gray-400">{items.length} {t('cart.itemsCount')}</span>
                     </div>
                     <button onClick={closeCart} className="text-black hover:rotate-90 transition-transform duration-300">
                         <X size={24} />
@@ -48,8 +49,8 @@ export default function CartDrawer() {
                     {items.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-gray-300 space-y-6">
                             <ShoppingBag size={64} strokeWidth={1} />
-                            <p className="text-xl font-serif italic text-gray-400">Your selection is empty</p>
-                            <button onClick={closeCart} className="text-xs uppercase tracking-widest font-bold text-black border-b border-black pb-1 hover:text-gray-600">Start Shopping</button>
+                            <p className="text-xl font-serif italic text-gray-400">{t('cart.empty')}</p>
+                            <button onClick={closeCart} className="text-xs uppercase tracking-widest font-bold text-black border-b border-black pb-1 hover:text-gray-600">{t('cart.startShopping')}</button>
                         </div>
                     ) : (
                         items.map((item) => (
@@ -66,7 +67,7 @@ export default function CartDrawer() {
                                             <X size={16} />
                                         </button>
                                     </div>
-                                    <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">Quantity: {item.quantity}</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">{t('product.quantity')}: {item.quantity}</p>
                                     <p className="font-serif text-black">{formatPrice(item.price)}</p>
                                 </div>
                             </div>
@@ -78,8 +79,8 @@ export default function CartDrawer() {
                 {items.length > 0 && (
                     <div className="p-8 bg-gray-50 space-y-6">
                         <div className="flex justify-between items-end border-b border-black/5 pb-6">
-                            <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Subtotal</span>
-                            <span className="text-3xl font-serif text-black">${total.toFixed(2)}</span>
+                            <span className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">{t('cart.subtotal')}</span>
+                            <span className="text-3xl font-serif text-black">{total.toFixed(2)}€</span>
                         </div>
 
                         <div className="space-y-4">
@@ -88,12 +89,12 @@ export default function CartDrawer() {
                                 onClick={closeCart}
                                 className="flex items-center justify-center gap-3 w-full py-5 bg-black text-white font-bold uppercase tracking-[0.2em] text-xs hover:bg-gray-900 transition-all shadow-xl hover:shadow-black/20"
                             >
-                                Secure Checkout <ArrowRight size={14} />
+                                {t('cart.secureCheckout')} <ArrowRight size={14} />
                             </Link>
 
                             <p className="text-center text-[10px] text-gray-400 uppercase tracking-widest flex items-center justify-center gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                Complimentary Shipping Included
+                                {t('cart.freeShipping')}
                             </p>
                         </div>
                     </div>

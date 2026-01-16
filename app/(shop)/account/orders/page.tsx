@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Order {
     id: number;
@@ -14,6 +15,7 @@ interface Order {
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { t } = useLanguage();
 
     useEffect(() => {
         fetchOrders();
@@ -44,21 +46,15 @@ export default function OrdersPage() {
         }
     };
 
-    const getStatusText = (status: string) => {
-        const statusMap: Record<string, string> = {
-            'pending': 'قيد الانتظار',
-            'processing': 'قيد المعالجة',
-            'shipped': 'تم الشحن',
-            'delivered': 'تم التسليم',
-            'cancelled': 'ملغي'
-        };
-        return statusMap[status.toLowerCase()] || status;
+    const getTranslatedStatus = (status: string) => {
+        const key = `account.status.${status.toLowerCase()}` as any;
+        return t(key) || status;
     };
 
     if (isLoading) {
         return (
             <div className="flex items-center justify-center py-12">
-                <div className="text-gray-500">جاري التحميل...</div>
+                <div className="text-gray-500">{t('shop.loading')}</div>
             </div>
         );
     }
@@ -66,14 +62,14 @@ export default function OrdersPage() {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-3xl font-serif text-black mb-2">Order History / سجل الطلبات</h1>
-                <p className="text-gray-500">View and track your orders / عرض وتتبع طلباتك</p>
+                <h1 className="text-3xl font-serif text-black mb-2">{t('orders.title')}</h1>
+                <p className="text-gray-500">{t('orders.subtitle')}</p>
             </div>
 
             {orders.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500 text-lg mb-4">لا توجد طلبات بعد</p>
-                    <p className="text-gray-400">ابدأ التسوق لإنشاء طلبك الأول!</p>
+                    <p className="text-gray-500 text-lg mb-4">{t('orders.noOrders')}</p>
+                    <p className="text-gray-400">{t('orders.startShopping')}</p>
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -81,9 +77,9 @@ export default function OrdersPage() {
                         <div key={order.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h3 className="font-serif text-xl text-black">Order #{order.id}</h3>
+                                    <h3 className="font-serif text-xl text-black">{t('account.order')} #{order.id}</h3>
                                     <p className="text-sm text-gray-500 mt-1">
-                                        {new Date(order.createdAt).toLocaleDateString('ar-YE', {
+                                        {new Date(order.createdAt).toLocaleDateString(typeof window !== 'undefined' ? localStorage.getItem('locale') || 'en' : 'en', {
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric'
@@ -91,12 +87,12 @@ export default function OrdersPage() {
                                     </p>
                                 </div>
                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                    {getStatusText(order.status)}
+                                    {getTranslatedStatus(order.status)}
                                 </span>
                             </div>
 
                             <div className="space-y-2 mb-4">
-                                <h4 className="text-sm font-medium text-gray-700">المنتجات:</h4>
+                                <h4 className="text-sm font-medium text-gray-700">{t('orders.products')}:</h4>
                                 <ul className="text-sm text-gray-600 space-y-1">
                                     {order.items.map((item, idx) => (
                                         <li key={idx}>• {item}</li>
@@ -106,10 +102,10 @@ export default function OrdersPage() {
 
                             <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                                 <div className="text-sm text-gray-600">
-                                    <span className="font-medium">العنوان:</span> {order.shippingAddress || 'غير محدد'}
+                                    <span className="font-medium">{t('orders.address')}:</span> {order.shippingAddress || t('orders.notSpecified')}
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm text-gray-500">الإجمالي</p>
+                                    <p className="text-sm text-gray-500">{t('orders.total')}</p>
                                     <p className="text-xl font-serif text-black">{Number(order.totalAmount).toFixed(2)}€</p>
                                 </div>
                             </div>

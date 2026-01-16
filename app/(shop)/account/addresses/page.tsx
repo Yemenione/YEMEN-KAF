@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Address {
     id: number;
@@ -17,6 +18,7 @@ export default function AddressesPage() {
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const { t } = useLanguage();
     const [formData, setFormData] = useState({
         street: "",
         city: "",
@@ -64,7 +66,7 @@ export default function AddressesPage() {
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('هل أنت متأكد من حذف هذا العنوان؟')) return;
+        if (!confirm(t('account.confirmDelete'))) return;
 
         try {
             const res = await fetch(`/api/account/addresses/${id}`, {
@@ -80,30 +82,30 @@ export default function AddressesPage() {
     };
 
     if (isLoading) {
-        return <div className="flex items-center justify-center py-12"><div className="text-gray-500">جاري التحميل...</div></div>;
+        return <div className="flex items-center justify-center py-12"><div className="text-gray-500">{t('shop.loading')}</div></div>;
     }
 
     return (
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-serif text-black mb-2">Addresses / العناوين</h1>
-                    <p className="text-gray-500">Manage your shipping addresses / إدارة عناوين الشحن</p>
+                    <h1 className="text-3xl font-serif text-black mb-2">{t('account.addresses')}</h1>
+                    <p className="text-gray-500">{t('account.manageAddresses')}</p>
                 </div>
                 <button
                     onClick={() => setShowForm(!showForm)}
                     className="px-6 py-3 bg-black text-white uppercase tracking-widest text-sm font-bold hover:bg-gray-800 transition-colors flex items-center gap-2"
                 >
-                    <Plus size={18} /> Add Address
+                    <Plus size={18} /> {t('account.addAddress')}
                 </button>
             </div>
 
             {showForm && (
                 <form onSubmit={handleSubmit} className="bg-gray-50 p-6 rounded-lg space-y-4">
-                    <h3 className="font-serif text-xl text-black mb-4">Add New Address</h3>
+                    <h3 className="font-serif text-xl text-black mb-4">{t('account.addNewAddress')}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">Street Address</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('account.form.street')}</label>
                             <input
                                 type="text"
                                 className="w-full border border-gray-300 rounded px-4 py-2"
@@ -113,7 +115,7 @@ export default function AddressesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">City</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('account.form.city')}</label>
                             <input
                                 type="text"
                                 className="w-full border border-gray-300 rounded px-4 py-2"
@@ -123,7 +125,7 @@ export default function AddressesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">State/Province</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('account.form.state')}</label>
                             <input
                                 type="text"
                                 className="w-full border border-gray-300 rounded px-4 py-2"
@@ -132,7 +134,7 @@ export default function AddressesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">Postal Code</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('account.form.postalCode')}</label>
                             <input
                                 type="text"
                                 className="w-full border border-gray-300 rounded px-4 py-2"
@@ -141,7 +143,7 @@ export default function AddressesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">Country</label>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('account.form.country')}</label>
                             <input
                                 type="text"
                                 className="w-full border border-gray-300 rounded px-4 py-2"
@@ -158,15 +160,15 @@ export default function AddressesPage() {
                                 onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
                                 className="w-4 h-4"
                             />
-                            <label htmlFor="isDefault" className="text-sm text-gray-700">Set as default address</label>
+                            <label htmlFor="isDefault" className="text-sm text-gray-700">{t('account.form.default')}</label>
                         </div>
                     </div>
                     <div className="flex gap-4">
                         <button type="submit" className="px-6 py-2 bg-black text-white uppercase text-sm font-bold hover:bg-gray-800">
-                            Save Address
+                            {t('account.form.save')}
                         </button>
                         <button type="button" onClick={() => setShowForm(false)} className="px-6 py-2 border border-gray-300 text-gray-700 uppercase text-sm font-bold hover:bg-gray-50">
-                            Cancel
+                            {t('account.form.cancel')}
                         </button>
                     </div>
                 </form>
@@ -174,7 +176,7 @@ export default function AddressesPage() {
 
             {addresses.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500 text-lg">لا توجد عناوين محفوظة</p>
+                    <p className="text-gray-500 text-lg">{t('account.noAddresses')}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -192,7 +194,7 @@ export default function AddressesPage() {
                                 onClick={() => handleDelete(address.id)}
                                 className="text-red-600 hover:text-red-800 text-sm flex items-center gap-1"
                             >
-                                <Trash2 size={16} /> Delete
+                                <Trash2 size={16} /> {t('account.form.delete')}
                             </button>
                         </div>
                     ))}

@@ -9,12 +9,24 @@ export async function POST(req: Request) {
     try {
         const token = (await cookies()).get('auth_token')?.value;
 
-        if (!token) {
-            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+        // AUTHENTICATION CHECK - MODIFIED FOR GUEST CHECKOUT
+        let userId: number | null = null;
+
+        if (token) {
+            try {
+                const { payload } = await jwtVerify(token, JWT_SECRET);
+                userId = payload.userId as number;
+            } catch (err) {
+                // Invalid token, treat as guest
+                console.warn('Invalid token during checkout, proceeding as guest');
+            }
         }
 
-        const { payload } = await jwtVerify(token, JWT_SECRET);
-        const userId = payload.userId as number;
+        // If no token, proceeding as guest (userId = null)
+        // Ensure shipping address includes email/contact if guest logic needed validation
+        // (Assuming frontend validation handled this)
+
+        // userId extraction moved up
 
         const { shippingAddress, paymentMethod, shippingMethod, items } = await req.json();
 
@@ -52,6 +64,11 @@ export async function POST(req: Request) {
             }
         } else {
             // Option 2: Fallback to server-side cart items
+            if (!userId) {
+                // Guests cannot use server-side cart items as fallback if not provided in request
+                return NextResponse.json({ error: 'Guest checkout requires items in request' }, { status: 400 });
+            }
+
             const [dbCartItems]: any = await pool.execute(
                 `SELECT ci.*, p.price 
                 FROM cart_items ci

@@ -15,7 +15,7 @@ export default function Footer() {
                 <div className="space-y-6">
                     <h2 className="text-2xl font-serif text-[var(--coffee-brown)] tracking-widest uppercase">Yemeni Market</h2>
                     <p className="text-[var(--coffee-brown)]/60 text-sm leading-relaxed max-w-xs">
-                        Purveyors of the world&apos;s finest Sidr Honey and Mocha Coffee. sourcing directly from the ancient valleys of Yemen.
+                        {t('footer.description')}
                     </p>
                     <div className="flex gap-4">
                         <a href="#" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors"><Instagram size={20} /></a>
@@ -26,29 +26,29 @@ export default function Footer() {
 
                 {/* Quick Links */}
                 <div>
-                    <h3 className="text-lg font-bold uppercase tracking-widest mb-6 text-[var(--coffee-brown)] text-xs">Quick Links</h3>
+                    <h3 className="text-lg font-bold uppercase tracking-widest mb-6 text-[var(--coffee-brown)] text-xs">{t('footer.quickLinks')}</h3>
                     <ul className="space-y-4 text-sm text-[var(--coffee-brown)]/70">
-                        <li><Link href="/shop" className="hover:text-[var(--honey-gold)] transition-colors">Shop All</Link></li>
-                        <li><Link href="/our-story" className="hover:text-[var(--honey-gold)] transition-colors">Our Story</Link></li>
-                        <li><Link href="/the-farms" className="hover:text-[var(--honey-gold)] transition-colors">The Farms</Link></li>
-                        <li><Link href="/track-order" className="hover:text-[var(--honey-gold)] transition-colors">Track Order</Link></li>
+                        <li><Link href="/shop" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.shopAll')}</Link></li>
+                        <li><Link href="/our-story" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.ourStory')}</Link></li>
+                        <li><Link href="/the-farms" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.theFarms')}</Link></li>
+                        <li><Link href="/track-order" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.trackOrder')}</Link></li>
                     </ul>
                 </div>
 
                 {/* Collections */}
                 <div>
-                    <h3 className="text-lg font-bold uppercase tracking-widest mb-6 text-[var(--coffee-brown)] text-xs">Collections</h3>
+                    <h3 className="text-lg font-bold uppercase tracking-widest mb-6 text-[var(--coffee-brown)] text-xs">{t('footer.collections')}</h3>
                     <ul className="space-y-4 text-sm text-[var(--coffee-brown)]/70">
-                        <li><Link href="/shop?category=honey" className="hover:text-[var(--honey-gold)] transition-colors">Royal Sidr Honey</Link></li>
-                        <li><Link href="/shop?category=coffee" className="hover:text-[var(--honey-gold)] transition-colors">Haraz Mocha</Link></li>
-                        <li><Link href="/shop?category=gifts" className="hover:text-[var(--honey-gold)] transition-colors">Gift Sets</Link></li>
-                        <li><Link href="/shop?category=wholesale" className="hover:text-[var(--honey-gold)] transition-colors">Wholesale</Link></li>
+                        <li><Link href="/shop?category=honey" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.honey')}</Link></li>
+                        <li><Link href="/shop?category=coffee" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.coffee')}</Link></li>
+                        <li><Link href="/shop?category=gifts" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.gifts')}</Link></li>
+                        <li><Link href="/shop?category=wholesale" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.wholesale')}</Link></li>
                     </ul>
                 </div>
 
                 {/* Contact */}
                 <div>
-                    <h3 className="text-lg font-bold uppercase tracking-widest mb-6 text-[var(--coffee-brown)] text-xs">Contact Us</h3>
+                    <h3 className="text-lg font-bold uppercase tracking-widest mb-6 text-[var(--coffee-brown)] text-xs">{t('footer.contact')}</h3>
                     <ul className="space-y-4 text-sm text-[var(--coffee-brown)]/70">
                         <li className="flex items-start gap-3">
                             <MapPin size={18} className="text-[var(--honey-gold)] mt-0.5" />
@@ -68,7 +68,7 @@ export default function Footer() {
 
             {/* Bottom Bar */}
             <div className="border-t border-[var(--coffee-brown)]/10 py-8 text-center text-xs text-[var(--coffee-brown)]/40 uppercase tracking-widest">
-                <p>&copy; {new Date().getFullYear()} Yemeni Market. All Rights Reserved.</p>
+                <p>&copy; {new Date().getFullYear()} {t('footer.rights')}</p>
             </div>
         </footer>
     );
