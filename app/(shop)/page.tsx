@@ -6,6 +6,12 @@ import ProductShowcase from "@/components/shop/ProductShowcase";
 import HeroSlider from "@/components/hero/HeroSlider";
 import CategoriesSection from "@/components/shop/CategoriesSection";
 import SpecialOffers from "@/components/shop/SpecialOffers";
+import BestSellers from "@/components/shop/BestSellers";
+import NewArrivals from "@/components/shop/NewArrivals";
+import Testimonials from "@/components/shop/Testimonials";
+import OurStoryBrief from "@/components/shop/OurStoryBrief";
+import BlogSection from "@/components/shop/BlogSection";
+import Newsletter from "@/components/shop/Newsletter";
 import { Truck, ShieldCheck, Star } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -23,8 +29,14 @@ export default function Home() {
       {/* Categories Grid */}
       <CategoriesSection />
 
+      {/* Best Sellers - NEW */}
+      <BestSellers />
+
       {/* Special Offers */}
       <SpecialOffers />
+
+      {/* New Arrivals - NEW */}
+      <NewArrivals />
 
       {/* Trust Indicators */}
       <section className="w-full py-16 border-t border-black/5">
@@ -61,6 +73,18 @@ export default function Home() {
 
       {/* Product Showcase */}
       <ProductShowcase />
+
+      {/* Testimonials - NEW */}
+      <Testimonials />
+
+      {/* Our Story Brief - NEW */}
+      <OurStoryBrief />
+
+      {/* Blog Section - NEW */}
+      <BlogSection />
+
+      {/* Newsletter - NEW */}
+      <Newsletter />
     </main>
   );
 }

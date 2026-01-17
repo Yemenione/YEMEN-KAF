@@ -1,0 +1,53 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function PUT(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const id = parseInt(params.id);
+        const body = await req.json();
+        const {
+            name, description, code, priority, isActive,
+            startsAt, endsAt, minAmount, totalAvailable, totalPerUser,
+            freeShipping, reductionPercent, reductionAmount
+        } = body;
+
+        const coupon = await prisma.cartRule.update({
+            where: { id },
+            data: {
+                name,
+                description,
+                code: code.toUpperCase(),
+                priority,
+                isActive,
+                startsAt: startsAt ? new Date(startsAt) : null,
+                endsAt: endsAt ? new Date(endsAt) : null,
+                minAmount: minAmount || 0,
+                totalAvailable,
+                totalPerUser,
+                freeShipping,
+                reductionPercent,
+                reductionAmount
+            }
+        });
+
+        return NextResponse.json(coupon);
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const id = parseInt(params.id);
+        await prisma.cartRule.delete({ where: { id } });
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}

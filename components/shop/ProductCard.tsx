@@ -66,7 +66,7 @@ export default function ProductCard({ id, title, price, image, category }: Produ
                 />
 
                 {/* Minimal Overlay Badge */}
-                <div className="absolute top-4 left-4">
+                <div className="absolute top-4 start-4">
                     <span className="inline-block px-3 py-1 text-[10px] uppercase tracking-widest bg-white text-black font-medium">
                         {category}
                     </span>
@@ -76,7 +76,7 @@ export default function ProductCard({ id, title, price, image, category }: Produ
                 <button
                     onClick={toggleWishlist}
                     disabled={loading}
-                    className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all shadow-sm"
+                    className="absolute top-4 end-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all shadow-sm"
                 >
                     <Heart
                         size={16}
@@ -88,7 +88,7 @@ export default function ProductCard({ id, title, price, image, category }: Produ
                 </button>
 
                 {/* 'Quick Add' Button - Appears on hover */}
-                <button className="absolute bottom-4 right-4 w-10 h-10 bg-white text-black flex items-center justify-center rounded-full translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black hover:text-white shadow-lg z-20">
+                <button className="absolute bottom-4 end-4 w-10 h-10 bg-white text-black flex items-center justify-center rounded-full translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black hover:text-white shadow-lg z-20">
                     <Plus size={20} />
                 </button>
             </div>

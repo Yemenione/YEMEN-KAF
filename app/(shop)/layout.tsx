@@ -11,6 +11,7 @@ import CartDrawer from "@/components/cart/CartDrawer";
 import WishlistDrawer from "@/components/wishlist/WishlistDrawer";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import { SettingsProvider } from "@/context/SettingsContext";
 import "../globals.css";
 
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -29,22 +30,24 @@ export default function ShopLayout({
   return (
     <html lang="en">
       <body className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)]`}>
-        <LanguageProvider>
-          <ToastProvider>
-            <AuthProvider>
-              <CartProvider>
-                <WishlistProvider>
-                  <Navbar />
-                  {children}
-                  <Footer />
-                  <CartDrawer />
-                  <WishlistDrawer />
-                  <CookieBanner />
-                </WishlistProvider>
-              </CartProvider>
-            </AuthProvider>
-          </ToastProvider>
-        </LanguageProvider>
+        <SettingsProvider>
+          <LanguageProvider>
+            <ToastProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <WishlistProvider>
+                    <Navbar />
+                    {children}
+                    <Footer />
+                    <CartDrawer />
+                    <WishlistDrawer />
+                    <CookieBanner />
+                  </WishlistProvider>
+                </CartProvider>
+              </AuthProvider>
+            </ToastProvider>
+          </LanguageProvider>
+        </SettingsProvider>
       </body>
     </html>
   );

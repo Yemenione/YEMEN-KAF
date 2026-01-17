@@ -1,58 +1,103 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
-import { getShippingRates, ShippingRate } from '@/lib/shipping-rates';
+import { calculateShipping, calculateTotalWeight } from '@/lib/shipping/colissimo';
 
+/**
+ * POST /api/shipping/calculate
+ * 
+ * Calculate shipping rates for cart items using Colissimo API
+ * 
+ * Request body:
+ * {
+ *   items: [{ id: number, quantity: number }],  // Product IDs and quantities
+ *   destination: { country: string, postalCode: string, city?: string, address?: string, name?: string }
+ * }
+ */
 export async function POST(req: Request) {
     try {
-        const { items, country } = await req.json();
+        const body = await req.json();
+        const { items, destination, country } = body;
+
+        // Support both old format (country only) and new format (full destination)
+        const dest = destination || { country: country || 'FR', postalCode: '75001', city: 'Paris', address: '', name: 'Customer' };
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return NextResponse.json({ rates: [] });
         }
 
-        if (!country) {
+        if (!dest.country) {
             return NextResponse.json({ rates: [] });
         }
 
-        // Fetch weights from DB
-        const ids = items.map((item: any) => item.id);
-        if (ids.length === 0) return NextResponse.json({ rates: [] });
+        // Fetch product details (weight, dimensions) from database
+        const productIds = items.map((item: any) => item.id);
+        const placeholders = productIds.map(() => '?').join(',');
 
-        // Create placeholders ? for the IN clause
-        const placeholders = ids.map(() => '?').join(',');
-
-        // We will try to select 'weight' if it exists, otherwise we mock it in code if the column is missing 
-        // (handling gracefully if the column doesn't exist yet would require a try-catch on the query, 
-        // but for now let's assume we can fetch it or default it).
-        // Since we can't easily alter the DB here without risk, let's fetch products and IF weight is missing, default to 0.5.
-        // Actually, to be safe, let's just fetch p.*
-
-        // Fetch product details (using * to be safe if weight column is missing, defaulting to 0.5kg later)
         const [products]: any = await pool.execute(
-            `SELECT * FROM products WHERE id IN (${placeholders})`,
-            ids
+            `SELECT id, weight, width, height, depth FROM products WHERE id IN (${placeholders})`,
+            productIds
         );
 
-        let totalWeight = 0;
-
-        items.forEach((item: any) => {
+        // Build items with weight data
+        const itemsWithWeight = items.map((item: any) => {
             const product = products.find((p: any) => p.id === item.id);
-            // Default weight 0.5kg if null or undefined
-            const weight = product?.weight ? Number(product.weight) : 0.500;
-            totalWeight += weight * item.quantity;
+            return {
+                weight: product?.weight ? parseFloat(product.weight) : 0.5,
+                quantity: item.quantity
+            };
         });
 
-        // Round to 3 decimals
-        totalWeight = Math.round(totalWeight * 1000) / 1000;
+        // Calculate total weight
+        const totalWeight = calculateTotalWeight(itemsWithWeight);
 
-        // Calculate Rates
-        const rates = getShippingRates(country, totalWeight);
+        // Get largest dimensions (for multi-item shipments, use largest product dimensions)
+        const maxDimensions = products.reduce((max: any, product: any) => {
+            const width = parseFloat(product.width) || 10;
+            const height = parseFloat(product.height) || 10;
+            const depth = parseFloat(product.depth) || 10;
 
-        return NextResponse.json({ rates, totalWeight });
+            return {
+                width: Math.max(max.width, width),
+                height: Math.max(max.height, height),
+                depth: Math.max(max.depth, depth)
+            };
+        }, { width: 10, height: 10, depth: 10 });
 
-    } catch (error) {
-        console.error("Shipping calculation error:", error);
-        // Fallback or empty rates
-        return NextResponse.json({ rates: [], error: 'Failed to calculate shipping' }, { status: 500 });
+        // Calculate shipping rates using Colissimo
+        const rates = await calculateShipping({
+            weight: totalWeight,
+            dimensions: maxDimensions,
+            destination: {
+                country: dest.country,
+                postalCode: dest.postalCode || '75001',
+                city: dest.city || '',
+                address: dest.address || '',
+                name: dest.name || 'Customer'
+            }
+        });
+
+        return NextResponse.json({
+            success: true,
+            rates,
+            totalWeight,
+            dimensions: maxDimensions
+        });
+
+    } catch (error: any) {
+        console.error('Shipping calculation error:', error);
+
+        // Fallback to static rate if Colissimo fails
+        return NextResponse.json({
+            success: true,
+            rates: [{
+                cost: 5.00,
+                deliveryDays: 3,
+                serviceCode: 'STANDARD',
+                serviceName: 'Standard Shipping (Estimated)'
+            }],
+            fallback: true,
+            totalWeight: 0.5,
+            error: error.message
+        });
     }
 }

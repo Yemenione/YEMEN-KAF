@@ -166,6 +166,7 @@ export async function POST(req: Request) {
             totalAmount
         });
 
+
     } catch (error) {
         console.error('Order creation error:', error);
         console.error('Error details:', {
@@ -182,5 +183,52 @@ export async function POST(req: Request) {
             details: (error as Error).message,
             sqlError: (error as any).sqlMessage || 'No SQL error message'
         }, { status: 500 });
+    }
+}
+
+export async function GET(req: Request) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const limit = parseInt(searchParams.get('limit') || '20');
+        const offset = parseInt(searchParams.get('offset') || '0');
+        const status = searchParams.get('status');
+        const search = searchParams.get('search');
+
+        let query = `
+            SELECT 
+                o.*,
+                CONCAT(c.first_name, ' ', c.last_name) as customer_name,
+                c.email as customer_email
+            FROM orders o
+            LEFT JOIN customers c ON o.customer_id = c.id
+            WHERE 1=1
+        `;
+
+        const params: any[] = [];
+
+        if (status && status !== 'all') {
+            query += ` AND o.status = ?`;
+            params.push(status);
+        }
+
+        if (search) {
+            query += ` AND (o.order_number LIKE ? OR c.email LIKE ? OR c.last_name LIKE ?)`;
+            params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+        }
+
+        query += ` ORDER BY o.created_at DESC LIMIT ? OFFSET ?`;
+        params.push(limit, offset);
+
+        const [orders]: any = await pool.execute(query, params);
+
+        // Get total count for pagination
+        const [countResult]: any = await pool.execute('SELECT COUNT(*) as total FROM orders');
+        const total = countResult[0].total;
+
+        return NextResponse.json({ orders, total });
+
+    } catch (error) {
+        console.error('Orders list fetch error:', error);
+        return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
 }

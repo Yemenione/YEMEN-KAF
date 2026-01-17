@@ -14,7 +14,7 @@ interface Product {
     name: string;
     price: number;
     slug: string;
-    image_url: string;
+    images?: string; // JSON string
     category_name: string;
     category_slug: string;
     description?: string;
@@ -38,6 +38,29 @@ export default function ShopPage() {
     const [sortBy, setSortBy] = useState('newest');
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
+
+    // Helper to extract main image from JSON
+    const getMainImage = (product: Product): string => {
+        try {
+            if (!product.images) return '/images/honey-jar.jpg';
+
+            // Check if it's already a clean URL (legacy/csv import support)
+            if (product.images.startsWith('http') || product.images.startsWith('/uploads')) {
+                return product.images;
+            }
+
+            const parsed = JSON.parse(product.images);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed[0];
+            }
+        } catch (e) {
+            // Fallback for non-JSON strings
+            if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
+                return product.images;
+            }
+        }
+        return '/images/honey-jar.jpg';
+    };
 
     // Read URL query params on mount
     useEffect(() => {
@@ -145,7 +168,7 @@ export default function ShopPage() {
                             <div className="flex items-center gap-2">
                                 <input
                                     type="number"
-                                    placeholder="Min €"
+                                    placeholder={t('shop.minPrice')}
                                     className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
                                     value={minPrice}
                                     onChange={(e) => setMinPrice(e.target.value)}
@@ -153,7 +176,7 @@ export default function ShopPage() {
                                 <span className="text-gray-400">-</span>
                                 <input
                                     type="number"
-                                    placeholder="Max €"
+                                    placeholder={t('shop.maxPrice')}
                                     className="w-20 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
                                     value={maxPrice}
                                     onChange={(e) => setMaxPrice(e.target.value)}
@@ -169,8 +192,8 @@ export default function ShopPage() {
                                     <option value="newest">{t('shop.newest')}</option>
                                     <option value="price-low">{t('shop.priceLow')}</option>
                                     <option value="price-high">{t('shop.priceHigh')}</option>
-                                    <option value="name-asc">Name (A-Z)</option>
-                                    <option value="name-desc">Name (Z-A)</option>
+                                    <option value="name-asc">{t('shop.nameAZ')}</option>
+                                    <option value="name-desc">{t('shop.nameZA')}</option>
                                 </select>
 
                                 <div className="flex gap-2 border border-gray-200 rounded-lg p-1">
@@ -226,7 +249,7 @@ export default function ShopPage() {
                                 <Link href={`/shop/${product.slug}`} className={viewMode === 'list' ? 'w-48 flex-shrink-0' : 'w-full'}>
                                     <div className={`relative overflow-hidden bg-gray-100 ${viewMode === 'list' ? 'h-full' : 'aspect-square'}`}>
                                         <Image
-                                            src={product.image_url || '/images/honey-jar.jpg'}
+                                            src={getMainImage(product)}
                                             alt={product.name}
                                             fill
                                             className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -286,7 +309,7 @@ export default function ShopPage() {
                                                 id: product.id,
                                                 title: product.name,
                                                 price: product.price,
-                                                image: product.image_url || '/images/honey-jar.jpg'
+                                                image: getMainImage(product)
                                             })}
                                             className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
                                         >

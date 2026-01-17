@@ -79,7 +79,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
             <div className="max-w-7xl mx-auto px-6 pb-20">
                 <ProductSpecs
                     weight={parseFloat(product.weight) || 0.5}
-                    origin="Yemen"
+                    origin={product.origin_country || "Yemen"}
                     shelfLife="24 months"
                     description={product.description || ''}
                     category={product.category?.slug || 'honey'}

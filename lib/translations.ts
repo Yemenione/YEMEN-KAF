@@ -41,6 +41,42 @@ export const translations = {
                 title: "Taste the Heritage",
                 viewAll: "View Full Catalog",
             },
+            bestSellers: {
+                badge: "Best Sellers",
+                title: "Our Most Popular Products",
+                topSale: "Best Seller"
+            },
+            newArrivals: {
+                badge: "New Arrivals",
+                title: "Our Latest Products",
+                newBadge: "New",
+                shopNow: "Shop Now"
+            },
+            testimonials: {
+                badge: "Testimonials",
+                title: "What Our Customers Say",
+                customer1: {
+                    name: "Fatima Ahmed",
+                    location: "Paris, France",
+                    text: "The best Yemeni honey I've tried! Excellent quality and fast delivery. I recommend it to everyone."
+                },
+                customer2: {
+                    name: "Mohamed Ali",
+                    location: "Lyon, France",
+                    text: "100% authentic products. Great taste and very reasonable price. I will definitely order again."
+                },
+                customer3: {
+                    name: "Sarah Hassan",
+                    location: "Marseille, France",
+                    text: "Excellent customer service and high-quality traditional products. I love the authentic Yemeni incense!"
+                }
+            },
+            ourStory: {
+                badge: "Our Story",
+                title: "From the Heart of Yemen to Your Home",
+                description: "We bring you the finest traditional Yemeni products, from natural honey to authentic incense. Each product carries a story and rich heritage from the land of Yemen.",
+                button: "Read Our Full Story"
+            }
         },
         // Shop
         shop: {
@@ -52,7 +88,10 @@ export const translations = {
             newest: "Newest",
             priceLow: "Price: Low to High",
             priceHigh: "Price: High to Low",
-            nameAZ: "Name A-Z",
+            nameAZ: "Name: A-Z",
+            nameZA: "Name: Z-A",
+            minPrice: "Min €",
+            maxPrice: "Max €",
             productsFound: "products found",
             loading: "Loading...",
             noProducts: "No products found",
@@ -240,6 +279,241 @@ export const translations = {
             send: "Send Message",
             success: "Message sent successfully! We'll get back to you soon.",
             error: "Failed to send message. Please try again or email us directly."
+        },
+        story: {
+            heritage: "Our Heritage",
+            origin: "The Origin",
+            legacyTitle: "Preserving an Ancient Legacy",
+            philosophy: "Yemeni Market was founded with a singular purpose: to bridge the gap between the ancient, untouched valleys of Yemen and the modern connoisseur. Our Sidr Honey is not just a product; it is a sacred elixir, harvested using methods that have remained unchanged for centuries. Our Coffee is the original Mocha, born from the very soil where coffee was first cultivated.",
+            signature: "Signature",
+            uncompromising: "Uncompromising Quality",
+            processTitle: "From the Hive to the Home",
+            steps: [
+                { title: "01. Sourcing", desc: "We work exclusively with generational beekeepers in the Do'an Valley." },
+                { title: "02. Testing", desc: "Every batch is lab-tested for purity, ensuring 0% sugar adulteration." },
+                { title: "03. Selection", desc: "Only the finest 'Royal' grade honey makes it into our black jars." }
+            ],
+            tasteHistory: "Taste the History",
+            explore: "Explore Collection"
+        },
+        farms: {
+            terroir: "Terroir",
+            title: "The Farms",
+            subtitle: "Yemen's geography is unlike anywhere else on Earth. High-altitude peaks and secluded valleys create microclimates perfect for the world's most distinct flavors.",
+            doan: {
+                location: "Wadi Do'an, Hadramout",
+                title: "The Valley of Honey",
+                desc: "Known as the Grand Canyon of Yemen, Wadi Do'an is home to the ancient Sidr trees. Here, bees collect nectar from the sacred trees, producing a honey that is thick, potent, and medicinal. The isolation of the valley ensures no pesticides or pollutants touch the hives.",
+                shop: "Shop Sidr Honey"
+            },
+            haraz: {
+                location: "Haraz Mountains, Sana'a",
+                title: "Clouds & Coffee",
+                desc: "At altitudes above 2,000 meters, the coffee cherries of Haraz ripen slowly in the mist. This stress on the fruit creates sugar-dense beans with complex notes of dried fruit, chocolate, and wine. It is the original Mocha, unchanged for 500 years.",
+                shop: "Shop Haraz Mocha"
+            }
+        },
+        blog: {
+            title: "Blog",
+            subtitle: "Articles and tips about traditional Yemeni products",
+            readMore: "Read More",
+            backToBlog: "Back to blog",
+            share: "Share",
+            allCategories: "All Categories"
+        },
+        newsletter: {
+            title: "Subscribe to Our Newsletter",
+            subtitle: "Get 10% off your first order + exclusive offers",
+            placeholder: "Your email",
+            button: "Subscribe",
+            success: "Successfully subscribed! Check your email.",
+            error: "An error occurred. Please try again."
+        },
+        admin: {
+            common: {
+                loading: "Loading...",
+                save: "Save",
+                cancel: "Cancel",
+                delete: "Delete",
+                edit: "Edit",
+                view: "View",
+                search: "Search...",
+                filter: "Filter",
+                export: "Export",
+                import: "Import",
+                actions: "Actions",
+                status: "Status",
+                active: "Active",
+                inactive: "Inactive",
+                yes: "Yes",
+                no: "No",
+                confirm: "Confirm",
+                back: "Back",
+                next: "Next",
+                previous: "Previous",
+                page: "Page",
+                of: "of",
+                showing: "Showing",
+                results: "results",
+                noResults: "No results found",
+                error: "Error",
+                success: "Success",
+                warning: "Warning",
+                info: "Info",
+                tryAgain: "Try Again"
+            },
+            dashboard: {
+                title: "Dashboard Overview",
+                lastUpdated: "Last updated",
+                dashboardError: "Dashboard Error",
+                kpi: {
+                    totalRevenue: "Total Revenue",
+                    totalOrders: "Total Orders",
+                    totalCustomers: "Total Customers",
+                    lowStockItems: "Low Stock Items"
+                },
+                charts: {
+                    salesOverview: "Sales Overview",
+                    recentOrders: "Recent Orders",
+                    topProducts: "Top Products"
+                }
+            },
+            orders: {
+                title: "Orders Management",
+                createOrder: "Create Order",
+                orderNumber: "Order #",
+                customer: "Customer",
+                date: "Date",
+                total: "Total",
+                status: "Status",
+                action: "Action",
+                viewDetails: "View Details",
+                searchPlaceholder: "Search orders, emails...",
+                statuses: {
+                    pending: "Pending",
+                    processing: "Processing",
+                    shipped: "Shipped",
+                    delivered: "Delivered",
+                    cancelled: "Cancelled"
+                },
+                details: {
+                    orderDetails: "Order Details",
+                    shippingAddress: "Shipping Address",
+                    billingAddress: "Billing Address",
+                    orderItems: "Order Items",
+                    orderSummary: "Order Summary",
+                    subtotal: "Subtotal",
+                    shipping: "Shipping",
+                    tax: "Tax",
+                    total: "Total",
+                    generateLabel: "Generate Shipping Label",
+                    trackingNumber: "Tracking Number",
+                    updateStatus: "Update Status",
+                    customerInfo: "Customer Information",
+                    paymentMethod: "Payment Method",
+                    shippingMethod: "Shipping Method"
+                }
+            },
+            products: {
+                title: "Products Inventory",
+                addNew: "Add New Product",
+                name: "Name",
+                price: "Price",
+                category: "Category",
+                stock: "Stock",
+                status: "Status",
+                image: "Image",
+                confirmDelete: "Are you sure you want to delete this product?",
+                searchPlaceholder: "Search products...",
+                form: {
+                    basicInfo: "Basic Information",
+                    pricing: "Pricing",
+                    inventory: "Inventory",
+                    images: "Images",
+                    seo: "SEO",
+                    productName: "Product Name",
+                    description: "Description",
+                    shortDescription: "Short Description",
+                    regularPrice: "Regular Price",
+                    salePrice: "Sale Price",
+                    sku: "SKU",
+                    stockQuantity: "Stock Quantity",
+                    manageStock: "Manage Stock",
+                    stockStatus: "Stock Status",
+                    inStock: "In Stock",
+                    outOfStock: "Out of Stock",
+                    backorder: "Backorder",
+                    weight: "Weight",
+                    dimensions: "Dimensions",
+                    length: "Length",
+                    width: "Width",
+                    height: "Height",
+                    metaTitle: "Meta Title",
+                    metaDescription: "Meta Description",
+                    slug: "URL Slug"
+                }
+            },
+            customers: {
+                title: "Customers Management",
+                name: "Name",
+                email: "Email",
+                phone: "Phone",
+                orders: "Orders",
+                totalSpent: "Total Spent",
+                registered: "Registered",
+                groups: "Customer Groups",
+                searchPlaceholder: "Search customers...",
+                details: {
+                    customerDetails: "Customer Details",
+                    personalInfo: "Personal Information",
+                    orderHistory: "Order History",
+                    addresses: "Addresses",
+                    notes: "Notes"
+                }
+            },
+            settings: {
+                title: "Settings",
+                general: "General Settings",
+                admins: "Administrators",
+                currencies: "Currencies",
+                languages: "Languages",
+                payments: "Payment Methods",
+                shipping: "Shipping Methods",
+                taxes: "Tax Settings",
+                translations: "Translations",
+                logs: "System Logs"
+            },
+            sidebar: {
+                groups: {
+                    overview: "Overview",
+                    catalog: "Catalog",
+                    operations: "Operations",
+                    designMarketing: "Design & Marketing",
+                    configuration: "Configuration"
+                },
+                items: {
+                    dashboard: "Dashboard",
+                    categories: "Categories",
+                    attributes: "Attributes",
+                    brands: "Brands",
+                    products: "Products",
+                    orders: "Orders",
+                    customers: "Customers",
+                    inventory: "Inventory",
+                    support: "Support",
+                    homepage: "Homepage",
+                    navigation: "Navigation",
+                    contentCms: "Content (CMS)",
+                    coupons: "Coupons",
+                    generalSettings: "General Settings",
+                    translations: "Translations",
+                    shipping: "Shipping",
+                    payments: "Payments",
+                    team: "Team",
+                    systemLogs: "System Logs",
+                    signOut: "Sign Out"
+                }
+            }
         }
     },
     fr: {
@@ -284,6 +558,42 @@ export const translations = {
                 title: "Goûtez à l'Héritage",
                 viewAll: "Voir le Catalogue Complet",
             },
+            bestSellers: {
+                badge: "Meilleures Ventes",
+                title: "Nos Produits Les Plus Demandés",
+                topSale: "Top Vente"
+            },
+            newArrivals: {
+                badge: "Nouveautés",
+                title: "Nos Derniers Produits",
+                newBadge: "Nouveau",
+                shopNow: "Acheter"
+            },
+            testimonials: {
+                badge: "Témoignages",
+                title: "Ce Que Disent Nos Clients",
+                customer1: {
+                    name: "Fatima Ahmed",
+                    location: "Paris, France",
+                    text: "Le meilleur miel yéménite que j'ai essayé ! Excellente qualité et livraison rapide. Je le recommande à tous."
+                },
+                customer2: {
+                    name: "Mohamed Ali",
+                    location: "Lyon, France",
+                    text: "Produits 100% authentiques. Goût excellent et prix très raisonnable. Je commanderai certainement à nouveau."
+                },
+                customer3: {
+                    name: "Sarah Hassan",
+                    location: "Marseille, France",
+                    text: "Service client excellent et produits traditionnels de haute qualité. J'adore l'encens yéménite authentique !"
+                }
+            },
+            ourStory: {
+                badge: "Notre Histoire",
+                title: "Du Cœur du Yémen à Votre Maison",
+                description: "Nous vous apportons les meilleurs produits traditionnels yéménites, du miel naturel à l'encens authentique. Chaque produit porte une histoire et un riche patrimoine de la terre du Yémen.",
+                button: "Lire Notre Histoire Complète"
+            }
         },
         // Shop
         shop: {
@@ -295,7 +605,10 @@ export const translations = {
             newest: "Plus récent",
             priceLow: "Prix croissant",
             priceHigh: "Prix décroissant",
-            nameAZ: "Nom A-Z",
+            nameAZ: "Nom : A-Z",
+            nameZA: "Nom : Z-A",
+            minPrice: "Min €",
+            maxPrice: "Max €",
             productsFound: "produits trouvés",
             loading: "Chargement...",
             noProducts: "Aucun produit trouvé",
@@ -483,6 +796,241 @@ export const translations = {
             send: "Envoyer le message",
             success: "Message envoyé avec succès! Nous vous répondrons bientôt.",
             error: "Échec de l'envoi du message. Veuillez réessayer ou nous envoyer un e-mail directement."
+        },
+        story: {
+            heritage: "Notre Héritage",
+            origin: "L'Origine",
+            legacyTitle: "Préserver un Héritage Ancestral",
+            philosophy: "Yemeni Market a été fondé avec un but unique : combler le fossé entre les vallées anciennes et intouchées du Yémen et l'amateur moderne. Notre miel de Sidr n'est pas seulement un produit ; c'est un élixir sacré, récolté selon des méthodes inchangées depuis des siècles. Notre café est le Mocha originel, né du sol même où le café a été cultivé pour la première fois.",
+            signature: "Signature",
+            uncompromising: "Qualité Sans Compromis",
+            processTitle: "De la Ruche à la Maison",
+            steps: [
+                { title: "01. Approvisionnement", desc: "Nous travaillons exclusivement avec des apiculteurs de génération en génération dans la vallée de Do'an." },
+                { title: "02. Tests", desc: "Chaque lot est testé en laboratoire pour sa pureté, garantissant 0% d'adaltération au sucre." },
+                { title: "03. Sélection", desc: "Seul le miel de qualité 'Royal' le plus fin finit dans nos pots noirs." }
+            ],
+            tasteHistory: "Goûtez à l'Histoire",
+            explore: "Explorer la Collection"
+        },
+        farms: {
+            terroir: "Terroir",
+            title: "Les Fermes",
+            subtitle: "La géographie du Yémen ne ressemble à aucune autre sur Terre. Des sommets de haute altitude et des vallées isolées créent des microclimats parfaits pour les saveurs les plus distinctes au monde.",
+            doan: {
+                location: "Wadi Do'an, Hadramout",
+                title: "La Vallée du Miel",
+                desc: "Connue comme le Grand Canyon du Yémen, Wadi Do'an abrite les anciens arbres Sidr. Ici, les abeilles récoltent le nectar des arbres sacrés, produisant un miel épais, puissant et médicinal. L'isolement de la vallée garantit qu'aucun pesticide ou polluant ne touche les ruches.",
+                shop: "Acheter le Miel de Sidr"
+            },
+            haraz: {
+                location: "Montagnes de Haraz, Sana'a",
+                title: "Nuages et Café",
+                desc: "À des altitudes supérieures à 2 000 mètres, les cerises de café de Haraz mûrissent lentement dans la brume. Ce stress sur le fruit crée des grains denses en sucre avec des notes complexes de fruits secs, de chocolat et de vin. C'est le Mocha originel, inchangé depuis 500 ans.",
+                shop: "Acheter le Mocha de Haraz"
+            }
+        },
+        blog: {
+            title: "Blog",
+            subtitle: "Articles et conseils sur les produits traditionnels yéménites",
+            readMore: "Lire Plus",
+            backToBlog: "Retour au blog",
+            share: "Partager",
+            allCategories: "Toutes les Catégories"
+        },
+        newsletter: {
+            title: "Abonnez-vous à Notre Newsletter",
+            subtitle: "Obtenez 10% de réduction sur votre première commande + offres exclusives",
+            placeholder: "Votre email",
+            button: "S'abonner",
+            success: "Inscription réussie ! Vérifiez votre email.",
+            error: "Une erreur s'est produite. Veuillez réessayer."
+        },
+        admin: {
+            common: {
+                loading: "Chargement...",
+                save: "Enregistrer",
+                cancel: "Annuler",
+                delete: "Supprimer",
+                edit: "Modifier",
+                view: "Voir",
+                search: "Rechercher...",
+                filter: "Filtrer",
+                export: "Exporter",
+                import: "Importer",
+                actions: "Actions",
+                status: "Statut",
+                active: "Actif",
+                inactive: "Inactif",
+                yes: "Oui",
+                no: "Non",
+                confirm: "Confirmer",
+                back: "Retour",
+                next: "Suivant",
+                previous: "Précédent",
+                page: "Page",
+                of: "de",
+                showing: "Affichage",
+                results: "résultats",
+                noResults: "Aucun résultat trouvé",
+                error: "Erreur",
+                success: "Succès",
+                warning: "Avertissement",
+                info: "Info",
+                tryAgain: "Réessayer"
+            },
+            dashboard: {
+                title: "Tableau de Bord",
+                lastUpdated: "Dernière mise à jour",
+                dashboardError: "Erreur du Tableau de Bord",
+                kpi: {
+                    totalRevenue: "Revenu Total",
+                    totalOrders: "Total Commandes",
+                    totalCustomers: "Total Clients",
+                    lowStockItems: "Articles en Stock Faible"
+                },
+                charts: {
+                    salesOverview: "Aperçu des Ventes",
+                    recentOrders: "Commandes Récentes",
+                    topProducts: "Meilleurs Produits"
+                }
+            },
+            orders: {
+                title: "Gestion des Commandes",
+                createOrder: "Créer une Commande",
+                orderNumber: "Commande #",
+                customer: "Client",
+                date: "Date",
+                total: "Total",
+                status: "Statut",
+                action: "Action",
+                viewDetails: "Voir Détails",
+                searchPlaceholder: "Rechercher commandes, emails...",
+                statuses: {
+                    pending: "En attente",
+                    processing: "En cours",
+                    shipped: "Expédié",
+                    delivered: "Livré",
+                    cancelled: "Annulé"
+                },
+                details: {
+                    orderDetails: "Détails de la Commande",
+                    shippingAddress: "Adresse de Livraison",
+                    billingAddress: "Adresse de Facturation",
+                    orderItems: "Articles de la Commande",
+                    orderSummary: "Résumé de la Commande",
+                    subtotal: "Sous-total",
+                    shipping: "Livraison",
+                    tax: "Taxe",
+                    total: "Total",
+                    generateLabel: "Générer Étiquette d'Expédition",
+                    trackingNumber: "Numéro de Suivi",
+                    updateStatus: "Mettre à Jour le Statut",
+                    customerInfo: "Informations Client",
+                    paymentMethod: "Moyen de Paiement",
+                    shippingMethod: "Méthode de Livraison"
+                }
+            },
+            products: {
+                title: "Inventaire des Produits",
+                addNew: "Ajouter Nouveau Produit",
+                name: "Nom",
+                price: "Prix",
+                category: "Catégorie",
+                stock: "Stock",
+                status: "Statut",
+                image: "Image",
+                confirmDelete: "Êtes-vous sûr de vouloir supprimer ce produit ?",
+                searchPlaceholder: "Rechercher produits...",
+                form: {
+                    basicInfo: "Informations de Base",
+                    pricing: "Tarification",
+                    inventory: "Inventaire",
+                    images: "Images",
+                    seo: "SEO",
+                    productName: "Nom du Produit",
+                    description: "Description",
+                    shortDescription: "Description Courte",
+                    regularPrice: "Prix Normal",
+                    salePrice: "Prix Promotionnel",
+                    sku: "SKU",
+                    stockQuantity: "Quantité en Stock",
+                    manageStock: "Gérer le Stock",
+                    stockStatus: "Statut du Stock",
+                    inStock: "En Stock",
+                    outOfStock: "Rupture de Stock",
+                    backorder: "Commande en Attente",
+                    weight: "Poids",
+                    dimensions: "Dimensions",
+                    length: "Longueur",
+                    width: "Largeur",
+                    height: "Hauteur",
+                    metaTitle: "Titre Meta",
+                    metaDescription: "Description Meta",
+                    slug: "URL Slug"
+                }
+            },
+            customers: {
+                title: "Gestion des Clients",
+                name: "Nom",
+                email: "Email",
+                phone: "Téléphone",
+                orders: "Commandes",
+                totalSpent: "Total Dépensé",
+                registered: "Inscrit",
+                groups: "Groupes de Clients",
+                searchPlaceholder: "Rechercher clients...",
+                details: {
+                    customerDetails: "Détails du Client",
+                    personalInfo: "Informations Personnelles",
+                    orderHistory: "Historique des Commandes",
+                    addresses: "Adresses",
+                    notes: "Notes"
+                }
+            },
+            settings: {
+                title: "Paramètres",
+                general: "Paramètres Généraux",
+                admins: "Administrateurs",
+                currencies: "Devises",
+                languages: "Langues",
+                payments: "Moyens de Paiement",
+                shipping: "Méthodes de Livraison",
+                taxes: "Paramètres de Taxe",
+                translations: "Traductions",
+                logs: "Journaux Système"
+            },
+            sidebar: {
+                groups: {
+                    overview: "Aperçu",
+                    catalog: "Catalogue",
+                    operations: "Opérations",
+                    designMarketing: "Design & Marketing",
+                    configuration: "Configuration"
+                },
+                items: {
+                    dashboard: "Tableau de Bord",
+                    categories: "Catégories",
+                    attributes: "Attributs",
+                    brands: "Marques",
+                    products: "Produits",
+                    orders: "Commandes",
+                    customers: "Clients",
+                    inventory: "Inventaire",
+                    support: "Support",
+                    homepage: "Page d'Accueil",
+                    navigation: "Navigation",
+                    contentCms: "Contenu (CMS)",
+                    coupons: "Coupons",
+                    generalSettings: "Paramètres Généraux",
+                    translations: "Traductions",
+                    shipping: "Livraison",
+                    payments: "Paiements",
+                    team: "Équipe",
+                    systemLogs: "Journaux Système",
+                    signOut: "Déconnexion"
+                }
+            }
         }
     },
     ar: {
@@ -527,6 +1075,42 @@ export const translations = {
                 title: "تذوق التراث",
                 viewAll: "عرض الكتالوج الكامل",
             },
+            bestSellers: {
+                badge: "الأكثر مبيعاً",
+                title: "منتجاتنا الأكثر طلباً",
+                topSale: "الأكثر مبيعاً"
+            },
+            newArrivals: {
+                badge: "وصل حديثاً",
+                title: "أحدث منتجاتنا",
+                newBadge: "جديد",
+                shopNow: "تسوق الآن"
+            },
+            testimonials: {
+                badge: "آراء العملاء",
+                title: "ماذا يقول عملاؤنا",
+                customer1: {
+                    name: "فاطمة أحمد",
+                    location: "باريس، فرنسا",
+                    text: "أفضل عسل يمني جربته! الجودة ممتازة والتوصيل سريع. أنصح الجميع بالتجربة."
+                },
+                customer2: {
+                    name: "محمد علي",
+                    location: "ليون، فرنسا",
+                    text: "منتجات أصلية 100%. الطعم رائع والسعر مناسب جداً. سأطلب مرة أخرى بالتأكيد."
+                },
+                customer3: {
+                    name: "سارة حسن",
+                    location: "مرسيليا، فرنسا",
+                    text: "خدمة عملاء رائعة ومنتجات تقليدية بجودة عالية. أحب البخور اليمني الأصيل!"
+                }
+            },
+            ourStory: {
+                badge: "قصتنا",
+                title: "من قلب اليمن إلى بيتك",
+                description: "نحن نجلب لكم أجود المنتجات اليمنية التقليدية، من العسل الطبيعي إلى البخور الأصيل. كل منتج يحمل قصة وتراث عريق من أرض اليمن السعيد.",
+                button: "اقرأ قصتنا الكاملة"
+            }
         },
         // Shop
         shop: {
@@ -538,8 +1122,11 @@ export const translations = {
             newest: "الأحدث",
             priceLow: "السعر: من الأقل للأعلى",
             priceHigh: "السعر: من الأعلى للأقل",
-            nameAZ: "الاسم أ-ي",
-            productsFound: "منتج",
+            nameAZ: "الاسم: أ-ي",
+            nameZA: "الاسم: ي-أ",
+            minPrice: "الأقل €",
+            maxPrice: "الأعلى €",
+            productsFound: "منتج تم العثور عليه",
             loading: "جاري التحميل...",
             noProducts: "لا توجد منتجات",
             addToCart: "أضف للسلة",
@@ -726,6 +1313,241 @@ export const translations = {
             send: "إرسال الرسالة",
             success: "تم إرسال الرسالة بنجاح! سنرد عليك قريباً.",
             error: "فشل إرسال الرسالة. يرجى المحاولة مرة أخرى أو مراسلتنا مباشرة."
+        },
+        story: {
+            heritage: "تراثنا",
+            origin: "الأصل",
+            legacyTitle: "الحفاظ على إرث قديم",
+            philosophy: "تأسس السوق اليمني لغرض واحد: سد الفجوة بين الوديان القديمة البكر في اليمن والذواقة المعاصرين. عسل السدر لدينا ليس مجرد منتج؛ إنه إكسير مقدس، يتم حصاده باستخدام طرق ظلت دون تغيير لقرون. قهوتنا هي الموكا الأصلية، ولدت من نفس التربة التي زرعت فيها القهوة لأول مرة.",
+            signature: "توقيع",
+            uncompromising: "جودة لا تضاهى",
+            processTitle: "من الخلية إلى المنزل",
+            steps: [
+                { title: "01. المصادر", desc: "نحن نعمل حصرياً مع مربي النحل المتوارثين في وادي دوعن." },
+                { title: "02. الاختبار", desc: "يتم اختبار كل دفعة مخبرياً للتأكد من نقائها، مما يضمن خلوها من السكر بنسبة 0%." },
+                { title: "03. الاختيار", desc: "فقط أرقى أنواع عسل الجودة 'الملكية' هي التي تصل إلى برطماناتنا السوداء." }
+            ],
+            tasteHistory: "تذوق التاريخ",
+            explore: "استكشف المجموعة"
+        },
+        farms: {
+            terroir: "تيروار (الأرض)",
+            title: "المزارع",
+            subtitle: "جغرافيا اليمن لا تشبه أي مكان آخر على وجه الأرض. القمم الشاهقة والوديان المنعزلة تخلق مناخات دقيقة مثالية لأكثر النكهات تميزاً في العالم.",
+            doan: {
+                location: "وادي دوعن، حضرموت",
+                title: "وادي العسل",
+                desc: "يُعرف وادي دوعن باسم جراند كانيون اليمن، وهو موطن لأشجار السدر القديمة. هنا، يجمع النحل الرحيق من الأشجار المقدسة، وينتج عسلاً سميكاً وقوياً وعلاجياً. تضمن عزلة الوادي عدم لمس المبيدات الحشرية أو الملوثات للخلايا.",
+                shop: "تسوق عسل السدر"
+            },
+            haraz: {
+                location: "جبال حراز، صنعاء",
+                title: "السحب والقهوة",
+                desc: "على ارتفاعات تزيد عن 2000 متر، تنضج كرز القهوة في حراز ببطء في الضباب. هذا الضغط على الفاكهة يخلق حبوباً كثيفة السكر مع نوتات معقدة من الفواكه المجففة والشوكولاتة والنبيذ. إنها الموكا الأصلية، لم تتغير منذ 500 عام.",
+                shop: "تسوق موكا حراز"
+            }
+        },
+        blog: {
+            title: "المدونة",
+            subtitle: "مقالات ونصائح حول المنتجات اليمنية التقليدية",
+            readMore: "اقرأ المزيد",
+            backToBlog: "العودة إلى المدونة",
+            share: "مشاركة",
+            allCategories: "جميع الفئات"
+        },
+        newsletter: {
+            title: "اشترك في نشرتنا البريدية",
+            subtitle: "احصل على خصم 10% على أول طلب + عروض حصرية",
+            placeholder: "بريدك الإلكتروني",
+            button: "اشترك الآن",
+            success: "تم الاشتراك بنجاح! تحقق من بريدك الإلكتروني.",
+            error: "حدث خطأ. يرجى المحاولة مرة أخرى."
+        },
+        admin: {
+            common: {
+                loading: "جاري التحميل...",
+                save: "حفظ",
+                cancel: "إلغاء",
+                delete: "حذف",
+                edit: "تعديل",
+                view: "عرض",
+                search: "بحث...",
+                filter: "تصفية",
+                export: "تصدير",
+                import: "استيراد",
+                actions: "الإجراءات",
+                status: "الحالة",
+                active: "نشط",
+                inactive: "غير نشط",
+                yes: "نعم",
+                no: "لا",
+                confirm: "تأكيد",
+                back: "رجوع",
+                next: "التالي",
+                previous: "السابق",
+                page: "صفحة",
+                of: "من",
+                showing: "عرض",
+                results: "نتائج",
+                noResults: "لا توجد نتائج",
+                error: "خطأ",
+                success: "نجاح",
+                warning: "تحذير",
+                info: "معلومات",
+                tryAgain: "حاول مرة أخرى"
+            },
+            dashboard: {
+                title: "لوحة التحكم",
+                lastUpdated: "آخر تحديث",
+                dashboardError: "خطأ في لوحة التحكم",
+                kpi: {
+                    totalRevenue: "إجمالي الإيرادات",
+                    totalOrders: "إجمالي الطلبات",
+                    totalCustomers: "إجمالي العملاء",
+                    lowStockItems: "منتجات بمخزون منخفض"
+                },
+                charts: {
+                    salesOverview: "نظرة عامة على المبيعات",
+                    recentOrders: "الطلبات الأخيرة",
+                    topProducts: "المنتجات الأكثر مبيعاً"
+                }
+            },
+            orders: {
+                title: "إدارة الطلبات",
+                createOrder: "إنشاء طلب",
+                orderNumber: "طلب #",
+                customer: "العميل",
+                date: "التاريخ",
+                total: "الإجمالي",
+                status: "الحالة",
+                action: "الإجراء",
+                viewDetails: "عرض التفاصيل",
+                searchPlaceholder: "بحث في الطلبات، الإيميلات...",
+                statuses: {
+                    pending: "قيد الانتظار",
+                    processing: "قيد المعالجة",
+                    shipped: "تم الشحن",
+                    delivered: "تم التسليم",
+                    cancelled: "ملغي"
+                },
+                details: {
+                    orderDetails: "تفاصيل الطلب",
+                    shippingAddress: "عنوان الشحن",
+                    billingAddress: "عنوان الفواتير",
+                    orderItems: "منتجات الطلب",
+                    orderSummary: "ملخص الطلب",
+                    subtotal: "المجموع الفرعي",
+                    shipping: "الشحن",
+                    tax: "الضريبة",
+                    total: "الإجمالي",
+                    generateLabel: "إنشاء ملصق الشحن",
+                    trackingNumber: "رقم التتبع",
+                    updateStatus: "تحديث الحالة",
+                    customerInfo: "معلومات العميل",
+                    paymentMethod: "طريقة الدفع",
+                    shippingMethod: "طريقة الشحن"
+                }
+            },
+            products: {
+                title: "إدارة المنتجات",
+                addNew: "إضافة منتج جديد",
+                name: "الاسم",
+                price: "السعر",
+                category: "الفئة",
+                stock: "المخزون",
+                status: "الحالة",
+                image: "الصورة",
+                confirmDelete: "هل أنت متأكد من حذف هذا المنتج؟",
+                searchPlaceholder: "بحث في المنتجات...",
+                form: {
+                    basicInfo: "المعلومات الأساسية",
+                    pricing: "التسعير",
+                    inventory: "المخزون",
+                    images: "الصور",
+                    seo: "تحسين محركات البحث",
+                    productName: "اسم المنتج",
+                    description: "الوصف",
+                    shortDescription: "وصف مختصر",
+                    regularPrice: "السعر العادي",
+                    salePrice: "سعر التخفيض",
+                    sku: "رمز المنتج",
+                    stockQuantity: "كمية المخزون",
+                    manageStock: "إدارة المخزون",
+                    stockStatus: "حالة المخزون",
+                    inStock: "متوفر",
+                    outOfStock: "غير متوفر",
+                    backorder: "طلب مسبق",
+                    weight: "الوزن",
+                    dimensions: "الأبعاد",
+                    length: "الطول",
+                    width: "العرض",
+                    height: "الارتفاع",
+                    metaTitle: "عنوان Meta",
+                    metaDescription: "وصف Meta",
+                    slug: "الرابط"
+                }
+            },
+            customers: {
+                title: "إدارة العملاء",
+                name: "الاسم",
+                email: "البريد الإلكتروني",
+                phone: "الهاتف",
+                orders: "الطلبات",
+                totalSpent: "إجمالي المصروفات",
+                registered: "تاريخ التسجيل",
+                groups: "مجموعات العملاء",
+                searchPlaceholder: "بحث في العملاء...",
+                details: {
+                    customerDetails: "تفاصيل العميل",
+                    personalInfo: "المعلومات الشخصية",
+                    orderHistory: "سجل الطلبات",
+                    addresses: "العناوين",
+                    notes: "ملاحظات"
+                }
+            },
+            settings: {
+                title: "الإعدادات",
+                general: "الإعدادات العامة",
+                admins: "المسؤولون",
+                currencies: "العملات",
+                languages: "اللغات",
+                payments: "طرق الدفع",
+                shipping: "طرق الشحن",
+                taxes: "إعدادات الضرائب",
+                translations: "الترجمات",
+                logs: "سجلات النظام"
+            },
+            sidebar: {
+                groups: {
+                    overview: "نظرة عامة",
+                    catalog: "الكتالوج",
+                    operations: "العمليات",
+                    designMarketing: "التصميم والتسويق",
+                    configuration: "الإعدادات"
+                },
+                items: {
+                    dashboard: "لوحة التحكم",
+                    categories: "الفئات",
+                    attributes: "الخصائص",
+                    brands: "العلامات التجارية",
+                    products: "المنتجات",
+                    orders: "الطلبات",
+                    customers: "العملاء",
+                    inventory: "المخزون",
+                    support: "الدعم",
+                    homepage: "الصفحة الرئيسية",
+                    navigation: "القوائم",
+                    contentCms: "المحتوى (CMS)",
+                    coupons: "الكوبونات",
+                    generalSettings: "الإعدادات العامة",
+                    translations: "الترجمات",
+                    shipping: "الشحن",
+                    payments: "المدفوعات",
+                    team: "الفريق",
+                    systemLogs: "سجلات النظام",
+                    signOut: "تسجيل الخروج"
+                }
+            }
         }
     },
 };

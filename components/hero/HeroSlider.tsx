@@ -6,25 +6,60 @@ import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import clsx from "clsx";
 import { ArrowRight } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 interface Product {
     id: number;
     name: string;
     description: string;
     slug: string;
-    image_url: string;
+    images?: string; // JSON string
+    image_url: string; // Keep for legacy if needed, or remove if fully deprecated
 }
 
 export default function HeroSlider() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [slides, setSlides] = useState<Product[]>([]);
     const { t } = useLanguage();
+    const { settings } = useSettings();
+
+    // Helper to extract main image from JSON
+    const getMainImage = (product: Product): string => {
+        try {
+            if (!product.images) return product.image_url || '/images/honey-jar.jpg';
+
+            // Check if it's already a clean URL (legacy/csv import support)
+            if (product.images.startsWith('http') || product.images.startsWith('/')) {
+                return product.images;
+            }
+
+            const parsed = JSON.parse(product.images);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed[0];
+            }
+        } catch (e) {
+            // Fallback for non-JSON strings
+            if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
+                return product.images;
+            }
+        }
+        return product.image_url || '/images/honey-jar.jpg';
+    };
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                // Fetch 4 featured/newest products for the slider
-                const res = await fetch('/api/products?limit=4');
+                let url = '/api/products?limit=4';
+
+                if (settings.homepage_hero_products) {
+                    const ids = JSON.parse(settings.homepage_hero_products);
+                    if (Array.isArray(ids) && ids.length > 0) {
+                        url = `/api/products?ids=${ids.join(',')}`;
+                    }
+                }
+
+                // Fetch featured/newest products for the slider
+                const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.products && data.products.length > 0) {
@@ -37,7 +72,7 @@ export default function HeroSlider() {
         };
 
         fetchProducts();
-    }, []);
+    }, [settings.homepage_hero_products]);
 
     // Auto-advance
     useEffect(() => {
@@ -62,7 +97,7 @@ export default function HeroSlider() {
                     )}
                 >
                     <Image
-                        src={slide.image_url || '/images/honey-jar.jpg'}
+                        src={getMainImage(slide)}
                         alt={slide.name}
                         fill
                         className="object-cover"
@@ -81,13 +116,13 @@ export default function HeroSlider() {
 
                     {/* Slide Specific Text */}
                     <div key={currentSlide} className="animate-fade-in space-y-4">
-                        <span className="text-[var(--coffee-brown)]/60 text-sm font-medium uppercase tracking-[0.4em] block pl-1">
+                        <span className="text-[var(--coffee-brown)]/60 text-sm font-medium uppercase tracking-[0.4em] block ps-1">
                             {t("home.hero.tagline")}
                         </span>
                         <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif text-[var(--coffee-brown)] leading-none tracking-tight line-clamp-2">
                             {slides[currentSlide].name}
                         </h1>
-                        <p className="text-xl md:text-2xl text-[var(--coffee-brown)] font-light max-w-xl leading-relaxed pl-1 pt-2 line-clamp-2">
+                        <p className="text-xl md:text-2xl text-[var(--coffee-brown)] font-light max-w-xl leading-relaxed ps-1 pt-2 line-clamp-2">
                             {slides[currentSlide].description}
                         </p>
                     </div>
@@ -96,7 +131,7 @@ export default function HeroSlider() {
                         <Link href={`/shop/${slides[currentSlide].slug}`}>
                             <button className="group flex items-center gap-4 px-12 py-5 bg-[var(--coffee-brown)] text-[var(--cream-white)] font-bold uppercase tracking-widest hover:bg-[var(--coffee-brown)]/90 transition-all shadow-xl">
                                 {t("home.hero.cta")}
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
                             </button>
                         </Link>
                     </div>
@@ -104,7 +139,7 @@ export default function HeroSlider() {
             </div>
 
             {/* Pagination Lines */}
-            <div className="absolute bottom-12 right-6 md:right-20 z-30 flex items-center gap-4">
+            <div className="absolute bottom-12 end-6 md:end-20 z-30 flex items-center gap-4">
                 <span className="text-xs font-bold text-[var(--coffee-brown)]">0{currentSlide + 1}</span>
                 <div className="flex gap-2">
                     {slides.map((_, index) => (

@@ -12,7 +12,7 @@ interface Product {
     name: string;
     price: number;
     description: string;
-    image_url: string;
+    images?: string;
     category_name: string;
     stock_quantity: number;
 }
@@ -23,12 +23,26 @@ export default function ProductDetails({ product }: { product: Product }) {
     const { addToCart } = useCart();
     const { t } = useLanguage();
 
-    // Mock images for gallery
-    const images = [
-        product.image_url || '/images/honey-jar.jpg',
-        product.image_url || '/images/honey-jar.jpg',
-        product.image_url || '/images/honey-jar.jpg',
-    ];
+    // Parse images from JSON string or use legacy/fallback
+    const getImages = () => {
+        if (!product.images) return ['/images/honey-jar.jpg'];
+        try {
+            // If raw URL (legacy or csv import)
+            if (product.images.startsWith('http') || product.images.startsWith('/')) {
+                return [product.images];
+            }
+            const parsed = JSON.parse(product.images);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed;
+            }
+        } catch (e) {
+            // Failed to parse, maybe it's just a raw string?
+            if (product.images.length > 0) return [product.images];
+        }
+        return ['/images/honey-jar.jpg'];
+    };
+
+    const images = getImages();
 
     return (
         <main className="min-h-screen bg-gray-50 pt-24">
@@ -203,7 +217,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                                 id: product.id,
                                 title: product.name,
                                 price: product.price,
-                                image: product.image_url || '/images/honey-jar.jpg'
+                                image: images[0]
                             })}
                             className="w-full bg-black text-white py-5 rounded-lg uppercase tracking-wider font-bold text-lg hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3"
                         >

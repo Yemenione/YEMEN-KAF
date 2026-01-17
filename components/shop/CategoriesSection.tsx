@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 interface Category {
     id: number;
@@ -15,6 +16,7 @@ interface Category {
 export default function CategoriesSection() {
     const [categories, setCategories] = useState<Category[]>([]);
     const { t } = useLanguage();
+    const { settings } = useSettings();
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -22,8 +24,16 @@ export default function CategoriesSection() {
                 const res = await fetch('/api/categories');
                 if (res.ok) {
                     const data = await res.json();
-                    // Show all categories
-                    setCategories(data.categories || []);
+                    let cats = data.categories || [];
+
+                    if (settings.homepage_featured_categories) {
+                        const ids = JSON.parse(settings.homepage_featured_categories);
+                        if (Array.isArray(ids) && ids.length > 0) {
+                            cats = cats.filter((c: any) => ids.includes(c.id));
+                        }
+                    }
+
+                    setCategories(cats);
                 }
             } catch (error) {
                 console.error("Failed to fetch categories:", error);
@@ -31,7 +41,7 @@ export default function CategoriesSection() {
         };
 
         fetchCategories();
-    }, []);
+    }, [settings.homepage_featured_categories]);
 
     if (categories.length === 0) return null;
 

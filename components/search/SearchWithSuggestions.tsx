@@ -89,28 +89,47 @@ export default function SearchWithSuggestions() {
                         </div>
                     ) : suggestions.length > 0 ? (
                         <ul>
-                            {suggestions.map((item) => (
-                                <li key={item.id} className="border-b border-gray-50 last:border-0">
-                                    <Link
-                                        href={`/shop/${item.slug}`}
-                                        className="flex gap-4 p-3 hover:bg-gray-50 transition-colors"
-                                        onClick={() => setIsOpen(false)}
-                                    >
-                                        <div className="relative w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
-                                            <Image
-                                                src={item.image_url || '/images/honey-jar.jpg'}
-                                                alt={item.name}
-                                                fill
-                                                className="object-cover"
-                                            />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="font-medium text-sm text-[var(--coffee-brown)] truncate">{item.name}</h4>
-                                            <p className="text-xs text-[var(--honey-gold)] font-bold">{Number(item.price).toFixed(2)}€</p>
-                                        </div>
-                                    </Link>
-                                </li>
-                            ))}
+                            {suggestions.map((item) => {
+                                // Helper logic for image
+                                let displayImage = '/images/honey-jar.jpg';
+                                try {
+                                    if (item.images) {
+                                        if (item.images.startsWith('http') || item.images.startsWith('/')) {
+                                            displayImage = item.images;
+                                        } else {
+                                            const parsed = JSON.parse(item.images);
+                                            if (Array.isArray(parsed) && parsed.length > 0) displayImage = parsed[0];
+                                        }
+                                    } else if (item.image_url) {
+                                        displayImage = item.image_url;
+                                    }
+                                } catch (e) {
+                                    if (item.images) displayImage = item.images;
+                                }
+
+                                return (
+                                    <li key={item.id} className="border-b border-gray-50 last:border-0">
+                                        <Link
+                                            href={`/shop/${item.slug}`}
+                                            className="flex gap-4 p-3 hover:bg-gray-50 transition-colors"
+                                            onClick={() => setIsOpen(false)}
+                                        >
+                                            <div className="relative w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                                                <Image
+                                                    src={displayImage}
+                                                    alt={item.name}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-medium text-sm text-[var(--coffee-brown)] truncate">{item.name}</h4>
+                                                <p className="text-xs text-[var(--honey-gold)] font-bold">{Number(item.price).toFixed(2)}€</p>
+                                            </div>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
                             <li className="bg-gray-50 p-2 text-center">
                                 <Link
                                     href={`/shop?search=${encodeURIComponent(query)}`}

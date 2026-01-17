@@ -3,16 +3,30 @@
 import { useLanguage } from "@/context/LanguageContext";
 import { Search } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function TrackOrderPage() {
     const { t } = useLanguage();
     const [orderId, setOrderId] = useState("");
-    const [status, setStatus] = useState<null | string>(null);
+    const [status, setStatus] = useState<null | any>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleTrack = (e: React.FormEvent) => {
+    const handleTrack = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Mock Logic
-        setStatus("Processing at Warehouse");
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`/api/orders/${orderId}`);
+            if (!res.ok) throw new Error("Order not found");
+            const data = await res.json();
+            setStatus(data);
+        } catch (err: any) {
+            setError(err.message);
+            setStatus(null);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -39,15 +53,42 @@ export default function TrackOrderPage() {
                         <Search className="absolute right-0 top-4 text-[var(--coffee-brown)]/20" size={20} />
                     </div>
 
-                    <button type="submit" className="w-full py-4 bg-[var(--coffee-brown)] text-white font-bold uppercase tracking-widest text-xs hover:bg-[var(--coffee-brown)]/90 transition-colors">
-                        Track Shipment
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-4 bg-[var(--coffee-brown)] text-white font-bold uppercase tracking-widest text-xs hover:bg-[var(--coffee-brown)]/90 transition-colors disabled:opacity-50"
+                    >
+                        {loading ? "Searching..." : "Track Shipment"}
                     </button>
                 </form>
 
+                {error && <p className="text-red-500 text-sm animate-fade-in">{error}</p>}
+
                 {status && (
-                    <div className="p-6 bg-gray-50 border border-black/5 animate-fade-in">
-                        <h3 className="text-xs uppercase tracking-widest text-[var(--coffee-brown)]/60 mb-2">Current Status</h3>
-                        <p className="text-xl font-serif text-[var(--coffee-brown)]">{status}</p>
+                    <div className="p-8 bg-gray-50 border border-black/5 animate-fade-in space-y-6 text-left">
+                        <div>
+                            <h3 className="text-xs uppercase tracking-widest text-[var(--coffee-brown)]/60 mb-2">Current Status</h3>
+                            <p className="text-2xl font-serif text-[var(--coffee-brown)] capitalize">{status.status}</p>
+                        </div>
+
+                        {status.trackingNumber ? (
+                            <div>
+                                <h3 className="text-xs uppercase tracking-widest text-[var(--coffee-brown)]/60 mb-2">Tracking Number</h3>
+                                <p className="text-lg font-mono text-[var(--honey-gold)] font-bold">{status.trackingNumber}</p>
+                                <p className="text-xs text-gray-400 mt-1">Provider: {status.shippingMethod || "Standard Carrier"}</p>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-gray-500 italic">No tracking number assigned yet. Your order is being prepared.</p>
+                        )}
+
+                        <div className="pt-4 border-t border-black/5">
+                            <Link
+                                href={`/order-confirmation/${status.orderNumber}`}
+                                className="text-xs font-bold uppercase tracking-widest text-[var(--honey-gold)] hover:underline"
+                            >
+                                View Full Order Details
+                            </Link>
+                        </div>
                     </div>
                 )}
             </div>

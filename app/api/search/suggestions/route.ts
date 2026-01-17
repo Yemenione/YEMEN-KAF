@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
     try {
         const sql = `
-            SELECT id, name, slug, price, image_url 
+            SELECT id, name, slug, price, images 
             FROM products 
             WHERE name LIKE ? OR description LIKE ? 
             LIMIT 5

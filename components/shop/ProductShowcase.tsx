@@ -9,7 +9,7 @@ interface Product {
     name: string;
     description: string;
     price: string | number;
-    image_url: string;
+    images?: string; // JSON string
     slug: string;
     category_name: string;
 }
@@ -18,6 +18,29 @@ export default function ProductShowcase() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const { t } = useLanguage();
+
+    // Helper to extract main image from JSON
+    const getMainImage = (product: Product): string => {
+        try {
+            if (!product.images) return '/images/honey-jar.jpg';
+
+            // Check if it's already a clean URL (legacy/csv import support)
+            if (product.images.startsWith('http') || product.images.startsWith('/')) {
+                return product.images;
+            }
+
+            const parsed = JSON.parse(product.images);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed[0];
+            }
+        } catch (e) {
+            // Fallback for non-JSON strings
+            if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
+                return product.images;
+            }
+        }
+        return '/images/honey-jar.jpg';
+    };
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -63,7 +86,7 @@ export default function ProductShowcase() {
                                     id={product.id}
                                     title={product.name}
                                     price={`€${Number(product.price).toFixed(2)}`}
-                                    image={product.image_url || '/images/honey-jar.jpg'}
+                                    image={getMainImage(product)}
                                     category={product.category_name || 'Collection'}
                                 />
                             </Link>

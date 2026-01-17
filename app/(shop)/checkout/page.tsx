@@ -4,7 +4,7 @@ import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CreditCard, ChevronRight, ShoppingBag, MapPin, Truck, Banknote } from "lucide-react";
+import { ArrowLeft, CreditCard, ChevronRight, ShoppingBag, MapPin, Truck, Banknote, Coins } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
@@ -14,11 +14,12 @@ import StripePaymentForm from "@/components/checkout/StripePaymentForm";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
-// Initialize Stripe outside to avoid re-initializing on render
-const stripePromise = getStripe();
+import { useSettings } from "@/context/SettingsContext";
 
 export default function CheckoutPage() {
+    const { settings } = useSettings();
+    const stripePromise = getStripe(settings.stripe_publishable_key);
+
     const { items, total } = useCart();
     const { t } = useLanguage();
     const router = useRouter();
@@ -413,35 +414,58 @@ export default function CheckoutPage() {
 
                         {/* Payment Method Selector */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
-                                <input
-                                    type="radio"
-                                    name="payment"
-                                    className="peer sr-only"
-                                    checked={selectedPaymentMethod === "stripe"}
-                                    onChange={() => setSelectedPaymentMethod("stripe")}
-                                />
-                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
-                                <div className="relative flex items-center gap-3 mb-2">
-                                    <CreditCard className="w-6 h-6 text-gray-400 peer-checked:text-black" />
-                                    <h3 className="font-serif text-lg text-black">Credit Card</h3>
-                                </div>
-                            </label>
+                            {(() => {
+                                let methods = [];
+                                try {
+                                    if (settings.payment_methods) {
+                                        methods = JSON.parse(settings.payment_methods).filter((m: any) => m.isEnabled);
+                                    }
+                                } catch (e) { }
 
-                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
-                                <input
-                                    type="radio"
-                                    name="payment"
-                                    className="peer sr-only"
-                                    checked={selectedPaymentMethod === "cod"}
-                                    onChange={() => setSelectedPaymentMethod("cod")}
-                                />
-                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
-                                <div className="relative flex items-center gap-3 mb-2">
-                                    <Banknote className="w-6 h-6 text-gray-400 peer-checked:text-black" />
-                                    <h3 className="font-serif text-lg text-black">Cash on Delivery</h3>
-                                </div>
-                            </label>
+                                // Fallback if no methods are enabled/configured
+                                if (methods.length === 0) {
+                                    return (
+                                        <>
+                                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
+                                                <input type="radio" name="payment" className="peer sr-only" checked={selectedPaymentMethod === "stripe"} onChange={() => setSelectedPaymentMethod("stripe")} />
+                                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl"></div>
+                                                <div className="relative flex items-center gap-3 mb-2">
+                                                    <CreditCard className="w-6 h-6 text-gray-400 peer-checked:text-black" />
+                                                    <h3 className="font-serif text-lg text-black">Credit Card</h3>
+                                                </div>
+                                            </label>
+                                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
+                                                <input type="radio" name="payment" className="peer sr-only" checked={selectedPaymentMethod === "cod"} onChange={() => setSelectedPaymentMethod("cod")} />
+                                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl"></div>
+                                                <div className="relative flex items-center gap-3 mb-2">
+                                                    <Banknote className="w-6 h-6 text-gray-400 peer-checked:text-black" />
+                                                    <h3 className="font-serif text-lg text-black">Cash on Delivery</h3>
+                                                </div>
+                                            </label>
+                                        </>
+                                    );
+                                }
+
+                                return methods.map((method: any) => (
+                                    <label key={method.id} className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
+                                        <input
+                                            type="radio"
+                                            name="payment"
+                                            className="peer sr-only"
+                                            checked={selectedPaymentMethod === method.provider}
+                                            onChange={() => setSelectedPaymentMethod(method.provider)}
+                                        />
+                                        <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
+                                        <div className="relative flex items-center gap-3 mb-2">
+                                            {method.provider === 'stripe' && <CreditCard className="w-6 h-6 text-gray-400 peer-checked:text-black" />}
+                                            {method.provider === 'paypal' && <Coins className="w-6 h-6 text-gray-400 peer-checked:text-black" />}
+                                            {method.provider === 'manual' && <Banknote className="w-6 h-6 text-gray-400 peer-checked:text-black" />}
+                                            <h3 className="font-serif text-lg text-black">{method.name}</h3>
+                                        </div>
+                                        <p className="text-xs text-gray-500 pl-9">{method.description}</p>
+                                    </label>
+                                ));
+                            })()}
                         </div>
 
                         {/* Payment Content */}

@@ -1,6 +1,10 @@
 import { Resend } from 'resend';
+import { getSecretConfig } from './config';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+async function getResendClient() {
+    const apiKey = await getSecretConfig('resend_api_key');
+    return new Resend(apiKey);
+}
 
 interface OrderEmailData {
     orderNumber: string;
@@ -110,6 +114,7 @@ export async function sendOrderConfirmationEmail(data: OrderEmailData) {
 </html>
         `;
 
+        const resend = await getResendClient();
         const { data: emailData, error } = await resend.emails.send({
             from: 'Yemeni Market <orders@yemeni-market.com>',
             to: [data.customerEmail],

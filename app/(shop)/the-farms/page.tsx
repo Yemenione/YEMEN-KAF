@@ -1,18 +1,21 @@
 "use client";
 
+import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 
 export default function TheFarmsPage() {
+    const { t } = useLanguage();
+
     return (
         <main className="min-h-screen bg-white">
             {/* Header */}
             <div className="pt-32 pb-20 px-6 text-center max-w-4xl mx-auto space-y-6">
-                <span className="text-[var(--honey-gold)] text-xs font-bold uppercase tracking-[0.4em]">Terroir</span>
-                <h1 className="text-6xl md:text-8xl font-serif text-[var(--coffee-brown)]">The Farms</h1>
+                <span className="text-[var(--honey-gold)] text-xs font-bold uppercase tracking-[0.4em]">{t('farms.terroir')}</span>
+                <h1 className="text-6xl md:text-8xl font-serif text-[var(--coffee-brown)]">{t('farms.title')}</h1>
                 <p className="text-[var(--coffee-brown)]/60 text-lg leading-relaxed">
-                    Yemen's geography is unlike anywhere else on Earth. High-altitude peaks and secluded valleys create microclimates perfect for the world's most distinct flavors.
+                    {t('farms.subtitle')}
                 </p>
             </div>
 
@@ -25,14 +28,14 @@ export default function TheFarmsPage() {
                     <div className="space-y-6 max-w-md">
                         <div className="flex items-center gap-2 text-[var(--honey-gold)]">
                             <MapPin size={16} />
-                            <span className="text-xs font-bold uppercase tracking-widest">Wadi Do'an, Hadramout</span>
+                            <span className="text-xs font-bold uppercase tracking-widest">{t('farms.doan.location')}</span>
                         </div>
-                        <h2 className="text-4xl font-serif text-[var(--coffee-brown)]">The Valley of Honey</h2>
+                        <h2 className="text-4xl font-serif text-[var(--coffee-brown)]">{t('farms.doan.title')}</h2>
                         <p className="text-[var(--coffee-brown)]/70 leading-relaxed">
-                            Known as the Grand Canyon of Yemen, Wadi Do'an is home to the ancient Sidr trees. Here, bees collect nectar from the sacred trees, producing a honey that is thick, potent, and medicinal. The isolation of the valley ensures no pesticides or pollutants touch the hives.
+                            {t('farms.doan.desc')}
                         </p>
                         <Link href="/shop?category=honey" className="inline-block border-b border-[var(--coffee-brown)] pb-1 text-xs uppercase tracking-widest font-bold pt-4">
-                            Shop Sidr Honey
+                            {t('farms.doan.shop')}
                         </Link>
                     </div>
                 </div>
@@ -44,14 +47,14 @@ export default function TheFarmsPage() {
                     <div className="space-y-6 max-w-md">
                         <div className="flex items-center gap-2 text-[var(--honey-gold)]">
                             <MapPin size={16} />
-                            <span className="text-xs font-bold uppercase tracking-widest">Haraz Mountains, Sana'a</span>
+                            <span className="text-xs font-bold uppercase tracking-widest">{t('farms.haraz.location')}</span>
                         </div>
-                        <h2 className="text-4xl font-serif">Clouds & Coffee</h2>
+                        <h2 className="text-4xl font-serif">{t('farms.haraz.title')}</h2>
                         <p className="text-white/70 leading-relaxed">
-                            At altitudes above 2,000 meters, the coffee cherries of Haraz ripen slowly in the mist. This stress on the fruit creates sugar-dense beans with complex notes of dried fruit, chocolate, and wine. It is the original Mocha, unchanged for 500 years.
+                            {t('farms.haraz.desc')}
                         </p>
                         <Link href="/shop?category=coffee" className="inline-block border-b border-white pb-1 text-xs uppercase tracking-widest font-bold pt-4 hover:text-[var(--honey-gold)] hover:border-[var(--honey-gold)] transition-colors">
-                            Shop Haraz Mocha
+                            {t('farms.haraz.shop')}
                         </Link>
                     </div>
                 </div>

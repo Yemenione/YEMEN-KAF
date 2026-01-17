@@ -32,7 +32,7 @@ export async function POST(req: Request) {
         }
 
         await pool.execute(
-            'INSERT IGNORE INTO wishlists (user_id, product_id) VALUES (?, ?)',
+            'INSERT IGNORE INTO wishlists (customer_id, product_id) VALUES (?, ?)',
             [userId, productId]
         );
 
@@ -58,7 +58,7 @@ export async function DELETE(req: Request) {
         }
 
         await pool.execute(
-            'DELETE FROM wishlists WHERE user_id = ? AND product_id = ?',
+            'DELETE FROM wishlists WHERE customer_id = ? AND product_id = ?',
             [userId, productId]
         );
 
@@ -80,7 +80,7 @@ export async function GET(req: Request) {
         const [rows] = await pool.execute<RowDataPacket[]>(
             `SELECT p.* FROM products p 
              JOIN wishlists w ON p.id = w.product_id 
-             WHERE w.user_id = ? 
+             WHERE w.customer_id = ? 
              ORDER BY w.created_at DESC`,
             [userId]
         );

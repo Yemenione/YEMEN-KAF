@@ -3,13 +3,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyD93noyqMOfh5-jgcktTF9IcKM16j4qcDE",
-    authDomain: "yemeni-marke.firebaseapp.com",
-    projectId: "yemeni-marke",
-    storageBucket: "yemeni-marke.firebasestorage.app",
-    messagingSenderId: "671802064897",
-    appId: "1:671802064897:web:3ba4c371a910d707a20000",
-    measurementId: "G-24NKEQ1HDN"
+    apiKey: "AIzaSyAgXg5cAvaq6n3eO2Phtk1ypMf_vlzG-HU",
+    authDomain: "yemeni-market-8d4ad.firebaseapp.com",
+    projectId: "yemeni-market-8d4ad",
+    storageBucket: "yemeni-market-8d4ad.firebasestorage.app",
+    messagingSenderId: "142190324080",
+    appId: "1:142190324080:web:4ddb7c6c29133e4a6bc7b5",
+    measurementId: "G-4CNLJQM3VM"
 };
 
 // Initialize Firebase (Singleton pattern to avoid re-initialization errors)

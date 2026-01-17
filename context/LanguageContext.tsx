@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { translations, Locale } from "@/lib/translations";
 
 interface LanguageContextType {
     locale: Locale;
+    language: Locale; // Alias for locale
     setLocale: (locale: Locale) => void;
     t: (key: string) => string;
 }
@@ -13,6 +14,28 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
     const [locale, setLocaleState] = useState<Locale>("fr");
+    const [dynamicTranslations, setDynamicTranslations] = useState<any>(translations);
+
+    useEffect(() => {
+        const fetchDynamicTranslations = async () => {
+            try {
+                const res = await fetch('/api/translations');
+                if (res.ok) {
+                    const data = await res.json();
+                    setDynamicTranslations(data);
+                }
+            } catch (error) {
+                console.error('Failed to load dynamic translations:', error);
+            }
+        };
+
+        fetchDynamicTranslations();
+
+        const stored = localStorage.getItem("locale") as Locale;
+        if (stored) {
+            setLocale(stored);
+        }
+    }, []);
 
     const setLocale = (newLocale: Locale) => {
         setLocaleState(newLocale);
@@ -25,7 +48,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     const t = (key: string): string => {
         const keys = key.split(".");
-        let value: any = translations[locale];
+        let value: any = dynamicTranslations[locale];
 
         for (const k of keys) {
             value = value?.[k];
@@ -35,7 +58,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <LanguageContext.Provider value={{ locale, setLocale, t }}>
+        <LanguageContext.Provider value={{ locale, language: locale, setLocale, t }}>
             {children}
         </LanguageContext.Provider>
     );

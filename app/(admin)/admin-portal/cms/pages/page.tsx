@@ -1,0 +1,141 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Plus, Edit2, Trash2, FileText, Globe, EyeOff, Calendar } from "lucide-react";
+
+interface Page {
+    id: number;
+    title: string;
+    slug: string;
+    isActive: boolean;
+    updatedAt: string;
+}
+
+export default function CMSPagesList() {
+    const [pages, setPages] = useState<Page[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchPages();
+    }, []);
+
+    const fetchPages = async () => {
+        try {
+            const res = await fetch('/api/admin/cms/pages');
+            const data = await res.json();
+            setPages(data.length ? data : []);
+        } catch (error) {
+            console.error('Failed to fetch pages', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this page?')) return;
+        try {
+            const res = await fetch(`/api/admin/cms/pages/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                setPages(pages.filter(p => p.id !== id));
+            } else {
+                alert('Failed to delete page');
+            }
+        } catch (error) {
+            alert('Error deleting page');
+        }
+    };
+
+    return (
+        <div className="max-w-6xl mx-auto space-y-6">
+            <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm">
+                <div>
+                    <h2 className="text-2xl font-bold flex items-center gap-2">
+                        <FileText className="w-6 h-6 text-gray-500" />
+                        CMS Pages
+                    </h2>
+                    <p className="text-gray-500 text-sm mt-1">Manage static content (About Us, Legal, Landing Pages).</p>
+                </div>
+                <Link
+                    href="/admin-portal/cms/pages/new"
+                    className="flex items-center gap-2 bg-[var(--coffee-brown)] text-white px-4 py-2 rounded-lg hover:bg-[#5a4635] transition-colors"
+                >
+                    <Plus className="w-5 h-5" />
+                    Create Page
+                </Link>
+            </div>
+
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                    <thead className="bg-gray-50 dark:bg-zinc-800 text-gray-500 uppercase text-xs font-semibold">
+                        <tr>
+                            <th className="px-6 py-4">Page Title</th>
+                            <th className="px-6 py-4">URL Slug</th>
+                            <th className="px-6 py-4">Last Modified</th>
+                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+                        {loading ? (
+                            <tr><td colSpan={5} className="p-8 text-center text-gray-400">Loading pages...</td></tr>
+                        ) : pages.length === 0 ? (
+                            <tr><td colSpan={5} className="p-10 text-center text-gray-500">No pages found. Create your first one!</td></tr>
+                        ) : (
+                            pages.map(page => (
+                                <tr key={page.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-lg text-gray-500">
+                                                <FileText className="w-4 h-4" />
+                                            </div>
+                                            <span className="font-medium text-gray-900 dark:text-gray-100">{page.title}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 px-2 py-1 rounded text-xs font-mono">
+                                            /{page.slug}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="w-3 h-3 text-gray-400" />
+                                            {new Date(page.updatedAt).toLocaleDateString()}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {page.isActive ? (
+                                            <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+                                                <Globe className="w-3 h-3" /> Published
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs font-medium">
+                                                <EyeOff className="w-3 h-3" /> Draft
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Link
+                                                href={`/admin-portal/cms/pages/${page.id}`}
+                                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(page.id)}
+                                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}

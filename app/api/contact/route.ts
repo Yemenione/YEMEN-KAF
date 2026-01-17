@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { getSecretConfig } from '@/lib/config';
 
 export async function POST(req: Request) {
     try {
+        const secretKey = await getSecretConfig('resend_api_key');
+        const resend = new Resend(secretKey);
+
         const { name, email, phone, subject, message } = await req.json();
 
         // Validate required fields

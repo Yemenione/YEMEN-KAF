@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { verifyAdmin } from '@/lib/admin-auth';
 
 export async function GET(req: Request) {
     try {
@@ -77,8 +78,105 @@ export async function GET(req: Request) {
 
         return NextResponse.json({ products });
 
+
     } catch (error) {
         console.error('Products fetch error:', error);
         return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
+    }
+}
+
+export async function POST(req: Request) {
+    try {
+        const { authorized, response } = await verifyAdmin();
+        if (!authorized) return response;
+
+        const body = await req.json();
+        const {
+            name,
+            slug,
+            sku,
+            description,
+            price,
+            stock_quantity,
+            category_id,
+            image_url,
+            is_active,
+            is_featured,
+            cost_price,
+            weight,
+            width,
+            height,
+            depth,
+            meta_title,
+            meta_description,
+            related_ids,
+            hs_code,
+            origin_country
+        } = body;
+
+        // Basic validation
+        if (!name || !price || !sku) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // Generate slug if not provided, and handle non-latin characters or empty names
+        let finalSlug = slug || name
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '') // Keep alphanumeric and spaces/dashes
+            .trim()
+            .replace(/[-\s]+/g, '-'); // Replace spaces/dashes with single dash
+
+        if (!finalSlug || finalSlug === '-') {
+            finalSlug = `product-${Date.now()}`;
+        }
+
+        // Generate SKU if not provided
+        const finalSku = sku || `YEM-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+
+        const [result]: any = await pool.execute(
+            `INSERT INTO products (
+                name, slug, sku, description, price, stock_quantity, 
+                category_id, brand_id, images, is_active, is_featured,
+                cost_price, weight, width, height, depth, meta_title, meta_description,
+                related_ids, hs_code, origin_country,
+                created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [
+                name,
+                finalSlug,
+                finalSku,
+                description || null,
+                price,
+                stock_quantity || 0,
+                category_id || null,
+                body.brand_id || null, // Capture brand_id from body
+                image_url ? JSON.stringify([image_url]) : null,
+                is_active !== undefined ? is_active : 1,
+                is_featured !== undefined ? is_featured : 0,
+                cost_price || null,
+                weight || null,
+                width || null,
+                height || null,
+                depth || null,
+                meta_title || null,
+                meta_description || null,
+                related_ids || "[]",
+                hs_code || null,
+                origin_country || "Yemen"
+            ]
+        );
+
+        return NextResponse.json({
+            success: true,
+            productId: result.insertId,
+            message: 'Product created successfully'
+        });
+
+    } catch (error: any) {
+        console.error('Product creation error:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return NextResponse.json({ error: 'SKU or Slug already exists' }, { status: 409 });
+        }
+        return NextResponse.json({ error: 'Failed to create product', details: error.message }, { status: 500 });
     }
 }
