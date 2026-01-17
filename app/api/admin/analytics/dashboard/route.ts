@@ -4,11 +4,13 @@ import { prisma } from "@/lib/prisma";
 export async function GET(req: NextRequest) {
     try {
         // 1. KPIs
-        const totalRevenueResult = await prisma.order.aggregate({
-            _sum: { totalAmount: true },
-            where: { status: { not: 'Cancelled' } }
+        // 1. KPIs
+        // WORKAROUND: Avoid prisma.order.aggregate due to "timer has gone away" panic on hosting
+        const allOrders = await prisma.order.findMany({
+            where: { status: { not: 'Cancelled' } },
+            select: { totalAmount: true }
         });
-        const totalRevenue = totalRevenueResult._sum.totalAmount || 0;
+        const totalRevenue = allOrders.reduce((sum: number, order: { totalAmount: any }) => sum + Number(order.totalAmount), 0);
 
         const totalOrders = await prisma.order.count();
         const totalCustomers = await prisma.customer.count();

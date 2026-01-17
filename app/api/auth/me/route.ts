@@ -30,7 +30,8 @@ export async function GET() {
 
         return NextResponse.json({ user });
 
-    } catch (error) {
-        return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    } catch (error: any) {
+        console.error("Auth error:", error);
+        return NextResponse.json({ error: 'Authentication failed', details: error.message }, { status: 500 });
     }
 }
