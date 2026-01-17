@@ -3,14 +3,14 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = parseInt(params.id);
+        const { id: idStr } = await params;
+        const id = parseInt(idStr);
         const customer = await prisma.customer.findUnique({
             where: { id },
             include: {
-                customerGroup: true,
                 addresses: true,
                 orders: {
                     take: 5,
@@ -31,20 +31,20 @@ export async function GET(
 
 export async function PUT(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const id = parseInt(params.id);
+        const { id: idStr } = await params;
+        const id = parseInt(idStr);
         const body = await req.json();
-        const { firstName, lastName, phone, customerGroupId } = body;
+        const { firstName, lastName, phone } = body;
 
         const customer = await prisma.customer.update({
             where: { id },
             data: {
                 firstName,
                 lastName,
-                phone,
-                customerGroupId: customerGroupId ? parseInt(customerGroupId) : null
+                phone
             }
         });
 
