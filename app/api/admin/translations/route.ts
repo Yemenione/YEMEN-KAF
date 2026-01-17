@@ -30,13 +30,13 @@ export async function GET(req: NextRequest) {
         const staticFr = flatten(staticTranslations.fr);
         const staticAr = flatten(staticTranslations.ar);
 
-        const allKeys = new Set([...Object.keys(staticEn), ...dbTranslations.map(t => t.key)]);
+        const allKeys = new Set([...Object.keys(staticEn), ...dbTranslations.map((t: any) => t.key)]);
 
         allKeys.forEach(key => {
             result[key] = {
-                en: dbTranslations.find(t => t.key === key && t.language === 'en')?.value || staticEn[key] || '',
-                fr: dbTranslations.find(t => t.key === key && t.language === 'fr')?.value || staticFr[key] || '',
-                ar: dbTranslations.find(t => t.key === key && t.language === 'ar')?.value || staticAr[key] || '',
+                en: dbTranslations.find((t: any) => t.key === key && t.language === 'en')?.value || staticEn[key] || '',
+                fr: dbTranslations.find((t: any) => t.key === key && t.language === 'fr')?.value || staticFr[key] || '',
+                ar: dbTranslations.find((t: any) => t.key === key && t.language === 'ar')?.value || staticAr[key] || '',
             };
         });
 
