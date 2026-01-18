@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Save, ArrowLeft, Upload, Loader2, Image as ImageIcon, Globe, EyeOff, X } from "lucide-react";
+import { Save, ArrowLeft, Upload, Loader2, Image as ImageIcon, Globe, EyeOff, X, Settings } from "lucide-react";
 import Link from "next/link";
 import { createBlogPost, updateBlogPost } from "@/app/actions/blog";
 import { getFirebaseConfig } from "@/app/actions/settings";
@@ -161,8 +161,8 @@ export default function BlogForm({ post }: { post?: any }) {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, status: "DRAFT" })}
                                     className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all border ${formData.status === "DRAFT"
-                                            ? "bg-gray-100 border-gray-200 text-gray-900"
-                                            : "bg-transparent border-gray-100 text-gray-400"
+                                        ? "bg-gray-100 border-gray-200 text-gray-900"
+                                        : "bg-transparent border-gray-100 text-gray-400"
                                         }`}
                                 >
                                     <EyeOff size={14} /> Brouillon
@@ -171,8 +171,8 @@ export default function BlogForm({ post }: { post?: any }) {
                                     type="button"
                                     onClick={() => setFormData({ ...formData, status: "PUBLISHED" })}
                                     className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all border ${formData.status === "PUBLISHED"
-                                            ? "bg-green-50 border-green-200 text-green-700"
-                                            : "bg-transparent border-gray-100 text-gray-400"
+                                        ? "bg-green-50 border-green-200 text-green-700"
+                                        : "bg-transparent border-gray-100 text-gray-400"
                                         }`}
                                 >
                                     <Globe size={14} /> Publié
