@@ -45,12 +45,12 @@ export default function Testimonials({ reviews = [] }: { reviews?: any[] }) {
         }
     ];
 
-    const displayReviews = reviews.length > 0 ? reviews.map(r => ({
+    const displayReviews: Testimonial[] = reviews.length > 0 ? reviews.map(r => ({
         name: `${r.patient?.firstName || ''} ${r.patient?.lastName || ''}`.trim() || 'Client',
         location: r.isVerified ? 'Achat vérifié' : 'Client Vérifié',
         text: r.comment || '',
         rating: r.rating,
-        avatar: r.patient?.avatar
+        avatar: r.patient?.avatar || undefined
     })) : fallbackTestimonials;
 
     return (
