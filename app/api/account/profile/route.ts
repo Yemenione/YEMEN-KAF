@@ -16,9 +16,8 @@ export async function GET() {
         const { payload } = await jwtVerify(token, JWT_SECRET);
         const userId = payload.userId as number;
 
-        // Fetch user profile
         const [rows]: any = await pool.execute(
-            'SELECT id, email, first_name as firstName, last_name as lastName, phone FROM customers WHERE id = ? LIMIT 1',
+            'SELECT id, email, first_name as firstName, last_name as lastName, phone, avatar FROM customers WHERE id = ? LIMIT 1',
             [userId]
         );
 
@@ -46,7 +45,7 @@ export async function PUT(req: Request) {
         const { payload } = await jwtVerify(token, JWT_SECRET);
         const userId = payload.userId as number;
 
-        const { firstName, lastName, phone } = await req.json();
+        const { firstName, lastName, phone, avatar } = await req.json();
 
         if (!firstName || !lastName) {
             return NextResponse.json({ error: 'First name and last name are required' }, { status: 400 });
@@ -54,13 +53,13 @@ export async function PUT(req: Request) {
 
         // Update user profile
         await pool.execute(
-            'UPDATE customers SET first_name = ?, last_name = ?, phone = ? WHERE id = ?',
-            [firstName, lastName, phone || null, userId]
+            'UPDATE customers SET first_name = ?, last_name = ?, phone = ?, avatar = ? WHERE id = ?',
+            [firstName, lastName, phone || null, avatar || null, userId]
         );
 
         return NextResponse.json({
             success: true,
-            user: { id: userId, firstName, lastName, phone }
+            user: { id: userId, firstName, lastName, phone, avatar }
         });
 
     } catch (error) {

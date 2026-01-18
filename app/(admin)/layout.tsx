@@ -13,6 +13,9 @@ const inter = Inter({
     display: "swap",
 });
 
+// ... imports
+import { UIProvider } from "@/context/UIContext";
+
 export default function AdminRootLayout({
     children,
 }: Readonly<{
@@ -24,10 +27,12 @@ export default function AdminRootLayout({
                 <LanguageProvider>
                     <AuthProvider>
                         <SettingsProvider>
-                            <AdminSidebar />
-                            <main className="flex-1 p-8 h-screen overflow-y-auto">
-                                {children}
-                            </main>
+                            <UIProvider>
+                                <AdminSidebar />
+                                <main className="flex-1 p-8 h-screen overflow-y-auto w-full">
+                                    {children}
+                                </main>
+                            </UIProvider>
                         </SettingsProvider>
                     </AuthProvider>
                 </LanguageProvider>

@@ -54,20 +54,25 @@ export default function CartDrawer() {
                         </div>
                     ) : (
                         items.map((item) => (
-                            <div key={item.id} className="flex gap-6 group">
+                            <div key={`${item.id}-${item.variantId || 'base'}`} className="flex gap-6 group">
                                 <Link href={`/shop/${item.id}`} onClick={closeCart} className="relative w-24 h-32 flex-shrink-0 bg-gray-50 overflow-hidden rounded-sm transition-transform group-hover:scale-105 duration-500">
                                     <Image src={item.image} alt={item.title} fill className="object-cover" />
                                 </Link>
                                 <div className="flex-1 min-w-0 py-1">
                                     <div className="flex justify-between items-start mb-1">
-                                        <h3 className="font-serif text-lg text-black truncate group-hover:text-gray-600 transition-colors">
-                                            <Link href={`/shop/${item.id}`} onClick={closeCart}>{item.title}</Link>
-                                        </h3>
-                                        <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-black transition-colors">
+                                        <div className="flex flex-col">
+                                            <h3 className="font-serif text-lg text-black truncate group-hover:text-gray-600 transition-colors leading-tight">
+                                                <Link href={`/shop/${item.id}`} onClick={closeCart}>{item.title}</Link>
+                                            </h3>
+                                            {item.variantName && (
+                                                <span className="text-xs text-gray-500 font-medium mt-1">{item.variantName}</span>
+                                            )}
+                                        </div>
+                                        <button onClick={() => removeFromCart(item.id, item.variantId)} className="text-gray-400 hover:text-black transition-colors">
                                             <X size={16} />
                                         </button>
                                     </div>
-                                    <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">{t('product.quantity')}: {item.quantity}</p>
+                                    <p className="text-xs text-gray-400 uppercase tracking-widest mb-4 mt-2">{t('product.quantity')}: {item.quantity}</p>
                                     <p className="font-serif text-black">{formatPrice(item.price)}</p>
                                 </div>
                             </div>

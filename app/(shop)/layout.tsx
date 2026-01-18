@@ -11,6 +11,7 @@ import CartDrawer from "@/components/cart/CartDrawer";
 import WishlistDrawer from "@/components/wishlist/WishlistDrawer";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { SettingsProvider } from "@/context/SettingsContext";
 import "../globals.css";
 
@@ -29,7 +30,7 @@ export default function ShopLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)]`}>
+      <body className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)] pb-16 lg:pb-0 safe-area-pb`}>
         <SettingsProvider>
           <LanguageProvider>
             <ToastProvider>
@@ -41,6 +42,7 @@ export default function ShopLayout({
                     <Footer />
                     <CartDrawer />
                     <WishlistDrawer />
+                    <MobileBottomNav />
                     <CookieBanner />
                   </WishlistProvider>
                 </CartProvider>

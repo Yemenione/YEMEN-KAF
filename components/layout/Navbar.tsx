@@ -159,9 +159,10 @@ export default function Navbar() {
                                 {/* Search Input */}
                                 <SearchWithSuggestions />
 
+                                {/* User Link - Hidden on Mobile (in Bottom Nav) */}
                                 <Link
                                     href={user ? "/account" : "/login"}
-                                    className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 flex items-center justify-center"
+                                    className="hidden md:flex hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 items-center justify-center"
                                     title={user ? `Account (${user.firstName})` : "Login"}
                                 >
                                     {user ? (
@@ -173,9 +174,10 @@ export default function Navbar() {
                                     )}
                                 </Link>
 
+                                {/* Wishlist - Hidden on Mobile (in Bottom Nav) */}
                                 <button
                                     onClick={openWishlist}
-                                    className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 relative"
+                                    className="hidden md:block hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 relative"
                                     title="My Wishlist"
                                 >
                                     <Heart className="w-5 h-5" />
@@ -186,7 +188,11 @@ export default function Navbar() {
                                     )}
                                 </button>
 
-                                <button onClick={openCart} className="relative hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300">
+                                {/* Cart - Hidden on Mobile (in Bottom Nav) */}
+                                <button
+                                    onClick={openCart}
+                                    className="hidden md:block relative hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300"
+                                >
                                     <ShoppingBag className="w-5 h-5" />
                                     {itemCount > 0 && (
                                         <span className="absolute -top-2 -end-2 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--coffee-brown)] text-[10px] text-white font-bold">
@@ -196,9 +202,9 @@ export default function Navbar() {
                                 </button>
                             </div>
 
-                            {/* Mobile Menu Toggle */}
+                            {/* Mobile Menu Toggle - Visible only on mobile */}
                             <button
-                                className="md:hidden"
+                                className="md:hidden ms-2"
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             >
                                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

@@ -8,6 +8,8 @@ import { ShoppingBag, Star, Filter, Grid, List, Heart, Eye } from "lucide-react"
 import { useCart } from "@/context/CartContext";
 import WishlistButton from "@/components/shop/WishlistButton";
 import ProductSkeleton from "@/components/shop/ProductSkeleton";
+import CategoryRail from "@/components/shop/CategoryRail";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface Product {
     id: number;
@@ -19,6 +21,7 @@ interface Product {
     category_slug: string;
     description?: string;
     stock_quantity?: number;
+    compare_at_price?: number;
 }
 
 interface Category {
@@ -27,9 +30,16 @@ interface Category {
     slug: string;
 }
 
-export default function ShopPage() {
+// ... (imports remain)
+import { Suspense } from "react";
+
+// ... (interfaces remain)
+
+function ShopContent() {
     const { t } = useLanguage();
     const { addToCart } = useCart();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState("all");
@@ -62,15 +72,12 @@ export default function ShopPage() {
         return '/images/honey-jar.jpg';
     };
 
-    // Read URL query params on mount
+    // Read URL query params on mount or change
     useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const q = params.get('search');
-        const cat = params.get('category');
+        const cat = searchParams.get('category');
         if (cat) setSelectedCategory(cat);
-        // If there's a search term, we could perhaps set it back to a search state,
-        // but for now relying on fetchProducts sending the current URL params or derived state
-    }, []);
+        else setSelectedCategory('all');
+    }, [searchParams]);
 
     useEffect(() => {
         fetchCategories();
@@ -99,21 +106,21 @@ export default function ShopPage() {
     const fetchProducts = async () => {
         setIsLoading(true);
         try {
-            const params = new URLSearchParams(window.location.search);
-            // If explicit category state is different from 'all', use state, else check URL
-            // Actually, simpler to just use the state:
+            // Construct params from state + existing search params (search query)
+            const currentParams = new URLSearchParams(searchParams.toString());
+
             if (selectedCategory !== 'all') {
-                params.set('category', selectedCategory);
+                currentParams.set('category', selectedCategory);
             } else {
-                params.delete('category');
+                currentParams.delete('category');
             }
 
             // Add sort and filter params
-            params.set('sort', sortBy);
-            if (minPrice) params.set('minPrice', minPrice);
-            if (maxPrice) params.set('maxPrice', maxPrice);
+            currentParams.set('sort', sortBy);
+            if (minPrice) currentParams.set('minPrice', minPrice);
+            if (maxPrice) currentParams.set('maxPrice', maxPrice);
 
-            const res = await fetch(`/api/products?${params.toString()}`);
+            const res = await fetch(`/api/products?${currentParams.toString()}`);
             if (res.ok) {
                 const data = await res.json();
                 setProducts(data.products);
@@ -134,13 +141,14 @@ export default function ShopPage() {
     ];
 
     return (
-        <main className="min-h-screen bg-gray-50 pt-24">
+        <main className="min-h-screen bg-gray-50 pt-32 lg:pt-40 pb-20 lg:pb-0"> {/* Increased padding for header separation */}
+            <CategoryRail />
             <div className="max-w-7xl mx-auto px-6 py-8">
                 {/* Filters Bar - Shein Style */}
-                <div className="bg-white rounded-lg shadow-sm p-4 mb-6 sticky top-0 z-10">
+                <div className="bg-white rounded-lg shadow-sm p-4 mb-6 sticky top-0 z-10"> {/* Removed hidden lg:block to allow Sort/Price on mobile */}
                     <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                        {/* Categories */}
-                        <div className="flex-1 w-full md:w-auto">
+                        {/* Categories - Hidden as we now use CategoryRail */}
+                        <div className="hidden">
                             <div className="flex items-center gap-2 mb-2">
                                 <Filter size={16} className="text-gray-400" />
                                 <span className="text-xs font-semibold text-gray-500 uppercase">{t('shop.categories')}</span>
@@ -161,7 +169,6 @@ export default function ShopPage() {
                             </div>
                         </div>
 
-                        {/* Sort & View */}
                         {/* Sort & View */}
                         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                             {/* Price Inputs */}
@@ -232,96 +239,139 @@ export default function ShopPage() {
                         ))}
                     </div>
                 ) : displayProducts.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-lg">
-                        <p className="text-gray-500 text-lg">{t('shop.noProducts')}</p>
+                    <div className="text-center py-20 bg-white rounded-lg flex flex-col items-center justify-center">
+                        <ShoppingBag size={48} className="text-gray-300 mb-4" />
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">{t('shop.noProducts') || 'No products found'}</h3>
+                        <p className="text-gray-500 max-w-md mx-auto mb-6">We couldn't find any products matching your filters. Try adjusting your search or category.</p>
+                        <button
+                            onClick={() => {
+                                setSelectedCategory('all');
+                                setMinPrice("");
+                                setMaxPrice("");
+                                setSortBy('newest');
+                            }}
+                            className="px-6 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+                        >
+                            Clear All Filters
+                        </button>
                     </div>
                 ) : (
                     <div className={viewMode === 'grid'
                         ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
                         : 'flex flex-col gap-4'
                     }>
-                        {displayProducts.map((product) => (
-                            <div
-                                key={product.id}
-                                className={`group bg-white rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 ${viewMode === 'list' ? 'flex flex-row' : 'flex flex-col'
-                                    }`}
-                            >
-                                <Link href={`/shop/${product.slug}`} className={viewMode === 'list' ? 'w-48 flex-shrink-0' : 'w-full'}>
-                                    <div className={`relative overflow-hidden bg-gray-100 ${viewMode === 'list' ? 'h-full' : 'aspect-square'}`}>
-                                        <Image
-                                            src={getMainImage(product)}
-                                            alt={product.name}
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                        />
+                        {displayProducts.map((product) => {
+                            // Calculate Discount
+                            const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+                            const discountPercentage = hasDiscount
+                                ? Math.round(((product.compare_at_price! - product.price) / product.compare_at_price!) * 100)
+                                : null;
 
-
-                                        {/* Wishlist & Quick View */}
-                                        <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <WishlistButton
-                                                productId={product.id}
-                                                className="p-2 bg-white rounded-full shadow-lg hover:bg-red-50"
+                            return (
+                                <div
+                                    key={product.id}
+                                    className={`group bg-white rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 ${viewMode === 'list' ? 'flex flex-row' : 'flex flex-col'
+                                        }`}
+                                >
+                                    <Link href={`/shop/${product.slug}`} className={viewMode === 'list' ? 'w-48 flex-shrink-0' : 'w-full'}>
+                                        <div className={`relative overflow-hidden bg-gray-100 ${viewMode === 'list' ? 'h-full' : 'aspect-square'}`}>
+                                            <Image
+                                                src={getMainImage(product)}
+                                                alt={product.name}
+                                                fill
+                                                className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                             />
-                                            <button className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50">
-                                                <Eye size={16} className="text-gray-700" />
-                                            </button>
-                                        </div>
 
-                                        {/* Stock Badge */}
-                                        {product.stock_quantity !== undefined && product.stock_quantity < 5 && product.stock_quantity > 0 && (
-                                            <div className="absolute top-2 left-2">
-                                                <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded">
-                                                    {t('shop.stockLimited')}
-                                                </span>
+
+                                            {/* Wishlist & Quick View */}
+                                            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                <WishlistButton
+                                                    productId={product.id}
+                                                    className="p-2 bg-white rounded-full shadow-lg hover:bg-red-50"
+                                                />
+                                                <button className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50">
+                                                    <Eye size={16} className="text-gray-700" />
+                                                </button>
                                             </div>
-                                        )}
-                                    </div>
-                                </Link>
 
-                                <div className={`p-4 flex flex-col ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                                    <Link href={`/shop/${product.slug}`}>
-                                        <span className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">
-                                            {product.category_name}
-                                        </span>
-                                        <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-gray-600 transition-colors">
-                                            {product.name}
-                                        </h3>
+                                            {/* Badges Container */}
+                                            <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
+                                                {/* Stock Badge */}
+                                                {product.stock_quantity !== undefined && product.stock_quantity < 5 && product.stock_quantity > 0 && (
+                                                    <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded shadow-md">
+                                                        {t('shop.stockLimited')}
+                                                    </span>
+                                                )}
+                                                {/* Sale Badge */}
+                                                {hasDiscount && (
+                                                    <span className="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded shadow-md">
+                                                        -{discountPercentage}%
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
                                     </Link>
 
-                                    {/* Rating */}
-                                    <div className="flex items-center gap-1 mb-2">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={12} className="fill-yellow-400 text-yellow-400" />
-                                        ))}
-                                        <span className="text-xs text-gray-500 ml-1">(4.8)</span>
-                                    </div>
+                                    <div className={`p-4 flex flex-col ${viewMode === 'list' ? 'flex-1' : ''}`}>
+                                        <Link href={`/shop/${product.slug}`}>
+                                            <span className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">
+                                                {product.category_name}
+                                            </span>
+                                            <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-gray-600 transition-colors">
+                                                {product.name}
+                                            </h3>
+                                        </Link>
 
-                                    <div className="flex items-center justify-between mt-auto">
-                                        <div>
-                                            <p className="text-xl font-bold text-black">
-                                                {Number(product.price).toFixed(2)}€
-                                            </p>
+                                        {/* Rating */}
+                                        <div className="flex items-center gap-1 mb-2">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} size={12} className="fill-yellow-400 text-yellow-400" />
+                                            ))}
+                                            <span className="text-xs text-gray-500 ml-1">(4.8)</span>
                                         </div>
 
-                                        <button
-                                            onClick={() => addToCart({
-                                                id: product.id,
-                                                title: product.name,
-                                                price: product.price,
-                                                image: getMainImage(product)
-                                            })}
-                                            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
-                                        >
-                                            <ShoppingBag size={18} />
-                                        </button>
+                                        <div className="flex items-center justify-between mt-auto">
+                                            <div className="flex flex-col">
+                                                <div className="flex items-baseline gap-2">
+                                                    <p className="text-xl font-bold text-black">
+                                                        {Number(product.price).toFixed(2)}€
+                                                    </p>
+                                                    {hasDiscount && (
+                                                        <span className="text-sm text-gray-400 line-through">
+                                                            {Number(product.compare_at_price).toFixed(2)}€
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={() => addToCart({
+                                                    id: product.id,
+                                                    title: product.name,
+                                                    price: product.price,
+                                                    image: getMainImage(product)
+                                                })}
+                                                className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
+                                            >
+                                                <ShoppingBag size={18} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
         </main>
+    );
+}
+
+export default function ShopPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen pt-40 flex justify-center"><p>Loading...</p></div>}>
+            <ShopContent />
+        </Suspense>
     );
 }

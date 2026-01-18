@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/mysql';
 import { verifyAdmin } from '@/lib/admin-auth';
+import { prisma } from '@/lib/prisma';
+import pool from '@/lib/mysql';
 
 // GET: Handle both Admin (Fetch by ID) and Storefront (Fetch by Slug)
 export async function GET(
@@ -13,43 +14,61 @@ export async function GET(
         // Check if slug is numeric (ID for Admin) or a string slug
         const isNumericId = /^\d+$/.test(slug);
 
-        let query = '';
-        let queryParams = [];
+        const product = await prisma.product.findFirst({
+            where: isNumericId
+                ? { id: parseInt(slug) }
+                : { slug, isActive: true },
+            include: {
+                category: {
+                    select: { name: true, slug: true }
+                },
+                variants: {
+                    where: { isActive: true },
+                    include: {
+                        attributeValues: {
+                            include: {
+                                attributeValue: {
+                                    include: { attribute: true }
+                                }
+                            }
+                        }
+                    },
+                    orderBy: { price: 'asc' }
+                }
+            }
+        });
 
-        if (isNumericId) {
-            // Admin: Fetch by ID
-            query = `
-                SELECT 
-                    p.*,
-                    c.name as category_name,
-                    c.slug as category_slug
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.id
-                WHERE p.id = ?
-            `;
-            queryParams = [slug];
-        } else {
-            // Storefront: Fetch by Slug (Active only)
-            query = `
-                SELECT 
-                    p.*,
-                    c.name as category_name,
-                    c.slug as category_slug
-                FROM products p
-                LEFT JOIN categories c ON p.category_id = c.id
-                WHERE p.slug = ? AND p.is_active = 1
-                LIMIT 1
-            `;
-            queryParams = [slug];
-        }
-
-        const [rows]: any = await pool.execute(query, queryParams);
-
-        if (rows.length === 0) {
+        if (!product) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
 
-        return NextResponse.json({ product: rows[0] });
+        // Transform for easier frontend consumption?
+        // Let's return raw structure, frontend can parse.
+        // Actually, let's map it slightly closer to what typical storefronts expect if needed.
+        // But for consistency with existing simple object, keeping it raw is safer.
+        // The existing frontend expects "product.category_name". Prisma returns "product.category.name".
+        // I need to shim this.
+
+        const responseProduct = {
+            ...product,
+            price: product.price.toNumber(), // Decimal to Number
+            stock_quantity: product.stockQuantity, // camelCase vs snake_case mapping
+            category_name: product.category?.name,
+            category_slug: product.category?.slug,
+            image_url: product.images ? JSON.parse(product.images)[0] : null, // Helper
+            // Flatten variants for easier usage
+            variants: product.variants.map((v: any) => ({
+                ...v,
+                price: v.price.toNumber(),
+                attributes: v.attributeValues.map((av: any) => ({
+                    name: av.attributeValue.attribute.publicName || av.attributeValue.attribute.name,
+                    value: av.attributeValue.name,
+                    type: av.attributeValue.attribute.type
+                }))
+            }))
+        };
+
+        return NextResponse.json({ product: responseProduct });
 
     } catch (error) {
         console.error('Product fetch error:', error);
@@ -82,7 +101,14 @@ export async function PUT(
             'is_active', 'is_featured',
             'cost_price', 'weight', 'width', 'height', 'depth',
             'meta_title', 'meta_description', 'related_ids',
-            'hs_code', 'origin_country'
+            'name', 'slug', 'sku', 'description', 'price',
+            'compare_at_price',
+            'stock_quantity', 'category_id', 'brand_id', 'images',
+            'is_active', 'is_featured',
+            'cost_price', 'weight', 'width', 'height', 'depth',
+            'meta_title', 'meta_description', 'related_ids',
+            'hs_code', 'origin_country',
+            'tax_rule_id'
         ];
 
         for (const [key, value] of Object.entries(body)) {

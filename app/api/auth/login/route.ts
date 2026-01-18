@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
+
 export async function POST(req: Request) {
     try {
         const { email, password } = await req.json();
@@ -14,27 +15,46 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });
         }
 
-        // Find user using direct SQL
-        const [rows]: any = await pool.execute(
+        // 1. Try finding in CUSTOMERS first
+        let [rows]: any = await pool.execute(
             'SELECT * FROM customers WHERE email = ? LIMIT 1',
             [email]
         );
 
-        const user = rows[0];
+        let user = rows[0];
+        let isAdmin = false;
+
+        // 2. If not found in customers, try ADMINS table
+        if (!user) {
+            const [adminRows]: any = await pool.execute(
+                'SELECT * FROM admins WHERE email = ? LIMIT 1',
+                [email]
+            );
+            user = adminRows[0];
+            if (user) {
+                isAdmin = true;
+            }
+        }
 
         if (!user) {
             return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
         }
 
         // Verify password
+        // Note: Admin table might use snake_case for password_hash too? Schema says @map("password_hash")
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!isValidPassword) {
             return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
         }
 
-        // Create token
-        const token = await new SignJWT({ userId: user.id, email: user.email })
+        // Create token with role
+        const token = await new SignJWT({
+            userId: user.id,
+            email: user.email,
+            isAdmin: isAdmin,
+            role: isAdmin ? (user.role || 'ADMIN') : 'CUSTOMER'
+        })
             .setProtectedHeader({ alg: 'HS256' })
             .setIssuedAt()
             .setExpirationTime('24h')
@@ -53,8 +73,10 @@ export async function POST(req: Request) {
             user: {
                 id: user.id,
                 email: user.email,
-                firstName: user.first_name,
-                lastName: user.last_name
+                firstName: isAdmin ? (user.name?.split(' ')[0] || 'Admin') : user.first_name,
+                lastName: isAdmin ? (user.name?.split(' ').slice(1).join(' ') || 'User') : user.last_name,
+                isAdmin,
+                role: isAdmin ? (user.role || 'ADMIN') : 'CUSTOMER'
             }
         });
 

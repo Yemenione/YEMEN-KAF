@@ -163,8 +163,8 @@ export default function CategoriesPage() {
                 />
             </div>
 
-            {/* List */}
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
                 <table className="w-full text-left">
                     <thead className="bg-gray-50 dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700">
                         <tr>
@@ -223,6 +223,56 @@ export default function CategoriesPage() {
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+                {loading ? (
+                    <div className="text-center py-8">Loading...</div>
+                ) : filteredCategories.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">No categories found</div>
+                ) : (
+                    filteredCategories.map((cat) => (
+                        <div key={cat.id} className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm flex items-center gap-4">
+                            <div className="relative w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                {cat.image_url ? (
+                                    <Image src={cat.image_url} alt={cat.name} fill className="object-cover" />
+                                ) : (
+                                    <div className="flex items-center justify-center h-full text-gray-300 text-xs">No Img</div>
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start mb-1">
+                                    <h3 className="font-medium text-gray-900 dark:text-white truncate">{cat.name}</h3>
+                                    <span className={`px-2 py-0.5 text-[10px] rounded-full ${cat.is_active
+                                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                        : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                                        }`}>
+                                        {cat.is_active ? 'Active' : 'Hidden'}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-gray-500 font-mono truncate mb-2">{cat.slug}</p>
+                                <div className="flex items-center justify-between gap-4">
+                                    <span className="text-xs text-gray-400">Order: {cat.display_order}</span>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleEdit(cat)}
+                                            className="p-1.5 text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100"
+                                        >
+                                            <Edit size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(cat.id)}
+                                            className="p-1.5 text-red-600 bg-red-50 rounded-md hover:bg-red-100"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Modal */}

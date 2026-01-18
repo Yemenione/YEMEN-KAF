@@ -1,7 +1,7 @@
 import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight, ArrowLeft } from "lucide-react";
 
 interface Article {
     title: string;
@@ -11,10 +11,10 @@ interface Article {
     slug: string;
 }
 
-export default function BlogSection() {
+export default function BlogSection({ articles = [] }: { articles?: any[] }) {
     const { language } = useLanguage();
 
-    const articlesData = {
+    const fallbackArticles = {
         ar: [
             {
                 title: "فوائد العسل اليمني الصحية",
@@ -86,7 +86,13 @@ export default function BlogSection() {
         ]
     };
 
-    const articles = articlesData[language as keyof typeof articlesData] || articlesData.en;
+    const displayArticles = articles.length > 0 ? articles.map(a => ({
+        title: a.title,
+        excerpt: a.excerpt || '',
+        image: a.image || '/images/blog/placeholder.jpg',
+        date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString(language === 'ar' ? 'ar-EG' : language === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '',
+        slug: a.slug
+    })) : (fallbackArticles[language as keyof typeof fallbackArticles] || fallbackArticles.en);
 
     const titles = {
         ar: { badge: "المدونة", title: "آخر الأخبار والمقالات", readMore: "اقرأ المزيد" },
@@ -109,7 +115,7 @@ export default function BlogSection() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {articles.map((article, index) => (
+                    {displayArticles.map((article: any, index: number) => (
                         <article
                             key={index}
                             className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-gray-100"
@@ -139,7 +145,7 @@ export default function BlogSection() {
                                     className="inline-flex items-center gap-2 text-[var(--honey-gold)] text-sm font-bold uppercase tracking-wider group-hover:gap-3 transition-all"
                                 >
                                     {text.readMore}
-                                    <ArrowRight className="w-4 h-4" />
+                                    {language === 'ar' ? <ArrowLeft className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
                                 </Link>
                             </div>
                         </article>

@@ -20,7 +20,7 @@ export default function CheckoutPage() {
     const { settings } = useSettings();
     const stripePromise = getStripe(settings.stripe_publishable_key);
 
-    const { items, total } = useCart();
+    const { items, total, subtotal, taxTotal } = useCart();
     const { t } = useLanguage();
     const router = useRouter();
     const [selectedShippingMethod, setSelectedShippingMethod] = useState("standard");
@@ -374,8 +374,8 @@ export default function CheckoutPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {shippingRates.length > 0 ? (
-                                shippingRates.map((rate) => (
-                                    <label key={rate.id} className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
+                                shippingRates.map((rate, index) => (
+                                    <label key={`${rate.id}-${index}`} className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
                                         <input
                                             type="radio"
                                             name="shipping"
@@ -390,7 +390,9 @@ export default function CheckoutPage() {
                                         <div className="relative flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2">
                                                 <Truck className="w-6 h-6 text-gray-400 peer-checked:text-black" />
-                                                <span className="font-bold text-lg">{rate.price === 0 ? t('checkout.free') : `${rate.price.toFixed(2)}€`}</span>
+                                                <span className="font-bold text-lg">
+                                                    {(!rate.price || rate.price === 0) ? t('checkout.free') : `${Number(rate.price).toFixed(2)}€`}
+                                                </span>
                                             </div>
                                         </div>
                                         <h3 className="font-serif text-lg text-black mb-1">{rate.name}</h3>
@@ -519,15 +521,19 @@ export default function CheckoutPage() {
 
                         <div className="space-y-4 pt-6 border-t border-black/10">
                             <div className="flex justify-between text-sm text-gray-600">
-                                <span>{t('checkout.subtotal')}</span>
-                                <span>{total.toFixed(2)}€</span>
+                                <span>{t('checkout.subtotal')} (HT)</span>
+                                <span>{subtotal.toFixed(2)}€</span>
+                            </div>
+                            <div className="flex justify-between text-sm text-gray-600">
+                                <span>{t('checkout.tax')}</span>
+                                <span>{taxTotal.toFixed(2)}€</span>
                             </div>
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span>{t('checkout.shipping')}</span>
-                                <span>{selectedShippingRate ? `${selectedShippingRate.price.toFixed(2)}€` : '--'}</span>
+                                <span>{selectedShippingRate && selectedShippingRate.price !== undefined ? `${Number(selectedShippingRate.price).toFixed(2)}€` : '--'}</span>
                             </div>
                             <div className="flex justify-between text-2xl font-serif text-black pt-4">
-                                <span>{t('checkout.total')}</span>
+                                <span>{t('checkout.total')} (TTC)</span>
                                 <span>{orderTotal.toFixed(2)}€</span>
                             </div>
                         </div>

@@ -5,10 +5,13 @@ import { useToast } from "@/context/ToastContext";
 
 export type CartItem = {
     id: string | number;
+    variantId?: number;
+    variantName?: string;
     title: string;
     price: string | number;
     image: string;
     quantity: number;
+    taxRate?: number; // Added taxRate
 };
 
 interface CartContextType {
@@ -17,8 +20,10 @@ interface CartContextType {
     openCart: () => void;
     closeCart: () => void;
     addToCart: (item: Omit<CartItem, "quantity">) => void;
-    removeFromCart: (id: string | number) => void;
+    removeFromCart: (id: string | number, variantId?: number) => void;
     total: number;
+    subtotal: number;
+    taxTotal: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,21 +39,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const addToCart = (newItem: Omit<CartItem, "quantity">) => {
         setItems((prev) => {
-            const existing = prev.find((i) => i.id === newItem.id);
+            const existing = prev.find((i) => i.id === newItem.id && i.variantId === newItem.variantId);
             if (existing) {
                 return prev.map((i) =>
-                    i.id === newItem.id ? { ...i, quantity: i.quantity + 1 } : i
+                    (i.id === newItem.id && i.variantId === newItem.variantId)
+                        ? { ...i, quantity: i.quantity + 1 }
+                        : i
                 );
             }
             return [...prev, { ...newItem, quantity: 1 }];
         });
         setIsOpen(true);
-        showToast(`${newItem.title} added to cart!`, "success");
+        showToast(`${newItem.title} ${newItem.variantName ? `(${newItem.variantName})` : ''} added to cart!`, "success");
     };
 
-    const removeFromCart = (id: string | number) => {
-        const item = items.find((i) => i.id === id);
-        setItems((prev) => prev.filter((i) => i.id !== id));
+    const removeFromCart = (id: string | number, variantId?: number) => {
+        const item = items.find((i) => i.id === id && i.variantId === variantId);
+        setItems((prev) => prev.filter((i) => !(i.id === id && i.variantId === variantId)));
         if (item) {
             showToast(`${item.title} removed from cart`, "info");
         }
@@ -60,10 +67,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return parseFloat(price.replace(/[^0-9.]/g, ""));
     };
 
-    const total = items.reduce((acc, item) => acc + parsePrice(item.price) * item.quantity, 0);
+    // Calculate Totals (Assuming Price is TTC/Tax Included)
+    const { total, subtotal, taxTotal } = items.reduce((acc, item) => {
+        const priceTTC = parsePrice(item.price);
+        const lineTotalTTC = priceTTC * item.quantity;
+        const taxRate = item.taxRate || 0;
+
+        // Calculate HT (Hors Taxe)
+        // priceTTC = priceHT * (1 + rate/100)
+        // priceHT = priceTTC / (1 + rate/100)
+        const priceHT = priceTTC / (1 + taxRate / 100);
+        const lineTotalHT = priceHT * item.quantity;
+        const lineTax = lineTotalTTC - lineTotalHT;
+
+        return {
+            total: acc.total + lineTotalTTC,
+            subtotal: acc.subtotal + lineTotalHT,
+            taxTotal: acc.taxTotal + lineTax
+        };
+    }, { total: 0, subtotal: 0, taxTotal: 0 });
 
     return (
-        <CartContext.Provider value={{ items, isOpen, openCart, closeCart, addToCart, removeFromCart, total }}>
+        <CartContext.Provider value={{ items, isOpen, openCart, closeCart, addToCart, removeFromCart, total, subtotal, taxTotal }}>
             {children}
         </CartContext.Provider>
     );

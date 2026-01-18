@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, UploadCloud, Box, DollarSign, FileText, Layers, Truck, Tag, Globe, Settings } from "lucide-react";
+import { ArrowLeft, Save, UploadCloud, Box, DollarSign, FileText, Layers, Truck, Tag, Globe, Settings, Trash2, Percent } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import ProductVariantsManager from "@/components/admin/products/ProductVariantsManager";
@@ -21,6 +21,8 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
     // Data Sources
     const [categories, setCategories] = useState<any[]>([]);
     const [brands, setBrands] = useState<any[]>([]);
+    const [taxRules, setTaxRules] = useState<any[]>([]);
+    const [variants, setVariants] = useState<any[]>([]);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -28,7 +30,9 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         sku: "",
         description: "",
         price: 0,
+        compare_at_price: 0,
         cost_price: 0,
+        tax_rule_id: "",
         stock_quantity: 0,
         weight: 0,
         width: 0,
@@ -36,7 +40,8 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         depth: 0,
         category_id: "",
         brand_id: "",
-        image_url: "",
+        images: [] as string[], // Changed to array
+        image_url: "", // Keeping for backward compatibility/single upload logic temporarily
         is_active: true,
         is_featured: false,
         meta_title: "",
@@ -46,26 +51,28 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         origin_country: "Yemen"
     });
 
-    const [allProducts, setAllProducts] = useState<any[]>([]); // For associations
+    const [allProducts, setAllProducts] = useState<any[]>([]);
 
-    // Fetch Categories and Brands
+    // Fetch Categories, Brands, Tax Rules
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [catRes, brandRes, prodRes] = await Promise.all([
+                const [catRes, brandRes, taxRes, prodRes] = await Promise.all([
                     fetch('/api/admin/categories'),
                     fetch('/api/admin/brands'),
-                    fetch('/api/products') // Fetch all for recommendations
+                    fetch('/api/admin/tax-rules'),
+                    fetch('/api/products')
                 ]);
 
                 if (catRes.ok) setCategories(await catRes.json());
                 if (brandRes.ok) setBrands(await brandRes.json());
+                if (taxRes.ok) setTaxRules(await taxRes.json());
                 if (prodRes.ok) {
                     const data = await prodRes.json();
                     setAllProducts(data.products || []);
                 }
             } catch (error) {
-                console.error("Failed to load form data dependencies", error);
+                console.error("Failed to load form data", error);
             }
         };
         fetchData();
@@ -74,11 +81,13 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
     // Populate form if editing
     useEffect(() => {
         if (initialData) {
-            let image = initialData.images;
+            let images: string[] = [];
             try {
                 const parsed = JSON.parse(initialData.images);
-                image = Array.isArray(parsed) ? parsed[0] : initialData.images;
-            } catch { }
+                images = Array.isArray(parsed) ? parsed : [initialData.images];
+            } catch {
+                if (initialData.images) images = [initialData.images];
+            }
 
             setFormData({
                 name: initialData.name || "",
@@ -86,17 +95,20 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 sku: initialData.sku || "",
                 description: initialData.description || "",
                 price: parseFloat(initialData.price) || 0,
+                compare_at_price: parseFloat(initialData.compareAtPrice) || 0,
                 cost_price: parseFloat(initialData.cost_price) || 0,
+                tax_rule_id: initialData.taxRuleId?.toString() || "",
                 stock_quantity: initialData.stock_quantity || 0,
                 weight: parseFloat(initialData.weight) || 0,
                 width: parseFloat(initialData.width) || 0,
                 height: parseFloat(initialData.height) || 0,
                 depth: parseFloat(initialData.depth) || 0,
-                category_id: initialData.category_id?.toString() || "",
-                brand_id: initialData.brand_id?.toString() || "",
-                image_url: image || "",
-                is_active: initialData.is_active === 1 || initialData.is_active === true,
-                is_featured: initialData.is_featured === 1 || initialData.is_featured === true,
+                category_id: (initialData.category_id || initialData.categoryId)?.toString() || "",
+                brand_id: (initialData.brand_id || initialData.brandId)?.toString() || "",
+                images: images,
+                image_url: images[0] || "",
+                is_active: initialData.isActive ?? (initialData.is_active === 1 || initialData.is_active === true),
+                is_featured: initialData.isFeatured ?? (initialData.is_featured === 1 || initialData.is_featured === true),
                 meta_title: initialData.meta_title || "",
                 meta_description: initialData.meta_description || "",
                 related_ids: initialData.related_ids || "[]",
@@ -113,6 +125,46 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         setFormData(prev => ({ ...prev, sku: `${prefix}-${random}-${time}` }));
     };
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.length) return;
+        setUploadingImage(true);
+        const files = Array.from(e.target.files);
+
+        try {
+            const uploadedUrls = await Promise.all(files.map(async (file) => {
+                const form = new FormData();
+                form.append('file', file);
+                form.append('folder', 'products');
+                const res = await fetch('/api/admin/media/upload', { method: 'POST', body: form });
+                if (res.ok) {
+                    const data = await res.json();
+                    return data.path;
+                }
+                return null;
+            }));
+
+            const validUrls = uploadedUrls.filter(url => url !== null) as string[];
+            setFormData(prev => ({
+                ...prev,
+                images: [...prev.images, ...validUrls],
+                image_url: prev.image_url || validUrls[0] || "" // Set primary if empty
+            }));
+        } catch (err) { alert('Upload failed'); }
+        finally { setUploadingImage(false); }
+    };
+
+    const removeImage = (index: number) => {
+        setFormData(prev => {
+            const newImages = [...prev.images];
+            newImages.splice(index, 1);
+            return {
+                ...prev,
+                images: newImages,
+                image_url: newImages[0] || ""
+            };
+        });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -124,7 +176,10 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             ...formData,
             category_id: formData.category_id ? parseInt(formData.category_id) : null,
             brand_id: formData.brand_id ? parseInt(formData.brand_id) : null,
-            images: JSON.stringify([formData.image_url])
+            tax_rule_id: formData.tax_rule_id ? parseInt(formData.tax_rule_id) : null,
+            images: JSON.stringify(formData.images), // Save full array
+            image_url: formData.images[0] || "", // Legacy support
+            variants: !isEdit ? variants : undefined
         };
 
         try {
@@ -154,7 +209,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         { id: "logistics", label: "Shipping", icon: Truck },
         { id: "seo", label: "SEO", icon: Globe },
         { id: "associations", label: "Connections", icon: Layers },
-        { id: "variants", label: "Variants", icon: Box, hidden: !isEdit },
+        { id: "variants", label: "Variants", icon: Box },
     ];
 
     return (
@@ -186,7 +241,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 <div className="col-span-12 md:col-span-3">
                     <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden sticky top-6">
                         <nav className="flex flex-col">
-                            {tabs.filter(t => !t.hidden).map(tab => (
+                            {(tabs as any[]).filter(t => !t.hidden).map(tab => (
                                 <button
                                     key={tab.id}
                                     type="button"
@@ -269,59 +324,89 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
 
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Description</label>
-                                    <textarea
-                                        className="w-full px-3 py-2 border rounded-lg h-40 dark:bg-zinc-800 dark:border-zinc-700"
-                                        value={formData.description}
-                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    />
+                                    <div className="relative">
+                                        <textarea
+                                            className="w-full px-3 py-2 border rounded-lg h-40 dark:bg-zinc-800 dark:border-zinc-700 pb-10"
+                                            value={formData.description}
+                                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                            placeholder="Enter product description..."
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                if (!formData.name) return alert("Please enter a product name first.");
+                                                setLoading(true); // Re-use main loading or add locally? Ideally local.
+                                                // Actually let's use a local loading state for AI to not block whole form
+                                                try {
+                                                    const { generateProductDescription } = await import('@/app/actions/ai');
+                                                    // Use name + category name as keywords base
+                                                    const categoryName = categories.find(c => c.id == formData.category_id)?.name || "";
+                                                    const res = await generateProductDescription(formData.name, categoryName, `${formData.name}, ${categoryName}, luxury, yemen`);
+
+                                                    if (res.error) alert(res.error);
+                                                    else if (res.description) {
+                                                        setFormData(prev => ({ ...prev, description: res.description }));
+                                                    }
+                                                } catch (e) {
+                                                    alert("AI Generation failed");
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                            disabled={loading}
+                                            className="absolute bottom-3 right-3 text-xs bg-[var(--honey-gold)] text-black px-3 py-1.5 rounded-full font-bold flex items-center gap-1 hover:brightness-110 shadow-sm transition-all disabled:opacity-50"
+                                        >
+                                            {loading ? 'Thinking...' : <>✨ Generate with AI</>}
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* Images Section (Main Image) */}
+                                {/* Images Section (Main Images) */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Main Image</label>
-                                    <div className="flex gap-4 items-start">
-                                        <div className="flex-1">
-                                            <div className="flex gap-2 mb-2">
+                                    <label className="block text-sm font-medium mb-1">Product Images</label>
+                                    <div className="space-y-3">
+                                        <div className="flex flex-wrap gap-4">
+                                            {formData.images.map((img, idx) => (
+                                                <div key={idx} className="relative group w-24 h-24 rounded-lg overflow-hidden border bg-gray-50 dark:border-zinc-700">
+                                                    <Image src={img} alt={`Product ${idx}`} fill className="object-cover" sizes="100px" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeImage(idx)}
+                                                        className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                    {idx === 0 && (
+                                                        <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-0.5">
+                                                            Main
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            <label className="flex flex-col items-center justify-center w-24 h-24 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
+                                                {uploadingImage ? (
+                                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500"></div>
+                                                ) : (
+                                                    <>
+                                                        <UploadCloud size={24} className="text-gray-400 mb-1" />
+                                                        <span className="text-[10px] text-gray-500">Upload</span>
+                                                    </>
+                                                )}
                                                 <input
-                                                    type="text"
-                                                    className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 text-sm"
-                                                    value={formData.image_url}
-                                                    onChange={e => setFormData({ ...formData, image_url: e.target.value })}
-                                                    placeholder="https://..."
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    multiple
+                                                    disabled={uploadingImage}
+                                                    onChange={handleImageUpload}
                                                 />
-                                                <label className="flex items-center justify-center px-4 py-2 bg-gray-100 dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors">
-                                                    <UploadCloud size={18} />
-                                                    <input
-                                                        type="file"
-                                                        className="hidden"
-                                                        accept="image/*"
-                                                        disabled={uploadingImage}
-                                                        onChange={async (e) => {
-                                                            if (!e.target.files?.[0]) return;
-                                                            setUploadingImage(true);
-                                                            const file = e.target.files[0];
-                                                            const form = new FormData();
-                                                            form.append('file', file);
-                                                            form.append('folder', 'products');
-                                                            try {
-                                                                const res = await fetch('/api/admin/media/upload', { method: 'POST', body: form });
-                                                                if (res.ok) {
-                                                                    const data = await res.json();
-                                                                    setFormData(prev => ({ ...prev, image_url: data.path }));
-                                                                }
-                                                            } catch (err) { alert('Upload failed'); }
-                                                            finally { setUploadingImage(false); }
-                                                        }}
-                                                    />
-                                                </label>
-                                            </div>
-                                            <p className="text-xs text-gray-500">Suggested size: 1000x1000px (WebP or JPG)</p>
+                                            </label>
                                         </div>
-                                        {formData.image_url && (
-                                            <div className="w-24 h-24 relative rounded-lg overflow-hidden border bg-gray-50">
-                                                <Image src={formData.image_url} alt="Preview" fill className="object-cover" />
-                                            </div>
-                                        )}
+                                        <p className="text-xs text-gray-500">
+                                            First image will be the main cover. Drag to reorder (coming soon).
+                                            Suggested size: 1000x1000px.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -348,6 +433,20 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                     </div>
                                 </div>
                                 <div>
+                                    <label className="block text-sm font-medium mb-1">Compare at Price (Original Price)</label>
+                                    <div className="relative">
+                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            className="w-full pl-9 pr-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
+                                            value={formData.compare_at_price || ""}
+                                            onChange={e => setFormData({ ...formData, compare_at_price: e.target.value === "" ? 0 : parseFloat(e.target.value) })}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">If set, the main price will appear as a sale price.</p>
+                                </div>
+                                <div>
                                     <label className="block text-sm font-medium mb-1">Cost Price (Excl. Tax)</label>
                                     <div className="relative">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -360,6 +459,30 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                         />
                                     </div>
                                     <p className="text-xs text-gray-500 mt-1">For internal margin calculations.</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Tax Rule</label>
+                                    <div className="relative">
+                                        <Percent className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                        <select
+                                            className="w-full pl-9 pr-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 appearance-none bg-none"
+                                            value={formData.tax_rule_id}
+                                            onChange={e => setFormData({ ...formData, tax_rule_id: e.target.value })}
+                                        >
+                                            <option value="">No Tax (0%)</option>
+                                            {taxRules.map((rule: any) => (
+                                                <option key={rule.id} value={rule.id}>
+                                                    {rule.name} ({rule.rate}%) - {rule.country}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1 flex justify-between">
+                                        <span>Applied to sales price.</span>
+                                        <Link href="/admin-portal/settings/taxes" className="text-blue-500 hover:underline">
+                                            Manage Rules
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -564,17 +687,36 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     )}
 
                     {/* Variants Tab */}
-                    {activeTab === "variants" && isEdit && initialData?.id && (
+                    {activeTab === "variants" && (
                         <div className="animate-fade-in">
                             <ProductVariantsManager
-                                productId={initialData.id}
+                                productId={isEdit ? initialData?.id : undefined}
                                 basePrice={formData.price}
                                 baseSku={formData.sku}
+                                onChange={!isEdit ? setVariants : undefined}
                             />
                         </div>
                     )}
 
                 </div>
+
+                {/* Wizard Navigation Footer for Tabs */}
+                {activeTab !== "variants" && (
+                    <div className="flex justify-end pt-4 border-t dark:border-zinc-800">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const currentIndex = tabs.findIndex(t => t.id === activeTab);
+                                if (currentIndex < tabs.length - 1) {
+                                    setActiveTab(tabs[currentIndex + 1].id);
+                                }
+                            }}
+                            className="px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-lg hover:opacity-90 transition-opacity"
+                        >
+                            Next Step &rarr;
+                        </button>
+                    </div>
+                )}
             </div>
         </form>
     );

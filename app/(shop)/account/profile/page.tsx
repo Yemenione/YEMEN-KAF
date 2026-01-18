@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { Camera, Loader2, User } from "lucide-react";
+import { getFirebaseConfig } from "@/app/actions/settings";
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { toast } from "sonner";
+import Image from "next/image";
 
 export default function ProfilePage() {
     const { user } = useAuth();
@@ -10,9 +16,16 @@ export default function ProfilePage() {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [phone, setPhone] = useState("");
+    const [avatar, setAvatar] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [firebaseConfig, setFirebaseConfig] = useState<any>(null);
+
+    useEffect(() => {
+        getFirebaseConfig().then(setFirebaseConfig);
+    }, []);
 
     useEffect(() => {
         if (user) {
@@ -29,9 +42,31 @@ export default function ProfilePage() {
             if (res.ok) {
                 const data = await res.json();
                 setPhone(data.user.phone || "");
+                setAvatar(data.user.avatar || "");
             }
         } catch (err) {
             console.error('Failed to fetch profile', err);
+        }
+    };
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !firebaseConfig) return;
+
+        setIsUploading(true);
+        try {
+            const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+            const storage = getStorage(app);
+            const storageRef = ref(storage, `avatars/customer/${user?.id || 'unknown'}_${Date.now()}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(snapshot.ref);
+            setAvatar(url);
+            toast.success(t('profile.imageUpdated') || "Photo de profil mise à jour");
+        } catch (error) {
+            console.error(error);
+            toast.error("Erreur de téléchargement");
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -45,7 +80,7 @@ export default function ProfilePage() {
             const res = await fetch('/api/account/profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, phone }),
+                body: JSON.stringify({ firstName, lastName, phone, avatar }),
             });
 
             if (res.ok) {
@@ -64,9 +99,33 @@ export default function ProfilePage() {
 
     return (
         <div className="space-y-8">
-            <div>
-                <h1 className="text-3xl font-serif text-black mb-2">{t('profile.title')}</h1>
-                <p className="text-gray-500">{t('account.updateInfo')}</p>
+            <div className="flex flex-col md:flex-row items-center gap-8 border-b border-gray-100 pb-8">
+                {/* Avatar Circle */}
+                <div className="relative group">
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-100 shadow-inner flex items-center justify-center">
+                        {avatar ? (
+                            <Image src={avatar} alt="Avatar" width={128} height={128} className="object-cover w-full h-full" />
+                        ) : (
+                            <User size={64} className="text-gray-300" />
+                        )}
+                        {isUploading && (
+                            <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10 transition-opacity">
+                                <Loader2 className="animate-spin text-black" size={32} />
+                            </div>
+                        )}
+                    </div>
+
+                    <label className="absolute bottom-0 right-0 p-2 bg-black text-white rounded-full cursor-pointer hover:scale-110 transition-transform shadow-lg group-hover:bg-[#5a4635]">
+                        <Camera size={18} />
+                        <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={isUploading} />
+                    </label>
+                </div>
+
+                <div>
+                    <h1 className="text-3xl font-serif text-black mb-1">{firstName} {lastName}</h1>
+                    <p className="text-gray-500 font-medium">Membre Prestige Yemeni Market</p>
+                    <p className="text-xs text-[var(--coffee-brown)]/60 mt-2 uppercase tracking-widest">{user?.email}</p>
+                </div>
             </div>
 
             {message && (

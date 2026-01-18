@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, FileText, Globe, EyeOff, Calendar } from "lucide-react";
+import { Plus, Edit2, Trash2, FileText, Globe, EyeOff, Calendar, Newspaper } from "lucide-react";
+import { usePathname } from "next/navigation";
+import clsx from "clsx";
 
 interface Page {
     id: number;
@@ -15,6 +17,7 @@ interface Page {
 export default function CMSPagesList() {
     const [pages, setPages] = useState<Page[]>([]);
     const [loading, setLoading] = useState(true);
+    const pathname = usePathname();
 
     useEffect(() => {
         fetchPages();
@@ -48,20 +51,50 @@ export default function CMSPagesList() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
+            {/* Unified CMS Header with Tabs */}
+            <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold font-serif text-[var(--coffee-brown)] dark:text-white">Gestion du Contenu (CMS)</h1>
+                        <p className="text-gray-500 text-sm">Gérez les pages statiques et les articles de blog de votre boutique.</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 p-1 rounded-xl w-fit">
+                    <Link
+                        href="/admin-portal/cms/pages"
+                        className={clsx(
+                            "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+                            pathname === "/admin-portal/cms/pages" ? "bg-white dark:bg-zinc-700 text-[var(--coffee-brown)] dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+                        )}
+                    >
+                        <FileText size={16} /> Pages CMS
+                    </Link>
+                    <Link
+                        href="/admin-portal/cms/blog"
+                        className={clsx(
+                            "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+                            pathname.startsWith("/admin-portal/cms/blog") ? "bg-white dark:bg-zinc-700 text-[var(--coffee-brown)] dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+                        )}
+                    >
+                        <Newspaper size={16} /> Articles du Blog
+                    </Link>
+                </div>
+            </div>
+
             <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm">
                 <div>
-                    <h2 className="text-2xl font-bold flex items-center gap-2">
-                        <FileText className="w-6 h-6 text-gray-500" />
-                        CMS Pages
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-gray-500" />
+                        Pages Statiques
                     </h2>
-                    <p className="text-gray-500 text-sm mt-1">Manage static content (About Us, Legal, Landing Pages).</p>
                 </div>
                 <Link
                     href="/admin-portal/cms/pages/new"
-                    className="flex items-center gap-2 bg-[var(--coffee-brown)] text-white px-4 py-2 rounded-lg hover:bg-[#5a4635] transition-colors"
+                    className="flex items-center gap-2 bg-[var(--coffee-brown)] text-white px-4 py-2 rounded-lg hover:bg-[#5a4635] transition-colors text-sm font-bold"
                 >
-                    <Plus className="w-5 h-5" />
-                    Create Page
+                    <Plus className="w-4 h-4" />
+                    Créer une Page
                 </Link>
             </div>
 

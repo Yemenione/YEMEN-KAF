@@ -90,8 +90,63 @@ export default function AdminProductsPage() {
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto">
+                {/* Mobile Card View */}
+                <div className="md:hidden grid grid-cols-1 gap-4 p-4">
+                    {loading ? (
+                        <div className="text-center py-8 text-gray-500">Loading inventory...</div>
+                    ) : products.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">No products found.</div>
+                    ) : (
+                        products.map((product) => (
+                            <div key={product.id} className="bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-lg p-4 shadow-sm flex gap-4">
+                                <div className="w-20 h-20 relative rounded bg-gray-100 flex-shrink-0 overflow-hidden">
+                                    {product.images ? (
+                                        <Image
+                                            src={(() => {
+                                                try {
+                                                    const parsed = JSON.parse(product.images);
+                                                    const url = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : null;
+                                                    if (url && (url.startsWith('/') || url.startsWith('http'))) return url;
+                                                } catch { }
+                                                const raw = product.images;
+                                                return (raw && (raw.startsWith('/') || raw.startsWith('http'))) ? raw : '/placeholder.png';
+                                            })()}
+                                            alt={product.name}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : <div className="w-full h-full bg-gray-200" />}
+                                </div>
+                                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex justify-between items-start gap-2">
+                                            <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate pr-2">{product.name}</h3>
+                                            <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-2 ${product.is_active ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mb-1">{product.category_name || '-'}</p>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-sm">€{Number(product.price).toFixed(2)}</span>
+                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${product.stock_quantity > 5 ? 'bg-green-50 text-green-700' : product.stock_quantity > 0 ? 'bg-yellow-50 text-yellow-700' : 'bg-red-50 text-red-700'}`}>
+                                                {product.stock_quantity}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end gap-3 mt-2">
+                                        <Link href={`/admin-portal/products/${product.id}`} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded">
+                                            <Edit size={16} />
+                                        </Link>
+                                        <button onClick={() => handleDelete(product.id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-gray-50 dark:bg-zinc-800 text-gray-500 uppercase tracking-wider font-medium">
                             <tr>

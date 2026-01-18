@@ -1,44 +1,32 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plus, Trash2, Globe, Edit2, Percent, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Trash2, Edit2, Percent } from "lucide-react";
 
-interface TaxRule {
-    id: number;
-    name: string;
-    rate: number;
-    country: string;
-    priority: number;
-    isActive: boolean;
-}
-
-export default function TaxesPage() {
-    const [taxes, setTaxes] = useState<TaxRule[]>([]);
+export default function TaxRulesPage() {
+    const [rules, setRules] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
-
-    // Form
     const [formData, setFormData] = useState({
-        name: '',
+        name: "",
         rate: 0,
-        country: '',
+        country: "FR",
         priority: 0,
         isActive: true
     });
 
     useEffect(() => {
-        fetchTaxes();
+        fetchRules();
     }, []);
 
-    const fetchTaxes = async () => {
-        setLoading(true);
+    const fetchRules = async () => {
         try {
-            const res = await fetch('/api/admin/settings/taxes');
-            const data = await res.json();
-            setTaxes(data.length ? data : []);
+            const res = await fetch('/api/admin/tax-rules');
+            if (res.ok) setRules(await res.json());
         } catch (error) {
-            console.error('Failed to fetch taxes:', error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
@@ -46,180 +34,165 @@ export default function TaxesPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            const url = isEditing && editId
-                ? `/api/admin/settings/taxes/${editId}`
-                : '/api/admin/settings/taxes';
-            const method = isEditing ? 'PUT' : 'POST';
+        const url = editId ? `/api/admin/tax-rules/${editId}` : '/api/admin/tax-rules';
+        const method = editId ? 'PUT' : 'POST';
 
-            const res = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
 
-            if (res.ok) {
-                fetchTaxes();
-                resetForm();
-            } else {
-                const err = await res.json();
-                alert(err.error);
-            }
-        } catch (error) {
-            alert('Operation failed');
+        if (res.ok) {
+            setIsEditing(false);
+            setEditId(null);
+            setFormData({ name: "", rate: 0, country: "FR", priority: 0, isActive: true });
+            fetchRules();
+        } else {
+            alert('Failed to save tax rule');
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Delete this tax rule?')) return;
-        try {
-            const res = await fetch(`/api/admin/settings/taxes/${id}`, { method: 'DELETE' });
-            if (res.ok) fetchTaxes();
-        } catch (error) {
-            alert('Delete failed');
+        if (!confirm("Are you sure?")) return;
+        const res = await fetch(`/api/admin/tax-rules/${id}`, { method: 'DELETE' });
+        if (res.ok) fetchRules();
+        else {
+            const err = await res.json();
+            alert(err.error || 'Failed to delete');
         }
     };
 
-    const openEdit = (rule: TaxRule) => {
-        setFormData({
-            name: rule.name,
-            rate: Number(rule.rate),
-            country: rule.country,
-            priority: rule.priority,
-            isActive: rule.isActive
-        });
-        setEditId(rule.id);
-        setIsEditing(true);
-    };
-
-    const resetForm = () => {
-        setFormData({ name: '', rate: 20, country: 'FR', priority: 0, isActive: true });
-        setIsEditing(false);
-        setEditId(null);
-    };
-
     return (
-        <div className="max-w-6xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
-                    <Percent className="w-6 h-6" />
-                </div>
-                Tax Rules
-            </h2>
+        <div className="space-y-6">
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold">Tax Rules</h1>
+                <button
+                    onClick={() => {
+                        setIsEditing(true);
+                        setEditId(null);
+                        setFormData({ name: "", rate: 0, country: "FR", priority: 0, isActive: true });
+                    }}
+                    className="bg-[var(--coffee-brown)] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90"
+                >
+                    <Plus size={18} /> Add Tax Rule
+                </button>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                {/* Form */}
-                <div className="md:col-span-1">
-                    <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm sticky top-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-semibold">{isEditing ? 'Edit Tax Rule' : 'Add New Tax Rule'}</h3>
-                            {isEditing && <button onClick={resetForm} className="text-xs text-gray-400">Cancel</button>}
+            {isEditing && (
+                <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border dark:border-zinc-800 shadow-sm animate-fade-in">
+                    <h3 className="font-semibold mb-4">{editId ? 'Edit Tax Rule' : 'New Tax Rule'}</h3>
+                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Rule Name</label>
+                            <input
+                                required
+                                type="text"
+                                className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="e.g. Standard Rate"
+                            />
                         </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Rule Name</label>
-                                <input
-                                    type="text" required placeholder="Standard Rate"
-                                    className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">Rate (%)</label>
-                                    <input
-                                        type="number" step="0.01" min="0" required
-                                        className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
-                                        value={formData.rate}
-                                        onChange={e => setFormData({ ...formData, rate: parseFloat(e.target.value) })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">Country Code</label>
-                                    <input
-                                        type="text" required maxLength={2} placeholder="FR"
-                                        className="w-full border rounded-md px-3 py-2 text-sm uppercase dark:bg-zinc-800 dark:border-zinc-700"
-                                        value={formData.country}
-                                        onChange={e => setFormData({ ...formData, country: e.target.value.toUpperCase() })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Priority (Higher runs first)</label>
-                                <input
-                                    type="number" step="1"
-                                    className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
-                                    value={formData.priority}
-                                    onChange={e => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-                                />
-                            </div>
-
-                            <div className="space-y-2 pt-2">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.isActive}
-                                        onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                                        className="rounded border-gray-300"
-                                    />
-                                    <span className="text-sm">Active</span>
-                                </label>
-                            </div>
-
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Rate (%)</label>
+                            <input
+                                required
+                                type="number"
+                                step="0.01"
+                                className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
+                                value={formData.rate}
+                                onChange={e => setFormData({ ...formData, rate: parseFloat(e.target.value) })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Country Code</label>
+                            <input
+                                required
+                                type="text"
+                                maxLength={2}
+                                className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 uppercase"
+                                value={formData.country}
+                                onChange={e => setFormData({ ...formData, country: e.target.value.toUpperCase() })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Priority</label>
+                            <input
+                                type="number"
+                                className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
+                                value={formData.priority}
+                                onChange={e => setFormData({ ...formData, priority: parseInt(e.target.value) })}
+                            />
+                        </div>
+                        <div className="md:col-span-2 flex justify-end gap-3 mt-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(false)}
+                                className="px-4 py-2 text-sm border rounded-lg"
+                            >
+                                Cancel
+                            </button>
                             <button
                                 type="submit"
-                                className="w-full bg-[var(--coffee-brown)] text-white py-2 rounded-md font-medium text-sm hover:bg-[#5a4635] flex justify-center items-center gap-2"
+                                className="px-4 py-2 text-sm bg-[var(--honey-gold)] text-black font-medium rounded-lg hover:brightness-110"
                             >
-                                {isEditing ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                                {isEditing ? "Update Rule" : "Add Tax Rule"}
+                                Save Rule
                             </button>
-                        </form>
-                    </div>
-                </div>
-
-                {/* List */}
-                <div className="md:col-span-2 space-y-4">
-                    {taxes.map(tax => (
-                        <div key={tax.id} className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-4 flex items-center justify-between shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="text-lg bg-gray-50 w-12 h-12 flex items-center justify-center rounded-lg border font-bold text-gray-500">
-                                    {tax.country}
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <h4 className="font-bold text-gray-900 dark:text-gray-100">{tax.name}</h4>
-                                        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold text-xs">{Number(tax.rate).toFixed(2)}%</span>
-                                        {!tax.isActive && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inactive</span>}
-                                    </div>
-                                    <div className="text-sm text-gray-500 mt-1 flex gap-3">
-                                        <span>Priority: {tax.priority}</span>
-                                        <span className="text-gray-300">|</span>
-                                        <span>Applies to {tax.country === 'ALL' ? 'All Countries' : tax.country}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => openEdit(tax)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full">
-                                    <Edit2 className="w-4 h-4" />
-                                </button>
-                                <button onClick={() => handleDelete(tax.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
                         </div>
-                    ))}
-                    {taxes.length === 0 && !loading && (
-                        <div className="text-center py-10 text-gray-500 bg-white dark:bg-zinc-900 rounded-xl border border-dashed">
-                            No tax rules defined.
-                        </div>
-                    )}
+                    </form>
                 </div>
+            )}
+
+            <div className="bg-white dark:bg-zinc-900 rounded-xl border dark:border-zinc-800 shadow-sm overflow-hidden">
+                <table className="w-full text-left">
+                    <thead className="bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 text-xs uppercase">
+                        <tr>
+                            <th className="px-6 py-3">Name</th>
+                            <th className="px-6 py-3">Rate</th>
+                            <th className="px-6 py-3">Country</th>
+                            <th className="px-6 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y dark:divide-zinc-800">
+                        {rules.map((rule) => (
+                            <tr key={rule.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                <td className="px-6 py-4 font-medium">{rule.name}</td>
+                                <td className="px-6 py-4">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                        {rule.rate}%
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4">{rule.country}</td>
+                                <td className="px-6 py-4 text-right flex justify-end gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setIsEditing(true);
+                                            setEditId(rule.id);
+                                            setFormData(rule);
+                                        }}
+                                        className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                                    >
+                                        <Edit2 size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(rule.id)}
+                                        className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        {!loading && rules.length === 0 && (
+                            <tr>
+                                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                                    No tax rules found. Add one to get started.
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
             </div>
         </div>
     );

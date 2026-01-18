@@ -52,46 +52,46 @@ export default function AdminDashboard() {
     );
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">{t('admin.dashboard.title')}</h2>
-                <div className="text-sm text-gray-500">{t('admin.dashboard.lastUpdated')}: {new Date().toLocaleTimeString()}</div>
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+                <h2 className="text-xl md:text-2xl font-bold">{t('admin.dashboard.title')}</h2>
+                <div className="text-xs md:text-sm text-gray-500">{t('admin.dashboard.lastUpdated')}: {new Date().toLocaleTimeString()}</div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                 <KPICard
                     title={t('admin.dashboard.kpi.totalRevenue')}
                     value={`€${Number(data.kpi?.revenue || 0).toLocaleString()}`}
-                    icon={<DollarSign className="w-5 h-5" />}
+                    icon={<DollarSign className="w-4 h-4 md:w-5 md:h-5" />}
                     color="green"
                 />
                 <KPICard
                     title={t('admin.dashboard.kpi.totalOrders')}
                     value={data.kpi?.orders || 0}
-                    icon={<ShoppingBag className="w-5 h-5" />}
+                    icon={<ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />}
                     color="blue"
                 />
                 <KPICard
                     title={t('admin.dashboard.kpi.totalCustomers')}
                     value={data.kpi?.customers || 0}
-                    icon={<Users className="w-5 h-5" />}
+                    icon={<Users className="w-4 h-4 md:w-5 md:h-5" />}
                     color="purple"
                 />
                 <KPICard
                     title={t('admin.dashboard.kpi.lowStockItems')}
                     value={data.kpi?.lowStock || 0}
-                    icon={<AlertTriangle className="w-5 h-5" />}
+                    icon={<AlertTriangle className="w-4 h-4 md:w-5 md:h-5" />}
                     color="red"
                     negative={(data.kpi?.lowStock || 0) > 0}
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 {/* Sales Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm min-h-[400px]">
-                    <h3 className="font-semibold mb-6">Sales Overview (Last 30 Days)</h3>
-                    <div className="h-80 w-full">
+                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm min-h-[300px] md:min-h-[400px]">
+                    <h3 className="font-semibold mb-4 md:mb-6">Sales Overview (Last 30 Days)</h3>
+                    <div className="h-60 md:h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={data.salesChart}>
                                 <defs>
@@ -118,28 +118,30 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Recent Activity */}
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                     {/* Recent Orders */}
-                    <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-                        <h3 className="font-semibold mb-4">Recent Orders</h3>
-                        <div className="space-y-4">
+                    <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+                        <h3 className="font-semibold mb-3 md:mb-4">Recent Orders</h3>
+                        <div className="space-y-3 md:space-y-4">
                             {data.recentOrders.length === 0 ? (
                                 <p className="text-gray-500 text-sm">No orders yet.</p>
                             ) : (
                                 data.recentOrders.map((order: any) => (
                                     <div key={order.id} className="flex items-center gap-3 border-b border-gray-50 dark:border-zinc-800 pb-3 last:border-0 last:pb-0">
-                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
                                             <Package className="w-4 h-4" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium truncate">Order #{order.orderNumber}</p>
-                                            <p className="text-xs text-gray-500">
+                                            <div className="flex justify-between items-start">
+                                                <p className="text-sm font-medium truncate">#{order.orderNumber}</p>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${getStatusColor(order.status)} shrink-0`}>
+                                                    {order.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 truncate">
                                                 {order.customer?.firstName} {order.customer?.lastName} • €{Number(order.totalAmount).toFixed(2)}
                                             </p>
                                         </div>
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${getStatusColor(order.status)}`}>
-                                            {order.status}
-                                        </span>
                                     </div>
                                 ))
                             )}
@@ -148,15 +150,15 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Recent Tickets */}
-                <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-                    <h3 className="font-semibold mb-4">Latest Support Tickets</h3>
-                    <div className="space-y-4">
+                <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
+                    <h3 className="font-semibold mb-3 md:mb-4">Latest Support Tickets</h3>
+                    <div className="space-y-3 md:space-y-4">
                         {data.recentTickets.length === 0 ? (
                             <p className="text-gray-500 text-sm">No active tickets.</p>
                         ) : (
                             data.recentTickets.map((ticket: any) => (
                                 <div key={ticket.id} className="flex items-center gap-3">
-                                    <div className="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                                    <div className="p-2 bg-orange-50 text-orange-600 rounded-lg shrink-0">
                                         <Ticket className="w-4 h-4" />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -165,7 +167,7 @@ export default function AdminDashboard() {
                                             {ticket.customer?.firstName} {ticket.customer?.lastName}
                                         </p>
                                     </div>
-                                    <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full">
+                                    <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full shrink-0">
                                         {ticket.status}
                                     </span>
                                 </div>
@@ -187,13 +189,13 @@ function KPICard({ title, value, icon, color, negative }: any) {
     };
 
     return (
-        <div className={`bg-white dark:bg-zinc-900 p-5 rounded-xl border ${negative ? 'border-red-200 bg-red-50/50' : 'border-gray-200 dark:border-zinc-800'} shadow-sm flex items-center gap-4`}>
-            <div className={`p-3 rounded-lg ${colorClasses[color as keyof typeof colorClasses] || 'bg-gray-100'}`}>
+        <div className={`bg-white dark:bg-zinc-900 p-3 md:p-5 rounded-xl border ${negative ? 'border-red-200 bg-red-50/50' : 'border-gray-200 dark:border-zinc-800'} shadow-sm flex items-center gap-3 md:gap-4`}>
+            <div className={`p-2 md:p-3 rounded-lg ${colorClasses[color as keyof typeof colorClasses] || 'bg-gray-100'}`}>
                 {icon}
             </div>
             <div>
-                <p className="text-xs font-medium text-gray-500 uppercase">{title}</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+                <p className="text-[10px] md:text-xs font-medium text-gray-500 uppercase">{title}</p>
+                <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
             </div>
         </div>
     );

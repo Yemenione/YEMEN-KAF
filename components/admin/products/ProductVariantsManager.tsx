@@ -17,20 +17,39 @@ interface Variant {
     price: number;
     stock: number;
     isActive: boolean;
+    images?: string | null; // JSON string of array
     attributes: { attributeId: number; valueId: number }[];
 }
 
-export default function ProductVariantsManager({ productId, basePrice, baseSku }: { productId: number, basePrice: number, baseSku: string }) {
+
+interface ProductVariantsManagerProps {
+    productId?: number;
+    basePrice: number;
+    baseSku: string;
+    initialVariants?: Variant[];
+    onChange?: (variants: Variant[]) => void;
+}
+
+export default function ProductVariantsManager({ productId, basePrice, baseSku, initialVariants = [], onChange }: ProductVariantsManagerProps) {
     const [attributes, setAttributes] = useState<Attribute[]>([]);
-    const [selectedAttrs, setSelectedAttrs] = useState<number[]>([]); // IDs of attributes to use
-    const [variants, setVariants] = useState<Variant[]>([]);
+    const [selectedAttrs, setSelectedAttrs] = useState<number[]>([]);
+    const [variants, setVariants] = useState<Variant[]>(initialVariants);
     const [loading, setLoading] = useState(false);
     const [generating, setGenerating] = useState(false);
 
     useEffect(() => {
         fetchAttributes();
-        fetchVariants();
+        if (productId && !initialVariants.length) {
+            fetchVariants(); // Only fetch if editing an existing product and no initial passed
+        }
     }, [productId]);
+
+    // Propagate changes to parent
+    useEffect(() => {
+        if (onChange) {
+            onChange(variants);
+        }
+    }, [variants, onChange]);
 
     const fetchAttributes = async () => {
         const res = await fetch('/api/admin/attributes');
@@ -38,6 +57,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku }
     };
 
     const fetchVariants = async () => {
+        if (!productId) return;
         const res = await fetch(`/api/admin/products/${productId}/variants`);
         if (res.ok) setVariants(await res.json());
     };
@@ -46,31 +66,27 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku }
         if (selectedAttrs.length === 0) return alert("Select at least one attribute");
         setGenerating(true);
 
-        // Filter full attribute objects
+        // ... (existing logic)
         const activeAttributes = attributes.filter(a => selectedAttrs.includes(a.id));
 
-        // Helper to generate combinations
         const combine = (acc: any[], idx: number): any[] => {
             if (idx === activeAttributes.length) return acc;
-
             const attr = activeAttributes[idx];
             const nextAcc = [];
 
             if (acc.length === 0) {
-                // First attribute values
-                nextAcc.push(...attr.values.map(v => ({
+                nextAcc.push(...attr.values.map((v: any) => ({
                     name: v.name,
                     skuPart: v.name.toUpperCase().slice(0, 3),
-                    attrs: [{ attributeId: attr.id, valueId: v.id }]
+                    attrs: [{ attributeId: attr.id, valueId: v.id, value: v.value }] // Added value
                 })));
             } else {
-                // Cross product
                 for (const existing of acc) {
                     for (const v of attr.values) {
                         nextAcc.push({
                             name: `${existing.name} - ${v.name}`,
                             skuPart: `${existing.skuPart}-${v.name.toUpperCase().slice(0, 3)}`,
-                            attrs: [...existing.attrs, { attributeId: attr.id, valueId: v.id }]
+                            attrs: [...existing.attrs, { attributeId: attr.id, valueId: v.id, value: v.value }]
                         });
                     }
                 }
@@ -80,17 +96,18 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku }
 
         const combinations = combine([], 0);
 
-        // Convert to Variant objects
         const newVariants: Variant[] = combinations.map(c => ({
             name: c.name,
             sku: `${baseSku}-${c.skuPart}`,
             price: basePrice,
             stock: 0,
             isActive: true,
-            attributes: c.attrs
+            attributes: c.attrs.map((curr: any) => ({
+                attributeId: curr.attributeId,
+                valueId: curr.valueId
+            }))
         }));
 
-        // Merge with existing? For now, just append or alert
         if (variants.length > 0) {
             if (!confirm("This will append new variants. Continue?")) {
                 setGenerating(false);
@@ -103,10 +120,11 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku }
     };
 
     const handleSave = async () => {
+        if (!productId) return; // Should not happen in create mode (button hidden)
         setLoading(true);
         try {
             const res = await fetch(`/api/admin/products/${productId}/variants`, {
-                method: 'POST', // Bulk replace/update
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ variants })
             });
@@ -125,6 +143,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku }
         }
     };
 
+
     const updateVariant = (index: number, field: keyof Variant, value: any) => {
         const updated = [...variants];
         // @ts-ignore
@@ -134,6 +153,49 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku }
 
     const removeVariant = (index: number) => {
         setVariants(variants.filter((_, i) => i !== index));
+    };
+
+    const handleImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files?.length) return;
+        const file = e.target.files[0];
+        const form = new FormData();
+        form.append('file', file);
+        form.append('folder', 'products/variants');
+
+        try {
+            // Set a temporary loading state for this variant if needed
+            const res = await fetch('/api/admin/media/upload', { method: 'POST', body: form });
+            if (res.ok) {
+                const data = await res.json();
+                // Store as JSON string since schema expects String
+                // But let's check if we want array or single. Schema says String?, likely for one JSON array or one URL.
+                // ProductForm uses array of strings. Let's align.
+                // Since schema is Text, we can store JSON string of array.
+                // But for now, let's just assume we want to append to an array if it exists.
+
+                const currentImages = parseImages(variants[index].images);
+                const newImages = [...currentImages, data.path];
+                updateVariant(index, 'images', JSON.stringify(newImages));
+            }
+        } catch (err) {
+            alert('Upload failed');
+        }
+    };
+
+    const parseImages = (imagesStr?: string | null): string[] => {
+        if (!imagesStr) return [];
+        try {
+            const parsed = JSON.parse(imagesStr);
+            return Array.isArray(parsed) ? parsed : [imagesStr];
+        } catch {
+            return [imagesStr];
+        }
+    };
+
+    const removeImage = (variantIndex: number, imgIndex: number) => {
+        const currentImages = parseImages(variants[variantIndex].images);
+        currentImages.splice(imgIndex, 1);
+        updateVariant(variantIndex, 'images', JSON.stringify(currentImages));
     };
 
     return (
@@ -183,13 +245,15 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku }
                 <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
                     <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex justify-between items-center bg-gray-50 dark:bg-zinc-800/50">
                         <h3 className="font-semibold">Variants ({variants.length})</h3>
-                        <button
-                            onClick={handleSave}
-                            disabled={loading}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
-                        >
-                            <Save size={16} /> Save Changes
-                        </button>
+                        {productId && (
+                            <button
+                                onClick={handleSave}
+                                disabled={loading}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
+                            >
+                                <Save size={16} /> Save Changes
+                            </button>
+                        )}
                     </div>
 
                     <div className="overflow-x-auto">
@@ -200,52 +264,82 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku }
                                     <th className="px-4 py-3">SKU</th>
                                     <th className="px-4 py-3 w-32">Price (€)</th>
                                     <th className="px-4 py-3 w-32">Stock</th>
+                                    <th className="px-4 py-3">Image</th>
                                     <th className="px-4 py-3 w-24">Active</th>
                                     <th className="px-4 py-3 w-16"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                                {variants.map((variant, index) => (
-                                    <tr key={index} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
-                                        <td className="px-4 py-2 font-medium">{variant.name}</td>
-                                        <td className="px-4 py-2">
-                                            <input
-                                                className="w-full bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none px-1 py-1"
-                                                value={variant.sku}
-                                                onChange={e => updateVariant(index, 'sku', e.target.value)}
-                                            />
-                                        </td>
-                                        <td className="px-4 py-2">
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                className="w-full bg-transparent border border-gray-200 rounded px-2 py-1 focus:border-blue-500"
-                                                value={variant.price}
-                                                onChange={e => updateVariant(index, 'price', parseFloat(e.target.value))}
-                                            />
-                                        </td>
-                                        <td className="px-4 py-2">
-                                            <input
-                                                type="number"
-                                                className="w-full bg-transparent border border-gray-200 rounded px-2 py-1 focus:border-blue-500"
-                                                value={variant.stock}
-                                                onChange={e => updateVariant(index, 'stock', parseInt(e.target.value))}
-                                            />
-                                        </td>
-                                        <td className="px-4 py-2 text-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={variant.isActive}
-                                                onChange={e => updateVariant(index, 'isActive', e.target.checked)}
-                                            />
-                                        </td>
-                                        <td className="px-4 py-2 text-center">
-                                            <button onClick={() => removeVariant(index)} className="text-red-500 hover:bg-red-50 p-1.5 rounded">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {variants.map((variant, index) => {
+                                    const variantImages = parseImages(variant.images);
+                                    return (
+                                        <tr key={index} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                                            <td className="px-4 py-2 font-medium">{variant.name}</td>
+                                            <td className="px-4 py-2">
+                                                <input
+                                                    className="w-full bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none px-1 py-1"
+                                                    value={variant.sku}
+                                                    onChange={e => updateVariant(index, 'sku', e.target.value)}
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    className="w-full bg-transparent border border-gray-200 rounded px-3 py-2 focus:border-blue-500"
+                                                    value={isNaN(variant.price) ? '' : variant.price}
+                                                    onChange={e => {
+                                                        const val = parseFloat(e.target.value);
+                                                        updateVariant(index, 'price', isNaN(val) ? 0 : val);
+                                                    }}
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                <input
+                                                    type="number"
+                                                    className="w-full bg-transparent border border-gray-200 rounded px-2 py-1 focus:border-blue-500"
+                                                    value={isNaN(variant.stock) ? '' : variant.stock}
+                                                    onChange={e => {
+                                                        const val = parseInt(e.target.value);
+                                                        updateVariant(index, 'stock', isNaN(val) ? 0 : val);
+                                                    }}
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    {variantImages.length > 0 ? (
+                                                        <div className="relative w-8 h-8 rounded border overflow-hidden group">
+                                                            <img src={variantImages[0]} alt="Variant" className="w-full h-full object-cover" />
+                                                            <button
+                                                                onClick={() => removeImage(index, 0)}
+                                                                className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                                            >
+                                                                <Trash2 size={12} />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <label className="w-8 h-8 flex items-center justify-center border border-dashed rounded cursor-pointer hover:bg-gray-100">
+                                                            <Plus size={14} className="text-gray-400" />
+                                                            <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(index, e)} />
+                                                        </label>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-2 text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={variant.isActive}
+                                                    onChange={e => updateVariant(index, 'isActive', e.target.checked)}
+                                                />
+                                            </td>
+                                            <td className="px-4 py-2 text-center">
+                                                <button onClick={() => removeVariant(index)} className="text-red-500 hover:bg-red-50 p-1.5 rounded">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

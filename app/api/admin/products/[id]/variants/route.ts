@@ -24,8 +24,12 @@ export async function GET(
             name: v.name,
             sku: v.sku,
             price: Number(v.price),
+            compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : null,
             stock: v.stock,
             isActive: v.isActive,
+            images: v.images, // Pass raw JSON string or parse if needed. Frontend currently expects string from initialData but let's see. 
+            // ProductForm parses initialData.images. ProductVariantsManager will likely want specific handling.
+            // Let's pass it as is (string or null).
             attributes: v.attributeValues.map(av => ({
                 attributeId: av.attributeValue.attributeId,
                 valueId: av.attributeValue.id
@@ -67,28 +71,43 @@ export async function POST(
 
             // 3. Upsert variants
             for (const v of variants) {
+                const variantData = {
+                    name: v.name,
+                    sku: v.sku,
+                    price: v.price,
+                    compareAtPrice: v.compareAtPrice,
+                    stock: v.stock,
+                    isActive: v.isActive,
+                    images: v.images // Expecting JSON string
+                };
+
                 if (v.id) {
                     // Update
                     await tx.productVariant.update({
                         where: { id: v.id },
-                        data: {
-                            name: v.name,
-                            sku: v.sku,
-                            price: v.price,
-                            stock: v.stock,
-                            isActive: v.isActive
-                        }
+                        data: variantData
                     });
+
+                    // Update Attributes: Delete existing, recreate new links
+                    await tx.productVariantValue.deleteMany({
+                        where: { variantId: v.id }
+                    });
+
+                    if (v.attributes && v.attributes.length > 0) {
+                        await tx.productVariantValue.createMany({
+                            data: v.attributes.map((attr: any) => ({
+                                variantId: v.id,
+                                attributeValueId: attr.valueId
+                            }))
+                        });
+                    }
+
                 } else {
                     // Create
                     const newVariant = await tx.productVariant.create({
                         data: {
                             productId,
-                            name: v.name,
-                            sku: v.sku,
-                            price: v.price,
-                            stock: v.stock,
-                            isActive: v.isActive
+                            ...variantData
                         }
                     });
 

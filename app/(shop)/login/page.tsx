@@ -23,7 +23,12 @@ export default function LoginPage() {
         const result = await login(email, password);
 
         if (result.success) {
-            router.push('/account');
+            // @ts-ignore
+            if (result.user?.isAdmin || result.user?.role === 'SUPER_ADMIN' || result.user?.role === 'ADMIN') {
+                router.push('/admin-portal');
+            } else {
+                router.push('/account');
+            }
         } else {
             setError(result.error || t('auth.error.login'));
         }

@@ -101,30 +101,30 @@ export default function ProductSpecs({
     return (
         <div className="mt-12 border-t border-gray-200">
             {/* Tabs */}
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-gray-200 overflow-x-auto flex-nowrap scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
                 <button
                     onClick={() => setActiveTab('description')}
-                    className={`px-8 py-4 font-bold uppercase tracking-widest text-sm transition-all ${activeTab === 'description'
-                            ? 'border-b-2 border-black text-black'
-                            : 'text-gray-400 hover:text-gray-600'
+                    className={`whitespace-nowrap px-6 md:px-8 py-4 font-bold uppercase tracking-widest text-xs md:text-sm transition-all flex-shrink-0 ${activeTab === 'description'
+                        ? 'border-b-2 border-black text-black'
+                        : 'text-gray-400 hover:text-gray-600'
                         }`}
                 >
                     {t('product.description') || 'Description'}
                 </button>
                 <button
                     onClick={() => setActiveTab('specs')}
-                    className={`px-8 py-4 font-bold uppercase tracking-widest text-sm transition-all ${activeTab === 'specs'
-                            ? 'border-b-2 border-black text-black'
-                            : 'text-gray-400 hover:text-gray-600'
+                    className={`whitespace-nowrap px-6 md:px-8 py-4 font-bold uppercase tracking-widest text-xs md:text-sm transition-all flex-shrink-0 ${activeTab === 'specs'
+                        ? 'border-b-2 border-black text-black'
+                        : 'text-gray-400 hover:text-gray-600'
                         }`}
                 >
                     {t('product.specifications') || 'Specifications'}
                 </button>
                 <button
                     onClick={() => setActiveTab('shipping')}
-                    className={`px-8 py-4 font-bold uppercase tracking-widest text-sm transition-all ${activeTab === 'shipping'
-                            ? 'border-b-2 border-black text-black'
-                            : 'text-gray-400 hover:text-gray-600'
+                    className={`whitespace-nowrap px-6 md:px-8 py-4 font-bold uppercase tracking-widest text-xs md:text-sm transition-all flex-shrink-0 ${activeTab === 'shipping'
+                        ? 'border-b-2 border-black text-black'
+                        : 'text-gray-400 hover:text-gray-600'
                         }`}
                 >
                     {t('product.shipping') || 'Shipping & Returns'}
