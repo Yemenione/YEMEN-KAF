@@ -22,6 +22,7 @@ export async function GET(
                 category: {
                     select: { name: true, slug: true }
                 },
+                carriers: true,
                 variants: {
                     where: { isActive: true },
                     include: {
@@ -56,6 +57,7 @@ export async function GET(
             category_name: product.category?.name,
             category_slug: product.category?.slug,
             image_url: product.images ? JSON.parse(product.images)[0] : null, // Helper
+            carriers: product.carriers,
             // Flatten variants for easier usage
             variants: product.variants.map((v: any) => ({
                 ...v,
@@ -86,59 +88,66 @@ export async function PUT(
         if (!authorized) return response;
 
         const { slug } = await params;
-        const id = slug; // Rename for clarity, assuming ID passed
+        const id = parseInt(slug);
+
+        if (isNaN(id)) {
+            return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
+        }
 
         const body = await req.json();
 
-        // Dynamic query building
-        const updates: string[] = [];
-        const values: any[] = [];
+        // Destructure known fields to ensure type safety and only update what is allowed
+        const {
+            name, slug: newSlug, sku, description, price,
+            stock_quantity, category_id, brand_id, images,
+            is_active, is_featured,
+            cost_price, weight, width, height, depth,
+            meta_title, meta_description, related_ids,
+            compare_at_price, hs_code, origin_country,
+            tax_rule_id, carriers
+        } = body;
 
-        // Whitelist allowed fields
-        const allowedFields = [
-            'name', 'slug', 'sku', 'description', 'price',
-            'stock_quantity', 'category_id', 'brand_id', 'images',
-            'is_active', 'is_featured',
-            'cost_price', 'weight', 'width', 'height', 'depth',
-            'meta_title', 'meta_description', 'related_ids',
-            'name', 'slug', 'sku', 'description', 'price',
-            'compare_at_price',
-            'stock_quantity', 'category_id', 'brand_id', 'images',
-            'is_active', 'is_featured',
-            'cost_price', 'weight', 'width', 'height', 'depth',
-            'meta_title', 'meta_description', 'related_ids',
-            'hs_code', 'origin_country',
-            'tax_rule_id'
-        ];
-
-        for (const [key, value] of Object.entries(body)) {
-            if (allowedFields.includes(key)) {
-                updates.push(`${key} = ?`);
-                values.push(value);
+        const updatedProduct = await prisma.product.update({
+            where: { id },
+            data: {
+                name,
+                slug: newSlug,
+                sku,
+                description,
+                price: price !== undefined ? parseFloat(price) : undefined,
+                stockQuantity: stock_quantity !== undefined ? parseInt(stock_quantity) : undefined,
+                categoryId: category_id ? parseInt(category_id) : null,
+                brandId: brand_id ? parseInt(brand_id) : null,
+                images: images ? (Array.isArray(images) ? JSON.stringify(images) : images) : undefined,
+                isActive: is_active,
+                isFeatured: is_featured,
+                costPrice: cost_price !== undefined ? parseFloat(cost_price) : undefined,
+                weight: weight !== undefined ? parseFloat(weight) : undefined,
+                width: width !== undefined ? parseFloat(width) : undefined,
+                height: height !== undefined ? parseFloat(height) : undefined,
+                depth: depth !== undefined ? parseFloat(depth) : undefined,
+                metaTitle: meta_title,
+                metaDescription: meta_description,
+                relatedIds: related_ids,
+                compareAtPrice: compare_at_price !== undefined ? parseFloat(compare_at_price) : undefined,
+                hsCode: hs_code,
+                originCountry: origin_country,
+                taxRuleId: tax_rule_id ? parseInt(tax_rule_id) : null,
+                carriers: carriers ? {
+                    set: Array.isArray(carriers) ? carriers.map((cid: any) => ({ id: parseInt(cid) })) : []
+                } : undefined
             }
-        }
+        });
 
-        if (updates.length === 0) {
-            return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
-        }
-
-        updates.push('updated_at = NOW()');
-
-        const query = `UPDATE products SET ${updates.join(', ')} WHERE id = ?`;
-        values.push(id);
-
-        const [result]: any = await pool.execute(query, values);
-
-        if (result.affectedRows === 0) {
-            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-        }
-
-        return NextResponse.json({ success: true, message: 'Product updated successfully' });
+        return NextResponse.json({ success: true, message: 'Product updated successfully', product: updatedProduct });
 
     } catch (error: any) {
         console.error('Product update error:', error);
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 'P2002') {
             return NextResponse.json({ error: 'SKU or Slug already exists' }, { status: 409 });
+        }
+        if (error.code === 'P2025') {
+            return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
         return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
     }

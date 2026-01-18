@@ -153,7 +153,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
         ? (selectedVariant.compareAtPrice ? Number(selectedVariant.compareAtPrice) : null)
         : (product.compare_at_price ? Number(product.compare_at_price) : null);
 
-    const currentStock = selectedVariant ? selectedVariant.stock : (product as any).stock_quantity;
+    const currentStock = selectedVariant ? selectedVariant.stock : ((product as any).stock || (product as any).stock_quantity || (product as any).quantity);
     const isOutOfStock = currentStock <= 0;
 
     const discountPercentage = currentCompareAtPrice && currentCompareAtPrice > currentPrice
@@ -314,10 +314,23 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                         )}
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                            <div className="flex items-center border border-gray-100 rounded-full bg-white shadow-sm overflow-hidden">
-                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-6 py-4 text-gray-400 hover:text-black transition-colors">-</button>
+                            <div className="flex-shrink-0 flex items-center border border-gray-100 rounded-full bg-white shadow-sm overflow-hidden">
+                                <button
+                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                    className="w-12 h-14 flex items-center justify-center text-gray-400 hover:text-black transition-colors"
+                                >
+                                    -
+                                </button>
                                 <span className="w-8 text-center font-bold text-sm tracking-tighter">{quantity}</span>
-                                <button onClick={() => setQuantity(Math.min(currentStock || 10, quantity + 1))} className="px-6 py-4 text-gray-400 hover:text-black transition-colors">+</button>
+                                <button
+                                    onClick={() => {
+                                        const stock = selectedVariant?.stock ?? (product as any).stock ?? (product as any).stock_quantity ?? (product as any).quantity ?? 10;
+                                        setQuantity(Math.min(stock, quantity + 1));
+                                    }}
+                                    className="w-12 h-14 flex items-center justify-center text-gray-400 hover:text-black transition-colors"
+                                >
+                                    +
+                                </button>
                             </div>
                             <button
                                 disabled={!canAddToCart}
@@ -346,7 +359,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             {/* French Logistics - DYNAMIC */}
                             {carriers.length > 0 && (
                                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                    <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-8 border-l-2 border-black pl-4">Expedition Certifiée</h4>
+                                    <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-8 border-l-2 border-black pl-4">{t('product.certifiedShipping')}</h4>
                                     <div className="flex flex-wrap items-center gap-10">
                                         {carriers.map((carrier) => (
                                             <div key={carrier.id} className="flex flex-col items-center gap-3 group">
@@ -365,7 +378,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                     </div>
                                     <p className="mt-6 text-[10px] text-gray-400 font-medium italic opacity-60 uppercase tracking-widest flex items-center gap-2">
                                         <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                        Livraison sécurisée sous 2 à 4 jours ouvrés
+                                        {t('product.secureDelivery')}
                                     </p>
                                 </div>
                             )}
@@ -377,8 +390,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                         <Shield size={20} className="text-black" />
                                     </div>
                                     <div>
-                                        <h5 className="text-[10px] font-bold text-black uppercase tracking-[0.15em]">Garantie Authenticité</h5>
-                                        <p className="text-[10px] text-gray-400 font-medium mt-1">100% Certifié d'Origine</p>
+                                        <h5 className="text-[10px] font-bold text-black uppercase tracking-[0.15em]">{t('product.authenticity')}</h5>
+                                        <p className="text-[10px] text-gray-400 font-medium mt-1">{t('product.authenticityDesc')}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-5 p-6 rounded-2xl bg-white border border-gray-50 shadow-sm hover:shadow-md transition-shadow">
@@ -386,15 +399,15 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                         <Check size={20} className="text-black" />
                                     </div>
                                     <div>
-                                        <h5 className="text-[10px] font-bold text-black uppercase tracking-[0.15em]">Controle Qualité</h5>
-                                        <p className="text-[10px] text-gray-400 font-medium mt-1">Vérifié avant expédition</p>
+                                        <h5 className="text-[10px] font-bold text-black uppercase tracking-[0.15em]">{t('product.qualityControl')}</h5>
+                                        <p className="text-[10px] text-gray-400 font-medium mt-1">{t('product.qualityControlDesc')}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Secure Payment */}
                             <div className="pt-6 text-center">
-                                <h4 className="text-[9px] uppercase tracking-[0.3em] font-bold text-gray-300 mb-6">Paiement Hautement Sécurisé</h4>
+                                <h4 className="text-[9px] uppercase tracking-[0.3em] font-bold text-gray-300 mb-6">{t('product.securePayment')}</h4>
                                 <div className="flex justify-center items-center gap-8 grayscale opacity-30 hover:opacity-100 hover:grayscale-0 transition-all duration-700">
                                     <div className="h-4 w-10 relative"><Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" fill className="object-contain" /></div>
                                     <div className="h-6 w-10 relative"><Image src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" /></div>
@@ -498,7 +511,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                                         {review.patient?.firstName} {review.patient?.lastName}
                                                         {review.isVerified && (
                                                             <span className="inline-flex items-center gap-1.5 text-[8px] bg-green-50 text-green-600 px-3 py-1 rounded-full font-black uppercase tracking-[0.1em] border border-green-100">
-                                                                <Check size={10} /> Vérifié
+                                                                <Check size={10} /> {t('product.verified')}
                                                             </span>
                                                         )}
                                                     </h5>
@@ -524,7 +537,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-6 lg:hidden z-40 safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.05)] rounded-t-[2.5rem]">
                 <div className="flex gap-6 items-center">
                     <div className="flex flex-col">
-                        <span className="text-[9px] text-gray-400 uppercase font-black tracking-[0.2em] mb-1">Total TTC</span>
+                        <span className="text-[9px] text-gray-400 uppercase font-black tracking-[0.2em] mb-1">{t('product.totalTTC')}</span>
                         <div className="flex items-baseline gap-2">
                             <span className="text-2xl font-light text-black tracking-tighter">{currentPrice.toFixed(2)}€</span>
                         </div>
@@ -554,8 +567,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             <div className="bg-stone-50/50 mt-32">
                 <div className="max-w-7xl mx-auto px-6 py-24">
                     <div className="mb-12">
-                        <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold">Suggestions</span>
-                        <h2 className="text-4xl font-serif text-[var(--coffee-brown)] mt-4">Poursuivez votre exploration</h2>
+                        <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold">{t('product.suggestions')}</span>
+                        <h2 className="text-4xl font-serif text-[var(--coffee-brown)] mt-4">{t('product.continueExploring')}</h2>
                     </div>
                     <BestSellers />
                 </div>

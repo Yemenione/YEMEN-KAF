@@ -144,6 +144,7 @@ model Product {
   stockMovements  StockMovement[]
   wishlists       Wishlist[]
   reviews         Review[]
+  carriers        Carrier[]
 
   @@index([brandId], map: "products_brand_id_fkey")
   @@index([categoryId], map: "products_category_id_fkey")
@@ -620,6 +621,7 @@ model Carrier {
   isActive        Boolean  @default(true) @map("is_active")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
+  products        Product[]
 
   @@map("carriers")
 }

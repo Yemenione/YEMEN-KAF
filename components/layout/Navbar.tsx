@@ -9,13 +9,12 @@ import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { useWishlist } from "@/context/WishlistContext";
-import { useRouter } from "next/navigation";
 import TopMarquee from "./TopMarquee";
 import SearchWithSuggestions from "../search/SearchWithSuggestions";
 import { useSettings } from "@/context/SettingsContext";
 
 function LanguageSelector() {
-    const { locale, setLocale } = useLanguage();
+    const { locale, setLocale, isRTL } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleLang = (l: "en" | "fr" | "ar") => {
@@ -24,22 +23,36 @@ function LanguageSelector() {
     };
 
     return (
-        <div className="relative">
+        <div className="relative group">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-1 hover:text-[var(--honey-gold)] transition-colors uppercase text-xs font-bold tracking-widest"
+                className="flex items-center gap-1.5 hover:text-[var(--honey-gold)] transition-colors uppercase text-[11px] font-bold tracking-widest py-2"
             >
-                <Globe className="w-4 h-4" />
+                <Globe className="w-3.5 h-3.5" />
                 <span>{locale}</span>
+                <ChevronDown className={clsx("w-3 h-3 transition-transform duration-300", isOpen ? "rotate-180" : "")} />
             </button>
 
-            {isOpen && (
-                <div className="absolute top-full end-0 mt-2 bg-white border border-gray-100 shadow-xl rounded-none py-1 min-w-[100px] z-50 animate-fade-in">
-                    <button onClick={() => toggleLang("en")} className="block w-full text-start px-4 py-2 text-xs hover:bg-gray-50 text-black">English</button>
-                    <button onClick={() => toggleLang("fr")} className="block w-full text-start px-4 py-2 text-xs hover:bg-gray-50 text-black">Français</button>
-                    <button onClick={() => toggleLang("ar")} className="block w-full text-end px-4 py-2 text-xs hover:bg-gray-50 text-black font-serif">العربية</button>
+            <div className={clsx(
+                "absolute top-full mt-0 pt-2 min-w-[140px] z-50 transition-all duration-300 transform origin-top",
+                isOpen ? "opacity-100 scale-100 visible" : "opacity-0 scale-95 invisible",
+                isRTL ? "start-0" : "end-0" // Align based on direction
+            )}>
+                <div className="bg-white border border-black/5 shadow-xl rounded-sm overflow-hidden py-1">
+                    <button onClick={() => toggleLang("en")} className={clsx("w-full text-start px-4 py-2.5 text-xs hover:bg-gray-50 flex items-center justify-between group/item", locale === 'en' ? "font-bold text-[var(--coffee-brown)]" : "text-gray-500")}>
+                        <span>English</span>
+                        {locale === 'en' && <span className="w-1.5 h-1.5 rounded-full bg-[var(--honey-gold)]"></span>}
+                    </button>
+                    <button onClick={() => toggleLang("fr")} className={clsx("w-full text-start px-4 py-2.5 text-xs hover:bg-gray-50 flex items-center justify-between group/item", locale === 'fr' ? "font-bold text-[var(--coffee-brown)]" : "text-gray-500")}>
+                        <span>Français</span>
+                        {locale === 'fr' && <span className="w-1.5 h-1.5 rounded-full bg-[var(--honey-gold)]"></span>}
+                    </button>
+                    <button onClick={() => toggleLang("ar")} className={clsx("w-full text-end px-4 py-2.5 text-xs hover:bg-gray-50 flex items-center justify-between group/item font-serif", locale === 'ar' ? "font-bold text-[var(--coffee-brown)]" : "text-gray-500")}>
+                        <span>العربية</span>
+                        {locale === 'ar' && <span className="w-1.5 h-1.5 rounded-full bg-[var(--honey-gold)]"></span>}
+                    </button>
                 </div>
-            )}
+            </div>
         </div>
     );
 }
@@ -49,6 +62,13 @@ export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
     const [megaMenuItems, setMegaMenuItems] = useState<any[]>([]);
+
+    const { openCart, items } = useCart();
+    const { user, logout } = useAuth();
+    const { wishlistCount, openWishlist } = useWishlist();
+    const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+    const { settings } = useSettings();
+    const { t, isRTL } = useLanguage();
 
     useEffect(() => {
         const fetchMegaMenuProducts = async () => {
@@ -67,176 +87,168 @@ export default function Navbar() {
 
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
+            setIsScrolled(window.scrollY > 20);
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    const { openCart, items } = useCart();
-    const { user, logout } = useAuth();
-    const { wishlistCount, openWishlist } = useWishlist();
-    const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
-    const { settings } = useSettings();
-
-    // Dynamic Text Color based on Scroll Key
-    const textColorClass = "text-[var(--coffee-brown)]"; // Black
     const logoSrc = settings.logo_url || "/images/logo.png";
 
     const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
-        <Link href={href} className={clsx("group relative text-xs uppercase tracking-[0.2em] font-bold transition-colors hover:text-[var(--honey-gold)]", textColorClass)}>
+        <Link href={href} className={clsx(
+            "group relative text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-medium transition-colors py-2",
+            isScrolled ? "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)]" : "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] md:text-black md:hover:text-[var(--honey-gold)]"
+        )}>
             {children}
-            <span className="absolute -bottom-2 start-0 w-0 h-[2px] bg-[var(--coffee-brown)] transition-all duration-300 group-hover:w-full"></span>
+            <span className={clsx(
+                "absolute bottom-2 h-[2px] bg-[var(--honey-gold)] transition-all duration-300 opacity-0 group-hover:opacity-100",
+                isRTL ? "end-0 w-0 group-hover:w-full" : "start-0 w-0 group-hover:w-full"
+            )}></span>
         </Link>
     );
 
-    // Search Logic (Handled by SearchWithSuggestions component now)
-    const { t } = useLanguage();
-
-
     return (
         <>
-            <header className="fixed top-0 start-0 end-0 z-50 flex flex-col transition-all duration-500">
-                {/* Marquee sits on top */}
-                <TopMarquee />
+            <header className={clsx(
+                "fixed top-0 start-0 end-0 z-50 flex flex-col transition-all duration-300",
+                isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-0 border-b border-black/5" : "bg-transparent py-2"
+            )}>
+                {/* Top Level: Marquee - Only show at top? Or always? Let's hide on scroll to save space if requested compact */}
+                <div className={clsx("transition-all duration-300", isScrolled ? "h-0 opacity-0 overflow-hidden" : "h-auto opacity-100")}>
+                    <TopMarquee />
+                </div>
 
-                <nav
-                    className={clsx(
-                        "w-full px-6 md:px-12 transition-all duration-500 ease-out border-b",
-                        isScrolled
-                            ? "bg-white/40 backdrop-blur-md py-2 shadow-sm border-black/5"
-                            : "bg-transparent py-4 border-transparent"
-                    )}
-                    onMouseLeave={() => setIsMegaMenuOpen(false)}
-                >
-                    <div className="max-w-7xl mx-auto flex items-center justify-between">
-                        {/* Left: Navigation (Desktop) */}
-                        <div className="hidden md:flex items-center gap-8">
-                            {settings.menu_main_nav ? (
-                                JSON.parse(settings.menu_main_nav).map((item: any, idx: number) => (
-                                    <NavLink key={idx} href={item.href}>{item.label}</NavLink>
-                                ))
-                            ) : (
-                                <>
+                {/* Main Navbar */}
+                <nav className="relative z-50 w-full">
+                    <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16">
+                        <div className={clsx(
+                            "flex items-center justify-between transition-all duration-300",
+                            isScrolled ? "h-16" : "h-20"
+                        )}>
+
+                            {/* LEFT: Logo */}
+                            <div className="flex-shrink-0 flex items-center gap-8">
+                                <Link href="/" className="relative block">
+                                    <div className="relative w-10 h-10 md:w-12 md:h-12 transition-all duration-300">
+                                        <Image
+                                            src={logoSrc}
+                                            alt={`${settings.site_name} Logo`}
+                                            fill
+                                            className="object-contain"
+                                            priority
+                                            sizes="48px"
+                                        />
+                                    </div>
+                                </Link>
+
+                                {/* DESKTOP NAV LINKS (Moved next to Logo) */}
+                                <div className="hidden md:flex items-center gap-6 lg:gap-8">
+                                    <NavLink href="/">{t("nav.home") || "Home"}</NavLink>
+
+                                    <div
+                                        className="group relative h-full flex items-center"
+                                        onMouseEnter={() => setIsMegaMenuOpen(true)}
+                                        onMouseLeave={() => setIsMegaMenuOpen(false)}
+                                    >
+                                        <Link
+                                            href="/shop"
+                                            className={clsx(
+                                                "flex items-center gap-1 text-[11px] uppercase tracking-[0.2em] font-medium transition-colors py-2",
+                                                isScrolled ? "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)]" : "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] md:text-black md:hover:text-[var(--honey-gold)]"
+                                            )}
+                                        >
+                                            {t("nav.shop")}
+                                            <ChevronDown className={clsx("w-3 h-3 transition-transform duration-300", isMegaMenuOpen ? "rotate-180" : "")} />
+                                        </Link>
+                                    </div>
+
                                     <NavLink href="/our-story">{t("nav.ourStory")}</NavLink>
                                     <NavLink href="/the-farms">{t("nav.farms")}</NavLink>
-                                </>
-                            )}
-                        </div>
-
-                        {/* Center: Brand Logo */}
-                        <Link href="/" className="relative z-50 group flex flex-col items-center">
-                            <div className="relative w-8 h-8 mb-1">
-                                <Image
-                                    src={logoSrc}
-                                    alt={`${settings.site_name} Logo`}
-                                    fill
-                                    className="object-contain"
-                                    priority
-                                    sizes="150px"
-                                />
-                            </div>
-                            <span className={clsx("text-base font-serif tracking-widest uppercase transition-colors duration-300", textColorClass)}>
-                                {settings.site_name}
-                            </span>
-                        </Link>
-
-                        {/* Right: Actions */}
-                        <div className={clsx("flex items-center gap-6", textColorClass)}>
-                            {/* Mega Menu Trigger */}
-                            <div
-                                className="hidden md:block group relative h-full flex items-center cursor-pointer"
-                                onMouseEnter={() => setIsMegaMenuOpen(true)}
-                            >
-                                <Link href="/shop" className="flex items-center gap-1 text-xs uppercase tracking-[0.2em] font-bold hover:text-[var(--honey-gold)] transition-colors">
-                                    {t("nav.shop")} <ChevronDown className={clsx("w-3 h-3 transition-transform duration-300", isMegaMenuOpen ? "rotate-180" : "")} />
-                                </Link>
+                                    <NavLink href="/contact">Contact</NavLink>
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-4 ps-6 border-s border-black/10">
-                                <LanguageSelector />
+                            {/* RIGHT: Actions */}
+                            <div className="flex items-center justify-end gap-3 md:gap-5 text-[var(--coffee-brown)]">
+                                <div className="hidden md:block">
+                                    <LanguageSelector />
+                                </div>
+                                <div className="hidden md:block w-px h-3 bg-gray-300 mx-1"></div>
+                                <div className="hidden md:block">
+                                    <SearchWithSuggestions />
+                                </div>
 
-                                {/* Search Input */}
-                                <SearchWithSuggestions />
-
-                                {/* User Link - Hidden on Mobile (in Bottom Nav) */}
                                 <Link
                                     href={user ? "/account" : "/login"}
-                                    className="hidden md:flex hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 items-center justify-center"
-                                    title={user ? `Account (${user.firstName})` : "Login"}
+                                    className="hidden md:flex hover:text-[var(--honey-gold)] transition-transform hover:scale-105 duration-300"
                                 >
-                                    {user ? (
-                                        <div className="w-6 h-6 rounded-full bg-black text-white text-[10px] flex items-center justify-center font-bold uppercase">
-                                            {user.firstName[0]}{user.lastName ? user.lastName[0] : ''}
-                                        </div>
-                                    ) : (
-                                        <User className="w-5 h-5" />
-                                    )}
+                                    <User className="w-5 h-5 stroke-1.5" />
                                 </Link>
 
-                                {/* Wishlist - Hidden on Mobile (in Bottom Nav) */}
                                 <button
                                     onClick={openWishlist}
                                     className="hidden md:block hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 relative"
-                                    title="My Wishlist"
+                                    title="Wishlist"
                                 >
-                                    <Heart className="w-5 h-5" />
+                                    <Heart className="w-5 h-5 stroke-1.5" />
                                     {wishlistCount > 0 && (
-                                        <span className="absolute -top-2 -end-2 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--coffee-brown)] text-[10px] text-white font-bold">
+                                        <span className="absolute -top-1.5 -end-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[var(--honey-gold)] text-[9px] text-white font-bold animate-zoom-in">
                                             {wishlistCount}
                                         </span>
                                     )}
                                 </button>
 
-                                {/* Cart - Hidden on Mobile (in Bottom Nav) */}
                                 <button
                                     onClick={openCart}
-                                    className="hidden md:block relative hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300"
+                                    className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 relative"
+                                    title="Cart"
                                 >
-                                    <ShoppingBag className="w-5 h-5" />
+                                    <ShoppingBag className="w-5 h-5 stroke-1.5" />
                                     {itemCount > 0 && (
-                                        <span className="absolute -top-2 -end-2 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--coffee-brown)] text-[10px] text-white font-bold">
+                                        <span className="absolute -top-1.5 -end-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[var(--coffee-brown)] text-[9px] text-white font-bold animate-zoom-in">
                                             {itemCount}
                                         </span>
                                     )}
                                 </button>
+
+                                {/* Mobile Menu Trigger (Right side on mobile) */}
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                    className="md:hidden p-1 text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors"
+                                >
+                                    {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                                </button>
                             </div>
 
-                            {/* Mobile Menu Toggle - Visible only on mobile */}
-                            <button
-                                className="md:hidden ms-2"
-                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            >
-                                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                            </button>
                         </div>
                     </div>
 
-                    {/* Mega Menu Dropdown */}
+                    {/* MEGA MENU DROPDOWN */}
                     <div
                         className={clsx(
-                            "absolute top-full start-0 w-full bg-white border-b border-black/5 shadow-xl overflow-hidden transition-all duration-500 ease-in-out z-40",
-                            isMegaMenuOpen ? "max-h-[500px] opacity-100 visible" : "max-h-0 opacity-0 invisible"
+                            "absolute top-full start-0 w-full bg-white border-b border-black/5 shadow-2xl overflow-hidden transition-all duration-500 ease-in-out z-40",
+                            isMegaMenuOpen ? "max-h-[500px] opacity-100 visible translate-y-0" : "max-h-0 opacity-0 invisible -translate-y-2"
                         )}
                         onMouseEnter={() => setIsMegaMenuOpen(true)}
                         onMouseLeave={() => setIsMegaMenuOpen(false)}
                     >
                         <div className="max-w-7xl mx-auto px-12 py-12 grid grid-cols-4 gap-12">
-                            {/* Collection Info */}
-                            <div className="col-span-1 space-y-6 border-e border-black/5">
-                                <h3 className="text-[var(--coffee-brown)] uppercase tracking-widest text-sm font-bold">{t('footer.collections')}</h3>
-                                <ul className="space-y-4 text-[var(--coffee-brown)]/80 text-sm">
-                                    <li><Link href="/shop?category=honey" className="hover:text-[var(--honey-gold)] transition-colors hover:ps-2 duration-300">{t('footer.honey')}</Link></li>
-                                    <li><Link href="/shop?category=coffee" className="hover:text-[var(--honey-gold)] transition-colors hover:ps-2 duration-300">{t('footer.coffee')}</Link></li>
-                                    <li><Link href="/shop?category=gifts" className="hover:text-[var(--honey-gold)] transition-colors hover:ps-2 duration-300">{t('footer.gifts')}</Link></li>
-                                    <li><Link href="/shop?category=wholesale" className="hover:text-[var(--honey-gold)] transition-colors hover:ps-2 duration-300">{t('footer.wholesale')}</Link></li>
+                            {/* Column 1: Categories */}
+                            <div className="col-span-1 space-y-6 md:border-e border-black/5 pe-8">
+                                <h3 className="font-serif text-lg text-[var(--coffee-brown)]">{t('footer.collections')}</h3>
+                                <div className="w-10 h-0.5 bg-[var(--honey-gold)]"></div>
+                                <ul className="space-y-3.5 text-sm">
+                                    <li><Link href="/shop" className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">{t("nav.shopAll") || "Shop All"}</Link></li>
+                                    <li><Link href="/shop?category=honey" className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">{t('footer.honey')}</Link></li>
+                                    <li><Link href="/shop?category=coffee" className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">{t('footer.coffee')}</Link></li>
+                                    <li><Link href="/shop?category=gifts" className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">{t('footer.gifts')}</Link></li>
                                 </ul>
                             </div>
 
-                            {/* Products Grid */}
+                            {/* Columns 2-4: Products Feature */}
                             {megaMenuItems.length > 0 ? (
                                 megaMenuItems.map((item) => {
-                                    // Helper to extract main image
                                     let displayImage = '/images/honey-jar.jpg';
                                     try {
                                         if (item.images) {
@@ -252,25 +264,27 @@ export default function Navbar() {
                                     }
 
                                     return (
-                                        <Link key={item.id} href={`/shop/${item.slug}`} className="group col-span-1 block" onClick={() => setIsMegaMenuOpen(false)}>
-                                            <div className="relative aspect-square overflow-hidden bg-gray-50 mb-4">
+                                        <Link key={item.id} href={`/shop/${item.slug}`} className="group col-span-1 block text-center" onClick={() => setIsMegaMenuOpen(false)}>
+                                            <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-50 mb-4 rounded-sm">
                                                 <Image
                                                     src={displayImage}
                                                     alt={item.name}
                                                     fill
-                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                                    sizes="(max-width: 1200px) 25vw, 20vw"
+                                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
                                                 />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300"></div>
                                             </div>
-                                            <div className="space-y-1 text-center">
-                                                <h4 className="font-serif text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-1">{item.name}</h4>
-                                                <span className="text-xs font-bold text-[var(--honey-gold)] uppercase tracking-widest">{Number(item.price).toFixed(2)}€</span>
+                                            <div className="space-y-1.5">
+                                                <h4 className="font-serif text-[var(--coffee-brown)] text-lg leading-tight group-hover:text-[var(--honey-gold)] transition-colors line-clamp-1">{item.name}</h4>
+                                                <div className="w-6 h-px bg-gray-200 mx-auto group-hover:w-16 group-hover:bg-[var(--honey-gold)] transition-all duration-500"></div>
+                                                <span className="block text-xs font-bold text-[var(--coffee-brown)] uppercase tracking-widest">{Number(item.price).toFixed(2)}€</span>
                                             </div>
                                         </Link>
                                     );
                                 })
                             ) : (
-                                <div className="col-span-3 text-center text-gray-400 py-10">
+                                <div className="col-span-3 text-center text-gray-400 py-10 flex items-center justify-center">
                                     <p>{t('shop.loading')}</p>
                                 </div>
                             )}
@@ -279,40 +293,57 @@ export default function Navbar() {
                 </nav>
             </header>
 
-            {/* Mobile Menu Overlay */}
+            {/* MOBILE MENU OVERLAY */}
             <div className={clsx(
-                "fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center space-y-8 transition-all duration-500",
-                isMobileMenuOpen ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-full pointer-events-none"
+                "fixed inset-0 bg-white z-[60] flex flex-col transition-all duration-500",
+                isMobileMenuOpen ? "opacity-100 translate-x-0" : clsx("opacity-0 pointer-events-none", isRTL ? "translate-x-full" : "-translate-x-full")
             )}>
-                <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="absolute top-8 end-8 text-black hover:rotate-90 transition-transform duration-300"
-                >
-                    <X size={32} />
-                </button>
+                <div className="flex items-center justify-between p-6 border-b border-black/5">
+                    <span className="font-serif text-2xl text-[var(--coffee-brown)]">{t("nav.menu") || "Menu"}</span>
+                    <button
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-black hover:bg-gray-100 hover:rotate-90 transition-all duration-300"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
 
-                <nav className="flex flex-col items-center space-y-6 text-center">
-                    <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">{t("home.hero.title")}</Link>
-                    <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">{t("nav.shop")}</Link>
-                    <Link href="/our-story" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">{t("nav.ourStory")}</Link>
-                    <Link href="/the-farms" onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-serif text-black hover:text-[var(--honey-gold)]">{t("nav.farms")}</Link>
+                <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
+                    <LanguageSelector />
 
-                    <div className="w-12 h-[1px] bg-black/10 my-4" />
+                    <nav className="flex flex-col space-y-4">
+                        <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">{t("nav.home")}</Link>
+                        <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">{t("nav.shop")}</Link>
+                        <Link href="/our-story" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">{t("nav.ourStory")}</Link>
+                        <Link href="/the-farms" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">{t("nav.farms")}</Link>
+                        <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">Contact</Link>
+                    </nav>
 
-                    {user ? (
-                        <>
-                            <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">{t('nav.account')}</Link>
-                            <button
-                                onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                className="text-sm uppercase tracking-widest font-bold text-red-500 hover:text-red-700 pt-4"
-                            >
-                                {t('nav.logout')}
-                            </button>
-                        </>
-                    ) : (
-                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-sm uppercase tracking-widest font-bold text-black hover:text-[var(--honey-gold)]">{t('nav.login')}</Link>
-                    )}
-                </nav>
+                    <div className="w-full h-px bg-gray-100 my-2" />
+
+                    <div className="space-y-4">
+                        {user ? (
+                            <>
+                                <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
+                                    <User size={16} /> {t('nav.account')}
+                                </Link>
+                                <button
+                                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                    className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-red-500"
+                                >
+                                    {t('nav.logout')}
+                                </button>
+                            </>
+                        ) : (
+                            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
+                                <User size={16} /> {t('nav.login')}
+                            </Link>
+                        )}
+                        <Link href="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
+                            <Heart size={16} /> Wishlist
+                        </Link>
+                    </div>
+                </div>
             </div>
         </>
     );

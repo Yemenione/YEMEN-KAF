@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
         // userId extraction moved up
 
-        const { shippingAddress, paymentMethod, shippingMethod, items } = await req.json();
+        const { shippingAddress, paymentMethod, shippingMethod, items, couponCode } = await req.json();
 
         if (!shippingAddress) {
             return NextResponse.json({ error: 'Shipping address required' }, { status: 400 });
@@ -39,9 +39,6 @@ export async function POST(req: Request) {
         let totalAmount = 0;
 
         if (items && items.length > 0) {
-            // Option 1: Handle items passed from frontend (Direct Checkout)
-            // Option 1: Handle items passed from frontend (Direct Checkout)
-
             // Build order items with verified prices
             console.log('Verifying items:', items);
             for (const item of items) {
@@ -64,9 +61,8 @@ export async function POST(req: Request) {
                 }
             }
         } else {
-            // Option 2: Fallback to server-side cart items
+            // Fallback to server-side cart
             if (!userId) {
-                // Guests cannot use server-side cart items as fallback if not provided in request
                 return NextResponse.json({ error: 'Guest checkout requires items in request' }, { status: 400 });
             }
 
@@ -95,18 +91,68 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No valid items in order' }, { status: 400 });
         }
 
+        // --- COUPON VALIDATION START ---
+        let discountAmount = 0;
+        let appliedCouponId = null;
+
+        if (couponCode) {
+            try {
+                // Check if coupon exists and is active
+                const [coupons]: any = await pool.execute(
+                    'SELECT * FROM cart_rules WHERE code = ? AND is_active = 1',
+                    [couponCode]
+                );
+
+                if (coupons.length > 0) {
+                    const coupon = coupons[0];
+                    const now = new Date();
+                    const startsAt = coupon.starts_at ? new Date(coupon.starts_at) : null;
+                    const endsAt = coupon.ends_at ? new Date(coupon.ends_at) : null;
+
+                    let isValid = true;
+                    if (startsAt && startsAt > now) isValid = false;
+                    if (endsAt && endsAt < now) isValid = false;
+                    if (coupon.total_available <= 0) isValid = false;
+                    if (totalAmount < parseFloat(coupon.min_amount || 0)) isValid = false;
+
+                    if (isValid) {
+                        if (parseFloat(coupon.reduction_amount) > 0) {
+                            discountAmount = parseFloat(coupon.reduction_amount);
+                        } else if (parseFloat(coupon.reduction_percent) > 0) {
+                            discountAmount = (totalAmount * parseFloat(coupon.reduction_percent)) / 100;
+                        }
+
+                        // Cap discount
+                        if (discountAmount > totalAmount) discountAmount = totalAmount;
+
+                        appliedCouponId = coupon.id;
+
+                        // Decrement usage (simple approach, ideally transaction safe)
+                        await pool.execute('UPDATE cart_rules SET total_available = total_available - 1 WHERE id = ?', [coupon.id]);
+                    }
+                }
+            } catch (err) {
+                console.error("Coupon validation error during order creation:", err);
+                // Continue without discount if error
+            }
+        }
+        // --- COUPON VALIDATION END ---
+
         // Calculate Shipping Cost
         const shippingCost = shippingMethod === 'express' ? 25.00 : 0.00;
-        totalAmount += shippingCost;
+
+        // Final Total Calculation
+        totalAmount = (totalAmount - discountAmount) + shippingCost;
+        if (totalAmount < 0) totalAmount = 0;
 
         // Generate generic Order Number
         const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
         // Create order
         const [orderResult]: any = await pool.execute(
-            `INSERT INTO orders (customer_id, order_number, total_amount, status, shipping_address, payment_method, shipping_method, shipping_cost, created_at) 
-            VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, NOW())`,
-            [userId, orderNumber, totalAmount, JSON.stringify(shippingAddress), paymentMethod || 'cash_on_delivery', shippingMethod || 'standard', shippingCost]
+            `INSERT INTO orders (customer_id, order_number, total_amount, status, shipping_address, payment_method, shipping_method, shipping_cost, discount_total, created_at) 
+            VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, NOW())`,
+            [userId, orderNumber, totalAmount, JSON.stringify(shippingAddress), paymentMethod || 'cash_on_delivery', shippingMethod || 'standard', shippingCost, discountAmount]
         );
 
         const orderId = orderResult.insertId;

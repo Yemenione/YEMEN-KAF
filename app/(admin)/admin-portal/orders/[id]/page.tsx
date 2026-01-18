@@ -69,7 +69,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         doc.text(settings.support_phone, 14, 36);
 
         // Info Block
-        (doc as any).autoTable({
+        autoTable(doc, {
             startY: 45,
             head: [['Bill To', 'Ship To', 'Details']],
             body: [[
@@ -106,7 +106,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             tableRows.push(row);
         });
 
-        (doc as any).autoTable({
+        autoTable(doc, {
             startY: (doc as any).lastAutoTable.finalY + 10,
             head: [tableColumn],
             body: tableRows,

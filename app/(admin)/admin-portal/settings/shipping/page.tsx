@@ -3,9 +3,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, Save, X, Upload, Loader2, Truck } from "lucide-react";
 import Image from "next/image";
-import { getFirebaseConfig } from "@/app/actions/settings";
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAllCarriers, createCarrier, updateCarrier, deleteCarrier } from "@/app/actions/carriers";
 import { toast } from "sonner";
 
@@ -23,27 +20,32 @@ export default function ShippingSettingsPage() {
 
     async function fetchInitialData() {
         setLoading(true);
-        const [carriersData, config] = await Promise.all([
-            getAllCarriers(),
-            getFirebaseConfig()
+        const [carriersData] = await Promise.all([
+            getAllCarriers()
         ]);
         setCarriers(carriersData);
-        setFirebaseConfig(config);
         setLoading(false);
     }
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, carrierId?: number) => {
         const file = e.target.files?.[0];
-        if (!file || !firebaseConfig) return;
+        if (!file) return;
 
         setIsUploading(true);
         try {
-            const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-            const storage = getStorage(app);
-            const storageRef = ref(storage, `carriers/${Date.now()}_${file.name}`);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'carriers');
 
-            const snapshot = await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(snapshot.ref);
+            const res = await fetch('/api/admin/media/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) throw new Error('Upload failed');
+
+            const data = await res.json();
+            const url = data.path; // The API returns 'path' which is the relative URL
 
             if (editingCarrier) {
                 setEditingCarrier({ ...editingCarrier, logo: url });

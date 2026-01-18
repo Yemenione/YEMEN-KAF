@@ -4,7 +4,7 @@ import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, CreditCard, ChevronRight, ShoppingBag, MapPin, Truck, Banknote, Coins } from "lucide-react";
+import { ArrowLeft, CreditCard, ChevronRight, ShoppingBag, MapPin, Truck, Banknote, Coins, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/layout/Navbar";
@@ -33,6 +33,40 @@ export default function CheckoutPage() {
     const [selectedShippingRate, setSelectedShippingRate] = useState<any>(null);
     const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    // Coupon State
+    const [couponCode, setCouponCode] = useState("");
+    const [couponError, setCouponError] = useState("");
+    const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+    const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+    const [discountAmount, setDiscountAmount] = useState(0);
+
+    const handleApplyCoupon = async () => {
+        setCouponError("");
+        setIsApplyingCoupon(true);
+        try {
+            const res = await fetch('/api/cart/coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: couponCode, cartTotal: total })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setAppliedCoupon(data.coupon);
+                setDiscountAmount(data.discountAmount);
+                setCouponCode(data.coupon.code); // Format/normalize
+            } else {
+                setCouponError(data.error || "Invalid coupon");
+                setAppliedCoupon(null);
+                setDiscountAmount(0);
+            }
+        } catch (err) {
+            setCouponError("Failed to apply coupon");
+        } finally {
+            setIsApplyingCoupon(false);
+        }
+    };
 
     const checkoutSchema = z.object({
         firstName: z.string().min(2, t('validation.firstNameRequired') || "First name is required"),
@@ -108,17 +142,32 @@ export default function CheckoutPage() {
             try {
                 const res = await fetch('/api/account/addresses');
                 if (res.ok) {
+                    setIsAuthenticated(true);
                     const data = await res.json();
-                    setSavedAddresses(data.addresses || []);
-                    // Auto-select default address if exists
-                    const defaultAddr = data.addresses?.find((a: any) => a.is_default);
-                    if (defaultAddr) {
-                        setSelectedAddressId(defaultAddr.id.toString());
-                        fillFormWithAddress(defaultAddr);
+
+                    if (data.addresses && data.addresses.length > 0) {
+                        setSavedAddresses(data.addresses);
+                        // Auto-select default address if exists
+                        const defaultAddr = data.addresses.find((a: any) => a.is_default);
+                        if (defaultAddr) {
+                            setSelectedAddressId(defaultAddr.id.toString());
+                            fillFormWithAddress(defaultAddr);
+                        } else {
+                            // Or just select the first one? Or let user choose? 
+                            // Let's force 'new' if no default, or maybe first one. Usually first one is better UX.
+                            // But keeping existing logic:
+                        }
+                    } else {
+                        // Logged in but no addresses: default to 'new' mode
+                        setSavedAddresses([]);
+                        setSelectedAddressId("new");
                     }
+                } else {
+                    setIsAuthenticated(false);
                 }
             } catch (error) {
                 console.log('Not logged in or no addresses');
+                setIsAuthenticated(false);
             }
         };
         fetchAddresses();
@@ -159,7 +208,7 @@ export default function CheckoutPage() {
         }
     };
 
-    const orderTotal = total + (selectedShippingRate?.price || 0);
+    const orderTotal = Math.max(0, (total + (selectedShippingRate?.price || 0)) - discountAmount);
 
     // Redirect if cart is empty
     useEffect(() => {
@@ -221,6 +270,28 @@ export default function CheckoutPage() {
 
         setIsSubmitting(true);
         try {
+            // Check if "Save Address" is checked
+            const saveAddressCheckbox = document.getElementById('save-address') as HTMLInputElement;
+            if ((selectedAddressId === 'new' || savedAddresses.length === 0) && saveAddressCheckbox && saveAddressCheckbox.checked) {
+                try {
+                    await fetch('/api/account/addresses', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            street: formData.address,
+                            city: formData.city,
+                            state: formData.state,
+                            postalCode: formData.zip,
+                            country: formData.country,
+                            isDefault: savedAddresses.length === 0 // Make default if it's the first one
+                        })
+                    });
+                    // Non-blocking catch, if it fails we still place order
+                } catch (err) {
+                    console.error("Failed to save address silently:", err);
+                }
+            }
+
             const res = await fetch('/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -229,7 +300,9 @@ export default function CheckoutPage() {
                     paymentMethod: selectedPaymentMethod,
                     paymentId: paymentId || null, // Store Stripe Payment ID
                     shippingMethod: selectedShippingMethod,
-                    items: items.map(item => ({ id: item.id, quantity: item.quantity }))
+
+                    items: items.map(item => ({ id: item.id, quantity: item.quantity })),
+                    couponCode: appliedCoupon ? appliedCoupon.code : null // Send coupon code
                 })
             });
 
@@ -299,6 +372,25 @@ export default function CheckoutPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                            {/* Address Selector */}
+                            {savedAddresses.length > 0 && (
+                                <div className="md:col-span-2 mb-4">
+                                    <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2">{t('checkout.selectAddress')}</label>
+                                    <select
+                                        value={selectedAddressId}
+                                        onChange={handleAddressSelect}
+                                        className="w-full border-b border-gray-200 py-3 text-lg outline-none focus:border-black transition-colors bg-transparent appearance-none cursor-pointer"
+                                    >
+                                        <option value="new">{t('checkout.useNewAddress')}</option>
+                                        {savedAddresses.map(addr => (
+                                            <option key={addr.id} value={addr.id}>
+                                                {addr.label || `${addr.street_address}, ${addr.city}`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
                             <div className="group">
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.firstName')}</label>
                                 <input {...register("firstName")} type="text" className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent placeholder-gray-300 ${errors.firstName ? 'border-red-500' : 'border-gray-200 focus:border-black'}`} />
@@ -356,6 +448,21 @@ export default function CheckoutPage() {
                                 </select>
                                 {errors.country && <span className="text-red-500 text-xs">{errors.country.message}</span>}
                             </div>
+
+                            {/* Save Address Checkbox - Show when creating new address AND authenticated */}
+                            {isAuthenticated && (selectedAddressId === 'new' || savedAddresses.length === 0) && (
+                                <div className="md:col-span-2 flex items-center gap-2 mt-2">
+                                    <input
+                                        type="checkbox"
+                                        id="save-address"
+                                        className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black"
+                                        onChange={(e) => {
+                                            (window as any).saveAddressChecked = e.target.checked;
+                                        }}
+                                    />
+                                    <label htmlFor="save-address" className="text-sm text-gray-600">{t('checkout.saveAddress')}</label>
+                                </div>
+                            )}
                         </div>
                     </section>
 
@@ -532,9 +639,40 @@ export default function CheckoutPage() {
                                 <span>{t('checkout.shipping')}</span>
                                 <span>{selectedShippingRate && selectedShippingRate.price !== undefined ? `${Number(selectedShippingRate.price).toFixed(2)}€` : '--'}</span>
                             </div>
-                            <div className="flex justify-between text-2xl font-serif text-black pt-4">
+
+                            {/* Coupon Section */}
+                            <div className="py-4 border-y border-black/5 my-4 space-y-3">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Promo Code"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                        className="flex-1 bg-white border border-gray-200 rounded px-3 py-2 text-sm uppercase outline-none focus:border-black transition-colors"
+                                    />
+                                    <button
+                                        onClick={handleApplyCoupon}
+                                        disabled={isApplyingCoupon || !couponCode}
+                                        className="bg-black text-white px-4 py-2 text-xs font-bold uppercase tracking-widest rounded hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                                    >
+                                        {isApplyingCoupon ? '...' : 'Apply'}
+                                    </button>
+                                </div>
+                                {couponError && <p className="text-red-500 text-xs">{couponError}</p>}
+                                {appliedCoupon && (
+                                    <div className="flex justify-between text-sm text-green-600 font-medium items-center bg-green-50 p-2 rounded">
+                                        <span>Discount ({appliedCoupon.code})</span>
+                                        <div className="flex items-center gap-2">
+                                            <span>-{discountAmount.toFixed(2)}€</span>
+                                            <button onClick={() => { setAppliedCoupon(null); setDiscountAmount(0); setCouponCode(''); }} className="text-gray-400 hover:text-red-500"><X size={14} /></button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex justify-between text-2xl font-serif text-black pt-2">
                                 <span>{t('checkout.total')} (TTC)</span>
-                                <span>{orderTotal.toFixed(2)}€</span>
+                                <span>{Math.max(0, orderTotal - discountAmount).toFixed(2)}€</span>
                             </div>
                         </div>
 

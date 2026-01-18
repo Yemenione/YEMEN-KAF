@@ -42,8 +42,8 @@ export default function Footer() {
             <div className="border-b border-[var(--coffee-brown)]/10">
                 <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="space-y-2 text-center md:text-start">
-                        <h3 className="text-2xl font-serif text-[var(--coffee-brown)]">Join the World of Yemeni Market</h3>
-                        <p className="text-[var(--coffee-brown)]/60 text-sm italic">Be the first to know about new arrivals and exclusive honey harvests.</p>
+                        <h3 className="text-2xl font-serif text-[var(--coffee-brown)]">{t('newsletter.joinTitle')}</h3>
+                        <p className="text-[var(--coffee-brown)]/60 text-sm italic">{t('newsletter.joinSubtitle')}</p>
                     </div>
                     <form onSubmit={handleSubscribe} className="w-full md:w-auto flex items-end border-b border-[var(--coffee-brown)] focus-within:border-[var(--honey-gold)] transition-colors py-2">
                         <input
@@ -125,7 +125,7 @@ export default function Footer() {
                     <ul className="space-y-4 text-sm text-[var(--coffee-brown)]/70">
                         <li className="flex items-start gap-3">
                             <MapPin size={18} className="text-[var(--honey-gold)] mt-0.5" />
-                            <span>123 Avenue des Champs-Élysées,<br />75008 Paris, France</span>
+                            <span>{t('footer.address')}</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <Phone size={18} className="text-[var(--honey-gold)]" />

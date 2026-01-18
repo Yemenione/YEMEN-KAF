@@ -113,6 +113,7 @@ export default function AdminProductsPage() {
                                             })()}
                                             alt={product.name}
                                             fill
+                                            sizes="80px"
                                             className="object-cover"
                                         />
                                     ) : <div className="w-full h-full bg-gray-200" />}
@@ -187,6 +188,7 @@ export default function AdminProductsPage() {
                                                         })()}
                                                         alt={product.name}
                                                         fill
+                                                        sizes="40px"
                                                         className="object-cover"
                                                     />
                                                 ) : <div className="w-full h-full bg-gray-200" />}

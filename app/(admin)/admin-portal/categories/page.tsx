@@ -187,7 +187,7 @@ export default function CategoriesPage() {
                                     <td className="px-6 py-4">
                                         <div className="relative w-10 h-10 bg-gray-100 rounded-md overflow-hidden">
                                             {cat.image_url ? (
-                                                <Image src={cat.image_url} alt={cat.name} fill className="object-cover" />
+                                                <Image src={cat.image_url} alt={cat.name} fill sizes="40px" className="object-cover" />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full text-gray-300 text-xs">No Img</div>
                                             )}
@@ -236,7 +236,7 @@ export default function CategoriesPage() {
                         <div key={cat.id} className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm flex items-center gap-4">
                             <div className="relative w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                 {cat.image_url ? (
-                                    <Image src={cat.image_url} alt={cat.name} fill className="object-cover" />
+                                    <Image src={cat.image_url} alt={cat.name} fill sizes="64px" className="object-cover" />
                                 ) : (
                                     <div className="flex items-center justify-center h-full text-gray-300 text-xs">No Img</div>
                                 )}
@@ -277,171 +277,174 @@ export default function CategoriesPage() {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-fade-in-up">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800">
-                            <h3 className="text-xl font-semibold">{editingCategory ? 'Edit Category' : 'New Category'}</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
+                            <h3 className="text-xl font-semibold text-[var(--coffee-brown)] dark:text-white">{editingCategory ? 'Edit Category' : 'New Category'}</h3>
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                                 <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Name</label>
-                                <input
-                                    required
-                                    type="text"
-                                    className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                />
-                            </div>
 
-                            {/* Hierarchy Selector */}
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Parent Category</label>
-                                <select
-                                    className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                    // @ts-ignore
-                                    value={formData.parent_id}
-                                    // @ts-ignore
-                                    onChange={e => setFormData({ ...formData, parent_id: e.target.value ? parseInt(e.target.value) : "" })}
-                                >
-                                    <option value="">None (Top Level)</option>
-                                    {categories
-                                        .filter(c => c.id !== editingCategory?.id) // Prevent self-parenting
-                                        .map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                        ))}
-                                </select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="overflow-y-auto p-6 space-y-4">
+                            <form id="categoryForm" onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Slug (optional)</label>
+                                    <label className="block text-sm font-medium mb-1">Name</label>
                                     <input
-                                        type="text"
-                                        className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 text-gray-500"
-                                        placeholder="auto-generated"
-                                        value={formData.slug}
-                                        onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Display Order</label>
-                                    <input
-                                        type="number"
-                                        className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                        value={formData.display_order}
-                                        onChange={e => setFormData({ ...formData, display_order: parseInt(e.target.value) })}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Description</label>
-                                <textarea
-                                    className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 h-20"
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Image</label>
-                                <div className="flex gap-2">
-                                    <input
+                                        required
                                         type="text"
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                        placeholder="Image URL"
-                                        value={formData.image_url}
-                                        onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                                        value={formData.name}
+                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     />
-                                    <label className="flex items-center px-3 py-2 bg-gray-100 border rounded-lg cursor-pointer hover:bg-gray-200">
-                                        <UploadCloud size={18} />
+                                </div>
+
+                                {/* Hierarchy Selector */}
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Parent Category</label>
+                                    <select
+                                        className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
+                                        // @ts-ignore
+                                        value={formData.parent_id}
+                                        // @ts-ignore
+                                        onChange={e => setFormData({ ...formData, parent_id: e.target.value ? parseInt(e.target.value) : "" })}
+                                    >
+                                        <option value="">None (Top Level)</option>
+                                        {categories
+                                            .filter(c => c.id !== editingCategory?.id) // Prevent self-parenting
+                                            .map(cat => (
+                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                            ))}
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Slug (optional)</label>
                                         <input
-                                            type="file"
-                                            className="hidden"
-                                            accept="image/*"
-                                            disabled={uploading}
-                                            onChange={async (e) => {
-                                                if (!e.target.files?.[0]) return;
-                                                setUploading(true);
-                                                const file = e.target.files[0];
-                                                const form = new FormData();
-                                                form.append('file', file);
-                                                form.append('folder', 'categories');
-                                                try {
-                                                    const res = await fetch('/api/admin/media/upload', { method: 'POST', body: form });
-                                                    if (res.ok) {
-                                                        const data = await res.json();
-                                                        setFormData(prev => ({ ...prev, image_url: data.path }));
-                                                    }
-                                                } catch (err) { alert('Upload failed'); }
-                                                finally { setUploading(false); }
-                                            }}
+                                            type="text"
+                                            className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 text-gray-500"
+                                            placeholder="auto-generated"
+                                            value={formData.slug}
+                                            onChange={e => setFormData({ ...formData, slug: e.target.value })}
                                         />
-                                    </label>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Display Order</label>
+                                        <input
+                                            type="number"
+                                            className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
+                                            value={formData.display_order}
+                                            onChange={e => setFormData({ ...formData, display_order: parseInt(e.target.value) })}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* SEO Section */}
-                            <div className="bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg border border-gray-100 dark:border-zinc-700 space-y-3">
-                                <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">SEO Settings</h4>
                                 <div>
-                                    <label className="block text-xs font-medium mb-1 text-gray-500">Meta Title</label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-900 dark:border-zinc-600 text-sm"
-                                        // @ts-ignore
-                                        value={formData.meta_title}
-                                        // @ts-ignore
-                                        onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium mb-1 text-gray-500">Meta Description</label>
+                                    <label className="block text-sm font-medium mb-1">Description</label>
                                     <textarea
-                                        className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-900 dark:border-zinc-600 text-sm h-16"
-                                        // @ts-ignore
-                                        value={formData.meta_description}
-                                        // @ts-ignore
-                                        onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
+                                        className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 h-20"
+                                        value={formData.description}
+                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
                                     />
                                 </div>
-                            </div>
 
-                            <div className="flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setFormData(prev => ({ ...prev, is_active: prev.is_active ? 0 : 1 }))}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${formData.is_active
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-gray-100 text-gray-500'
-                                        }`}
-                                >
-                                    {formData.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
-                                    {formData.is_active ? 'Visible in Store' : 'Hidden'}
-                                </button>
-                            </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Image</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
+                                            placeholder="Image URL"
+                                            value={formData.image_url}
+                                            onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                                        />
+                                        <label className="flex items-center px-3 py-2 bg-gray-100 border rounded-lg cursor-pointer hover:bg-gray-200">
+                                            <UploadCloud size={18} />
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                disabled={uploading}
+                                                onChange={async (e) => {
+                                                    if (!e.target.files?.[0]) return;
+                                                    setUploading(true);
+                                                    const file = e.target.files[0];
+                                                    const form = new FormData();
+                                                    form.append('file', file);
+                                                    form.append('folder', 'categories');
+                                                    try {
+                                                        const res = await fetch('/api/admin/media/upload', { method: 'POST', body: form });
+                                                        if (res.ok) {
+                                                            const data = await res.json();
+                                                            setFormData(prev => ({ ...prev, image_url: data.path }));
+                                                        }
+                                                    } catch (err) { alert('Upload failed'); }
+                                                    finally { setUploading(false); }
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-zinc-800 mt-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-6 py-2 bg-[var(--coffee-brown)] text-white font-medium text-sm rounded-lg hover:opacity-90 flex items-center gap-2"
-                                >
-                                    <Save size={18} />
-                                    Save Category
-                                </button>
-                            </div>
-                        </form>
+                                {/* SEO Section */}
+                                <div className="bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg border border-gray-100 dark:border-zinc-700 space-y-3">
+                                    <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">SEO Settings</h4>
+                                    <div>
+                                        <label className="block text-xs font-medium mb-1 text-gray-500">Meta Title</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-900 dark:border-zinc-600 text-sm"
+                                            // @ts-ignore
+                                            value={formData.meta_title}
+                                            // @ts-ignore
+                                            onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium mb-1 text-gray-500">Meta Description</label>
+                                        <textarea
+                                            className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-900 dark:border-zinc-600 text-sm h-16"
+                                            // @ts-ignore
+                                            value={formData.meta_description}
+                                            // @ts-ignore
+                                            onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, is_active: prev.is_active ? 0 : 1 }))}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${formData.is_active
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-gray-100 text-gray-500'
+                                            }`}
+                                    >
+                                        {formData.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
+                                        {formData.is_active ? 'Visible in Store' : 'Hidden'}
+                                    </button>
+                                </div>
+
+                                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-zinc-800 mt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-6 py-2 bg-[var(--coffee-brown)] dark:bg-[var(--honey-gold)] text-white dark:text-black font-medium text-sm rounded-lg hover:opacity-90 flex items-center gap-2 transition-opacity shadow-sm"
+                                    >
+                                        <Save size={18} />
+                                        Save Category
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div >
                 </div >
             )

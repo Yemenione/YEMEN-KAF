@@ -50,13 +50,13 @@ export default function ProductSpecs({
                 ...baseSpecs,
                 {
                     icon: Award,
-                    label: 'Purity',
-                    value: '100% Pure & Natural'
+                    label: t('product.purity') || 'Purity',
+                    value: t('product.purityValue')
                 },
                 {
                     icon: Package,
-                    label: 'Packaging',
-                    value: 'Glass Jar'
+                    label: t('product.packaging') || 'Packaging',
+                    value: t('product.packagingHoney')
                 }
             ];
         } else if (category === 'coffee') {
@@ -64,13 +64,13 @@ export default function ProductSpecs({
                 ...baseSpecs,
                 {
                     icon: Award,
-                    label: 'Roast Level',
-                    value: 'Medium to Dark'
+                    label: t('product.roastLevel') || 'Roast Level',
+                    value: t('product.roastLevelValue')
                 },
                 {
                     icon: Package,
-                    label: 'Packaging',
-                    value: 'Sealed Bag'
+                    label: t('product.packaging') || 'Packaging',
+                    value: t('product.packagingCoffee')
                 }
             ];
         }
@@ -109,7 +109,7 @@ export default function ProductSpecs({
                         : 'text-gray-400 hover:text-gray-600'
                         }`}
                 >
-                    {t('product.description') || 'Description'}
+                    {t('product.description')}
                 </button>
                 <button
                     onClick={() => setActiveTab('specs')}
@@ -118,7 +118,7 @@ export default function ProductSpecs({
                         : 'text-gray-400 hover:text-gray-600'
                         }`}
                 >
-                    {t('product.specifications') || 'Specifications'}
+                    {t('product.specifications')}
                 </button>
                 <button
                     onClick={() => setActiveTab('shipping')}
@@ -140,18 +140,9 @@ export default function ProductSpecs({
                             {description ? (
                                 <p className="text-lg">{description}</p>
                             ) : (
-                                <>
-                                    <p className="text-lg">
-                                        Discover the authentic taste of Yemen with our premium selection.
-                                        Each product is carefully sourced from the finest regions and
-                                        processed with traditional methods to preserve its natural qualities.
-                                    </p>
-                                    <p>
-                                        Our commitment to quality ensures that you receive only the best,
-                                        maintaining the rich heritage and exceptional standards that Yemeni
-                                        products are known for worldwide.
-                                    </p>
-                                </>
+                                <p className="text-lg">
+                                    {t('product.defaultDescription')}
+                                </p>
                             )}
                         </div>
 
@@ -162,8 +153,8 @@ export default function ProductSpecs({
                                     <Award className="w-4 h-4 text-white" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-black">Premium Quality</h4>
-                                    <p className="text-sm text-gray-600">Certified and tested for purity</p>
+                                    <h4 className="font-bold text-black">{t('product.qualityGuaranteed')}</h4>
+                                    <p className="text-sm text-gray-600">{t('product.certifiedShipping')}</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
@@ -171,8 +162,8 @@ export default function ProductSpecs({
                                     <MapPin className="w-4 h-4 text-white" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-black">Authentic Origin</h4>
-                                    <p className="text-sm text-gray-600">Sourced directly from Yemen</p>
+                                    <h4 className="font-bold text-black">{t('product.authenticity')}</h4>
+                                    <p className="text-sm text-gray-600">{t('product.authenticityDesc')}</p>
                                 </div>
                             </div>
                         </div>
@@ -182,7 +173,7 @@ export default function ProductSpecs({
                 {/* Specifications Tab */}
                 {activeTab === 'specs' && (
                     <div>
-                        <h3 className="text-2xl font-serif text-black mb-8">Product Specifications</h3>
+                        <h3 className="text-2xl font-serif text-black mb-8">{t('product.specifications')}</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {specifications.map((spec, index) => {
@@ -208,11 +199,28 @@ export default function ProductSpecs({
                                     <Package className="w-6 h-6 text-white" />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-bold text-black mb-1">Estimated Shipping Cost</h4>
-                                    <p className="text-gray-600 text-lg font-semibold">
-                                        {weight <= 1 ? '€5.99 - €8.99' : weight <= 3 ? '€8.99 - €12.99' : '€12.99 - €15.99'}
+                                    <h4 className="font-bold text-black mb-1">{t('product.estimatedShippingCost')}</h4>
+                                    <p className="text-sm text-gray-600 mb-2">
+                                        {t('product.basedOn')} <span className="font-semibold text-black">Paris, France</span>
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-1">Based on {weight}kg to France • Express shipping available</p>
+                                    <div className="text-sm text-blue-800">
+                                        {t('product.deliveryTimes')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Return Policy */}
+                        <div className="mt-4 p-6 bg-green-50 rounded-xl border border-green-200">
+                            <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                                    <RefreshCw className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-black mb-1">{t('product.returnPolicy')}</h4>
+                                    <div className="text-sm text-green-800">
+                                        {t('product.returnPolicyDesc')}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -233,7 +241,7 @@ export default function ProductSpecs({
                 {/* Shipping Tab */}
                 {activeTab === 'shipping' && (
                     <div>
-                        <h3 className="text-2xl font-serif text-black mb-8">Shipping & Returns</h3>
+                        <h3 className="text-2xl font-serif text-black mb-8">{t('product.shipping')}</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                             {shippingInfo.map((info, index) => {

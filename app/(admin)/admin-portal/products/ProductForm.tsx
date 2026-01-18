@@ -23,6 +23,9 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
     const [brands, setBrands] = useState<any[]>([]);
     const [taxRules, setTaxRules] = useState<any[]>([]);
     const [variants, setVariants] = useState<any[]>([]);
+    const [carriers, setCarriers] = useState<any[]>([]);
+
+    const [allProducts, setAllProducts] = useState<any[]>([]);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -40,28 +43,28 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         depth: 0,
         category_id: "",
         brand_id: "",
-        images: [] as string[], // Changed to array
-        image_url: "", // Keeping for backward compatibility/single upload logic temporarily
+        images: [] as string[],
+        image_url: "",
         is_active: true,
         is_featured: false,
         meta_title: "",
         meta_description: "",
         related_ids: "[]",
         hs_code: "",
-        origin_country: "Yemen"
+        origin_country: "Yemen",
+        carriers: [] as number[]
     });
 
-    const [allProducts, setAllProducts] = useState<any[]>([]);
-
-    // Fetch Categories, Brands, Tax Rules
+    // Fetch Categories, Brands, Tax Rules, Carriers
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [catRes, brandRes, taxRes, prodRes] = await Promise.all([
+                const [catRes, brandRes, taxRes, prodRes, carrRes] = await Promise.all([
                     fetch('/api/admin/categories'),
                     fetch('/api/admin/brands'),
                     fetch('/api/admin/tax-rules'),
-                    fetch('/api/products')
+                    fetch('/api/products'),
+                    fetch('/api/admin/carriers')
                 ]);
 
                 if (catRes.ok) setCategories(await catRes.json());
@@ -71,6 +74,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     const data = await prodRes.json();
                     setAllProducts(data.products || []);
                 }
+                if (carrRes.ok) setCarriers(await carrRes.json());
             } catch (error) {
                 console.error("Failed to load form data", error);
             }
@@ -113,10 +117,16 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 meta_description: initialData.meta_description || "",
                 related_ids: initialData.related_ids || "[]",
                 hs_code: initialData.hs_code || "",
-                origin_country: initialData.origin_country || "Yemen"
+                origin_country: initialData.origin_country || "Yemen",
+                carriers: initialData.carriers ? initialData.carriers.map((c: any) => c.id) : []
             });
         }
     }, [initialData]);
+
+    // ... (handlers)
+
+    // Inside render, specifically the "logistics" tab
+
 
     const generateAutoSku = () => {
         const prefix = "YEM";
@@ -577,6 +587,40 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                         />
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="pt-6 border-t dark:border-zinc-800 space-y-6">
+                                <h4 className="text-sm font-medium text-[var(--coffee-brown)] dark:text-[var(--honey-gold)] flex items-center gap-2">
+                                    <Truck size={16} /> Allowed Carriers
+                                </h4>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    {carriers.map(carrier => (
+                                        <label key={carrier.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${formData.carriers.includes(carrier.id)
+                                            ? "bg-[var(--coffee-brown)] text-white border-transparent"
+                                            : "bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 hover:bg-gray-100"
+                                            }`}>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={formData.carriers.includes(carrier.id)}
+                                                onChange={(e) => {
+                                                    if (e.target.checked) {
+                                                        setFormData({ ...formData, carriers: [...formData.carriers, carrier.id] });
+                                                    } else {
+                                                        setFormData({ ...formData, carriers: formData.carriers.filter(id => id !== carrier.id) });
+                                                    }
+                                                }}
+                                            />
+                                            {carrier.logo && (
+                                                <div className="w-8 h-8 relative bg-white rounded-md overflow-hidden flex-shrink-0">
+                                                    <Image src={carrier.logo} alt={carrier.name} fill sizes="32px" className="object-contain p-1" />
+                                                </div>
+                                            )}
+                                            <span className="font-medium text-sm">{carrier.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-500">Select which carriers can ship this product. If none selected, all active carriers will be available.</p>
                             </div>
                         </div>
                     )}

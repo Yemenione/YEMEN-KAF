@@ -94,6 +94,7 @@ export default function CategoryRail() {
                                     src={getImageForCategory(cat) || '/images/logo.png'}
                                     alt={cat.name}
                                     fill
+                                    sizes="(max-width: 768px) 64px, 96px"
                                     className="object-cover"
                                 />
                             </div>

@@ -56,7 +56,7 @@ export default function CartDrawer() {
                         items.map((item) => (
                             <div key={`${item.id}-${item.variantId || 'base'}`} className="flex gap-6 group">
                                 <Link href={`/shop/${item.id}`} onClick={closeCart} className="relative w-24 h-32 flex-shrink-0 bg-gray-50 overflow-hidden rounded-sm transition-transform group-hover:scale-105 duration-500">
-                                    <Image src={item.image} alt={item.title} fill className="object-cover" />
+                                    <Image src={item.image} alt={item.title} fill sizes="(max-width: 768px) 96px, 96px" className="object-cover" />
                                 </Link>
                                 <div className="flex-1 min-w-0 py-1">
                                     <div className="flex justify-between items-start mb-1">

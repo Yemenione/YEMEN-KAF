@@ -168,6 +168,9 @@ export async function POST(req: Request) {
                     relatedIds: related_ids || "[]",
                     hsCode: hs_code,
                     originCountry: origin_country || "Yemen",
+                    carriers: body.carriers && Array.isArray(body.carriers) ? {
+                        connect: body.carriers.map((id: number) => ({ id: parseInt(id.toString()) }))
+                    } : undefined
                 }
             });
 
