@@ -19,7 +19,7 @@ interface CartContextType {
     isOpen: boolean;
     openCart: () => void;
     closeCart: () => void;
-    addToCart: (item: Omit<CartItem, "quantity">) => void;
+    addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
     removeFromCart: (id: string | number, variantId?: number) => void;
     total: number;
     subtotal: number;
@@ -37,17 +37,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     const { showToast } = useToast();
 
-    const addToCart = (newItem: Omit<CartItem, "quantity">) => {
+    const addToCart = (newItem: Omit<CartItem, "quantity">, quantity: number = 1) => {
         setItems((prev) => {
             const existing = prev.find((i) => i.id === newItem.id && i.variantId === newItem.variantId);
             if (existing) {
                 return prev.map((i) =>
                     (i.id === newItem.id && i.variantId === newItem.variantId)
-                        ? { ...i, quantity: i.quantity + 1 }
+                        ? { ...i, quantity: i.quantity + quantity }
                         : i
                 );
             }
-            return [...prev, { ...newItem, quantity: 1 }];
+            return [...prev, { ...newItem, quantity }];
         });
         setIsOpen(true);
         showToast(`${newItem.title} ${newItem.variantName ? `(${newItem.variantName})` : ''} added to cart!`, "success");

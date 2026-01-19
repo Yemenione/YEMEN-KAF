@@ -246,7 +246,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         }
     };
 
-    const tabs: { id: string; label: string; icon: any; hidden?: boolean }[] = [
+    const tabs: { id: string; label: string; icon: React.ElementType; hidden?: boolean }[] = [
         { id: "general", label: "General", icon: FileText },
         { id: "pricing", label: "Pricing", icon: DollarSign },
         { id: "logistics", label: "Shipping", icon: Truck },

@@ -196,7 +196,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
         setSelectedOptions(prev => ({ ...prev, [attrName]: value }));
     };
 
-    const canAddToCart = !hasVariants || (selectedVariant && !isOutOfStock);
+    const canAddToCart = !isOutOfStock && (!hasVariants || selectedVariant);
 
     return (
         <main className="min-h-screen bg-gray-50 pt-28">
@@ -374,7 +374,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                     variantId: selectedVariant?.id,
                                     variantName: selectedVariant?.name,
                                     taxRate: product.taxRate || 0
-                                })}
+                                }, quantity)}
                                 className={`flex-1 py-5 rounded-full uppercase tracking-[0.2em] font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-all duration-500 ${canAddToCart
                                     ? 'bg-black text-white hover:bg-gray-900 hover:scale-[1.02] active:scale-[0.98]'
                                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
@@ -584,7 +584,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             variantId: selectedVariant?.id,
                             variantName: selectedVariant?.name,
                             taxRate: product.taxRate || 0
-                        })}
+                        }, quantity)}
                         className={`flex-1 py-4 rounded-full uppercase tracking-[0.2em] font-bold text-xs shadow-2xl flex items-center justify-center gap-3 transition-transform active:scale-95 ${canAddToCart
                             ? 'bg-black text-white'
                             : 'bg-gray-100 text-gray-400'
