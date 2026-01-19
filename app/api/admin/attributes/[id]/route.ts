@@ -18,7 +18,7 @@ export async function GET(
         }
 
         return NextResponse.json(attribute);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch attribute' }, { status: 500 });
     }
 }
@@ -43,6 +43,7 @@ export async function PUT(
 
             // Handle values:
             // 1. Delete values not in the new list (if they have IDs)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const keepIds = values.filter((v: any) => v.id).map((v: any) => v.id);
             await tx.attributeValue.deleteMany({
                 where: {
@@ -97,7 +98,7 @@ export async function DELETE(
         const id = parseInt(params.id);
         await prisma.attribute.delete({ where: { id } });
         return NextResponse.json({ success: true, message: 'Attribute deleted' });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to delete attribute' }, { status: 500 });
     }
 }

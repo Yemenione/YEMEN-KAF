@@ -5,6 +5,14 @@ import { jwtVerify } from 'jose';
 import pool from '@/lib/mysql';
 import { RowDataPacket } from 'mysql2';
 
+interface ProductRow extends RowDataPacket {
+    id: number;
+    name: string;
+    slug: string;
+    price: string;
+    image_url: string;
+}
+
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
 async function getUserId() {
@@ -13,7 +21,7 @@ async function getUserId() {
     try {
         const { payload } = await jwtVerify(token, JWT_SECRET);
         return payload.userId as number;
-    } catch (err) {
+    } catch {
         return null;
     }
 }
@@ -69,7 +77,7 @@ export async function DELETE(req: Request) {
     }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const userId = await getUserId();
         if (!userId) {
@@ -77,7 +85,7 @@ export async function GET(req: Request) {
             return NextResponse.json({ wishlist: [] });
         }
 
-        const [rows] = await pool.execute<RowDataPacket[]>(
+        const [rows] = await pool.execute<ProductRow[]>(
             `SELECT p.* FROM products p 
              JOIN wishlists w ON p.id = w.product_id 
              WHERE w.customer_id = ? 

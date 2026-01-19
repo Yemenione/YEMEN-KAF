@@ -57,7 +57,7 @@ export default function AccountDashboard() {
 
     // Helper to get translated status
     const getTranslatedStatus = (status: string) => {
-        const key = `account.status.${status.toLowerCase()}` as any;
+        const key = `account.status.${status.toLowerCase()}`;
         return t(key) || status;
     };
 

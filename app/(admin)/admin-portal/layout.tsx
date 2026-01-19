@@ -1,7 +1,6 @@
 "use client";
 
-import { LayoutDashboard, ShoppingCart, Package, Users, Settings, LogOut, Globe, Menu } from "lucide-react";
-import Link from "next/link";
+import { Menu } from "lucide-react";
 import { LanguageProvider, useLanguage } from "@/context/LanguageContext";
 import { useUI } from "@/context/UIContext";
 

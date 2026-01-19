@@ -1,13 +1,16 @@
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { translations as staticTranslations } from '@/lib/translations';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const dbTranslations = await (prisma as any).translation.findMany();
-        const merged: any = JSON.parse(JSON.stringify(staticTranslations));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const merged: Record<string, any> = JSON.parse(JSON.stringify(staticTranslations));
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dbTranslations.forEach((t: any) => {
             const keys = t.key.split('.');
             let current = merged[t.language];
@@ -22,7 +25,7 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json(merged);
-    } catch (error) {
+    } catch {
         return NextResponse.json(staticTranslations);
     }
 }

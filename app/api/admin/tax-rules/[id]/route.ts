@@ -27,7 +27,7 @@ export async function PUT(
         });
 
         return NextResponse.json(taxRule);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to update tax rule' }, { status: 500 });
     }
 }
@@ -56,7 +56,7 @@ export async function DELETE(
         });
 
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to delete tax rule' }, { status: 500 });
     }
 }

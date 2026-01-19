@@ -1,6 +1,26 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
 import { calculateShipping, calculateTotalWeight } from '@/lib/shipping/colissimo';
+import { RowDataPacket } from 'mysql2';
+
+interface ShippingProductRow extends RowDataPacket {
+    id: number;
+    weight: string;
+    width: string;
+    height: string;
+    depth: string;
+}
+
+interface ShippingItem {
+    id: number;
+    quantity: number;
+}
+
+interface DimensionAccumulator {
+    width: number;
+    height: number;
+    depth: number;
+}
 
 /**
  * POST /api/shipping/calculate
@@ -30,17 +50,17 @@ export async function POST(req: Request) {
         }
 
         // Fetch product details (weight, dimensions) from database
-        const productIds = items.map((item: any) => item.id);
+        const productIds = items.map((item: ShippingItem) => item.id);
         const placeholders = productIds.map(() => '?').join(',');
 
-        const [products]: any = await pool.execute(
-            `SELECT id, weight, width, height, depth FROM products WHERE id IN (${placeholders})`,
+        const [products] = await pool.execute<ShippingProductRow[]>(
+            `SELECT id, weight, width, height, depth FROM products WHERE id IN(${placeholders})`,
             productIds
         );
 
         // Build items with weight data
-        const itemsWithWeight = items.map((item: any) => {
-            const product = products.find((p: any) => p.id === item.id);
+        const itemsWithWeight = items.map((item: ShippingItem) => {
+            const product = products.find((p) => p.id === item.id);
             return {
                 weight: product?.weight ? parseFloat(product.weight) : 0.5,
                 quantity: item.quantity
@@ -51,7 +71,7 @@ export async function POST(req: Request) {
         const totalWeight = calculateTotalWeight(itemsWithWeight);
 
         // Get largest dimensions (for multi-item shipments, use largest product dimensions)
-        const maxDimensions = products.reduce((max: any, product: any) => {
+        const maxDimensions = products.reduce<DimensionAccumulator>((max, product) => {
             const width = parseFloat(product.width) || 10;
             const height = parseFloat(product.height) || 10;
             const depth = parseFloat(product.depth) || 10;
@@ -83,8 +103,9 @@ export async function POST(req: Request) {
             dimensions: maxDimensions
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Shipping calculation error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown shipping error';
 
         // Fallback to static rate if Colissimo fails
         return NextResponse.json({
@@ -97,7 +118,7 @@ export async function POST(req: Request) {
             }],
             fallback: true,
             totalWeight: 0.5,
-            error: error.message
+            error: errorMessage
         });
     }
 }

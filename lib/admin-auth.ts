@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import pool from '@/lib/mysql';
 
+import { RowDataPacket } from 'mysql2';
+
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
 export interface AdminSession {
@@ -26,7 +28,7 @@ export async function getAdminSession(): Promise<AdminSession | null> {
         const userId = payload.userId as number;
 
         // Verify that this user ID exists in the ADMINS table, not just customers
-        const [rows]: any = await pool.execute(
+        const [rows] = await pool.execute<RowDataPacket[]>(
             'SELECT id, email, role FROM admins WHERE id = ? LIMIT 1',
             [userId]
         );
@@ -36,17 +38,17 @@ export async function getAdminSession(): Promise<AdminSession | null> {
             // This is useful if the ID mapping isn't 1:1 between customers/admins 
             // but the payload contains the email.
             if (payload.email) {
-                const [emailRows]: any = await pool.execute(
+                const [emailRows] = await pool.execute<RowDataPacket[]>(
                     'SELECT id, email, role FROM admins WHERE email = ? LIMIT 1',
                     [payload.email]
                 );
-                if (emailRows.length > 0) return emailRows[0];
+                if (emailRows.length > 0) return emailRows[0] as AdminSession;
             }
             return null;
         }
 
-        return rows[0];
-    } catch (error) {
+        return rows[0] as AdminSession;
+    } catch {
         return null;
     }
 }

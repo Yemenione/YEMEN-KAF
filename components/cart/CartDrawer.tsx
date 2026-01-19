@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-import { X, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
+import { X, ShoppingBag, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";

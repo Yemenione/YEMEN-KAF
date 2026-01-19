@@ -30,7 +30,7 @@ export default function ImportProductsPage() {
             });
             const data = await res.json();
             setResult(data);
-        } catch (error) {
+        } catch {
             setResult({ error: 'Upload failed', details: 'Network error' });
         } finally {
             setUploading(false);

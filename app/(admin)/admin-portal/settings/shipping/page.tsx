@@ -1,18 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, Save, X, Upload, Loader2, Truck } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Loader2, Truck } from "lucide-react";
 import Image from "next/image";
 import { getAllCarriers, createCarrier, updateCarrier, deleteCarrier } from "@/app/actions/carriers";
 import { toast } from "sonner";
 
+interface Carrier {
+    id: number;
+    name: string;
+    logo: string | null;
+    deliveryTime: string | null;
+    description: string | null;
+    isFree: boolean;
+    isActive: boolean;
+}
+
 export default function ShippingSettingsPage() {
-    const [carriers, setCarriers] = useState<any[]>([]);
+    const [carriers, setCarriers] = useState<Carrier[]>([]);
     const [loading, setLoading] = useState(true);
-    const [editingCarrier, setEditingCarrier] = useState<any>(null);
+    const [editingCarrier, setEditingCarrier] = useState<Carrier | null>(null);
     const [isAdding, setIsAdding] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const [firebaseConfig, setFirebaseConfig] = useState<any>(null);
+
 
     useEffect(() => {
         fetchInitialData();
@@ -27,7 +37,7 @@ export default function ShippingSettingsPage() {
         setLoading(false);
     }
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, carrierId?: number) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -63,9 +73,11 @@ export default function ShippingSettingsPage() {
 
     const [newCarrier, setNewCarrier] = useState({
         name: "",
+        slug: "",
         logo: "",
         deliveryTime: "",
         description: "",
+        price: 0,
         isFree: false,
         isActive: true
     });
@@ -79,7 +91,7 @@ export default function ShippingSettingsPage() {
         if (res.success) {
             toast.success("Carrier created");
             setIsAdding(false);
-            setNewCarrier({ name: "", logo: "", deliveryTime: "", description: "", isFree: false, isActive: true });
+            setNewCarrier({ name: "", slug: "", logo: "", deliveryTime: "", description: "", price: 0, isFree: false, isActive: true });
             fetchInitialData();
         } else {
             toast.error("Failed to create carrier");
@@ -87,11 +99,18 @@ export default function ShippingSettingsPage() {
     };
 
     const handleUpdate = async () => {
+        if (!editingCarrier) return;
         if (!editingCarrier.name) {
             toast.error("Name is required");
             return;
         }
-        const res = await updateCarrier(editingCarrier.id, editingCarrier);
+        const payload = {
+            ...editingCarrier,
+            logo: editingCarrier.logo || undefined,
+            deliveryTime: editingCarrier.deliveryTime || undefined,
+            description: editingCarrier.description || undefined
+        };
+        const res = await updateCarrier(editingCarrier.id, payload);
         if (res.success) {
             toast.success("Carrier updated");
             setEditingCarrier(null);
@@ -227,7 +246,7 @@ export default function ShippingSettingsPage() {
                                     {editingCarrier?.id === carrier.id ? (
                                         <input
                                             type="text"
-                                            value={editingCarrier.name}
+                                            value={editingCarrier.name || ''}
                                             onChange={(e) => setEditingCarrier({ ...editingCarrier, name: e.target.value })}
                                             className="border rounded px-2 py-1 text-sm w-full focus:ring-1 focus:ring-black outline-none"
                                         />
@@ -239,7 +258,7 @@ export default function ShippingSettingsPage() {
                                     {editingCarrier?.id === carrier.id ? (
                                         <input
                                             type="text"
-                                            value={editingCarrier.deliveryTime}
+                                            value={editingCarrier.deliveryTime || ''}
                                             onChange={(e) => setEditingCarrier({ ...editingCarrier, deliveryTime: e.target.value })}
                                             className="border rounded px-2 py-1 text-sm w-full focus:ring-1 focus:ring-black outline-none"
                                         />
@@ -250,7 +269,13 @@ export default function ShippingSettingsPage() {
                                 <td className="px-6 py-4">
                                     <button
                                         onClick={() => {
-                                            const updated = { ...carrier, isActive: !carrier.isActive };
+                                            const updated = {
+                                                ...carrier,
+                                                isActive: !carrier.isActive,
+                                                logo: carrier.logo || undefined,
+                                                deliveryTime: carrier.deliveryTime || undefined,
+                                                description: carrier.description || undefined
+                                            };
                                             updateCarrier(carrier.id, updated).then(() => fetchInitialData());
                                         }}
                                         className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${carrier.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
@@ -306,6 +331,6 @@ export default function ShippingSettingsPage() {
                     </p>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

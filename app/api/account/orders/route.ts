@@ -5,6 +5,15 @@ import pool from '@/lib/mysql';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
+interface OrderRow {
+    id: number;
+    totalAmount: number;
+    status: string;
+    createdAt: Date;
+    shippingAddress: string;
+    items: string;
+}
+
 export async function GET() {
     try {
         const token = (await cookies()).get('auth_token')?.value;
@@ -17,6 +26,7 @@ export async function GET() {
         const userId = payload.userId as number;
 
         // Fetch user orders with items
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const [orders]: any = await pool.execute(
             `SELECT 
                 o.id,
@@ -38,7 +48,7 @@ export async function GET() {
         );
 
         // Format the orders
-        const formattedOrders = orders.map((order: any) => ({
+        const formattedOrders = (orders as OrderRow[]).map((order) => ({
             ...order,
             items: order.items ? order.items.split('|') : []
         }));

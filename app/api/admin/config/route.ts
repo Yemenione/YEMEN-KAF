@@ -20,26 +20,23 @@ export async function GET(req: NextRequest) {
             orderBy: { key: 'asc' }
         });
 
-        const configMap = configs.reduce((acc: any, curr: any) => {
+        const configMap = configs.reduce((acc: Record<string, string>, curr) => {
             acc[curr.key] = curr.value;
             return acc;
         }, {} as Record<string, string>);
 
         return NextResponse.json(configMap);
 
-    } catch (error: any) {
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return NextResponse.json(
-            { error: 'Failed to fetch config', details: error.message },
+            { error: 'Failed to fetch config', details: errorMessage },
             { status: 500 }
         );
     }
 }
 
-// Add a private GET for admin settings
-export async function POST_GET_PRIVATE(req: NextRequest) {
-    // This is just a conceptual note, I'll implement a proper private route or query param
-}
-
+// ...
 
 export async function POST(req: NextRequest) {
     try {
@@ -77,9 +74,10 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ success: true });
 
-    } catch (error: any) {
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return NextResponse.json(
-            { error: 'Failed to save settings', details: error.message },
+            { error: 'Failed to save settings', details: errorMessage },
             { status: 500 }
         );
     }

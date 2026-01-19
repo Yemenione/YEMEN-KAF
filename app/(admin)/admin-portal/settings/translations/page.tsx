@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Save, Plus, Filter, Search } from "lucide-react";
+import { Plus, Filter, Search } from "lucide-react";
 
 interface TranslationRow {
     group: string;
@@ -66,7 +66,7 @@ export default function TranslationsPage() {
 
             // Visual feedback could be added here (e.g. green border flash)
 
-        } catch (error) {
+        } catch {
             alert('Failed to save translation');
         }
     };
@@ -80,7 +80,7 @@ export default function TranslationsPage() {
             setShowAddModal(false);
             setNewKeyData({ group: 'frontend', key: '', value: '' });
             fetchData(); // Reload to see new row
-        } catch (error) {
+        } catch {
             alert('Failed to add key');
         }
     };

@@ -2,14 +2,31 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Camera, Save, Loader2 } from "lucide-react";
+import { Camera, Loader2 } from "lucide-react";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { updateAdminAvatar } from "@/app/actions/profile";
 
+interface Admin {
+    id: string | number;
+    name: string;
+    email: string;
+    role: string;
+    avatar?: string | null;
+}
+
+interface FirebaseConfig {
+    apiKey: string;
+    authDomain?: string;
+    projectId?: string;
+    storageBucket?: string;
+    messagingSenderId?: string;
+    appId?: string;
+}
+
 interface ProfileFormProps {
-    admin: any;
-    firebaseConfig: any;
+    admin: Admin;
+    firebaseConfig: FirebaseConfig | Record<string, string> | null;
 }
 
 export default function ProfileForm({ admin, firebaseConfig }: ProfileFormProps) {
@@ -42,7 +59,7 @@ export default function ProfileForm({ admin, firebaseConfig }: ProfileFormProps)
 
             // Update Database
             const result = await updateAdminAvatar(downloadURL);
-            
+
             if (result.success) {
                 setAvatarUrl(downloadURL);
                 setMessage("Avatar updated successfully!");
@@ -50,9 +67,9 @@ export default function ProfileForm({ admin, firebaseConfig }: ProfileFormProps)
                 setMessage("Failed to update database.");
             }
 
-        } catch (error: any) {
+        } catch (error) {
             console.error(error);
-            setMessage("Upload failed: " + error.message);
+            setMessage("Upload failed: " + (error instanceof Error ? error.message : "Unknown error"));
         } finally {
             setUploading(false);
         }
@@ -64,11 +81,11 @@ export default function ProfileForm({ admin, firebaseConfig }: ProfileFormProps)
                 <div className="relative group">
                     <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-100 shadow-inner bg-gray-50 relative">
                         {avatarUrl ? (
-                            <Image 
-                                src={avatarUrl} 
-                                alt="Avatar" 
-                                fill 
-                                className="object-cover" 
+                            <Image
+                                src={avatarUrl}
+                                alt="Avatar"
+                                fill
+                                className="object-cover"
                                 sizes="128px"
                             />
                         ) : (
@@ -77,19 +94,19 @@ export default function ProfileForm({ admin, firebaseConfig }: ProfileFormProps)
                             </div>
                         )}
                     </div>
-                    
+
                     <label className="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full cursor-pointer shadow-lg hover:bg-gray-800 transition-colors">
                         <Camera size={18} />
-                        <input 
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
                             onChange={handleFileChange}
                             disabled={uploading}
                         />
                     </label>
                 </div>
-                
+
                 <div className="text-center">
                     <h2 className="text-xl font-bold">{admin?.name || 'Admin'}</h2>
                     <p className="text-gray-500 text-sm">{admin?.email}</p>

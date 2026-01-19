@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
-dotenv.config();
+import mysql, { RowDataPacket } from 'mysql2/promise';
+import 'dotenv/config';
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -10,14 +8,19 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME,
 });
 
+interface ConfigRow extends RowDataPacket {
+    key: string;
+    value: string;
+}
+
 async function fix() {
     try {
         console.log('Detecting swapped Stripe keys...');
 
-        const [rows] = await pool.execute('SELECT `key`, `value` FROM store_config WHERE `key` IN ("stripe_publishable_key", "stripe_secret_key")');
+        const [rows] = await pool.execute<ConfigRow[]>('SELECT `key`, `value` FROM store_config WHERE `key` IN ("stripe_publishable_key", "stripe_secret_key")');
 
-        let pub = rows.find(r => r.key === 'stripe_publishable_key');
-        let sec = rows.find(r => r.key === 'stripe_secret_key');
+        const pub = rows.find(r => r.key === 'stripe_publishable_key');
+        const sec = rows.find(r => r.key === 'stripe_secret_key');
 
         if (pub && sec && pub.value.startsWith('sk_') && sec.value.startsWith('pk_')) {
             console.log('Swapping back detected mismatched keys...');
@@ -30,8 +33,9 @@ async function fix() {
             console.log('No swap needed or keys not found in current state.');
         }
 
-    } catch (e) {
-        console.error('Fix failed:', e.message);
+    } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.error('Fix failed:', msg);
     } finally {
         await pool.end();
         process.exit();

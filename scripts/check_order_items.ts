@@ -1,5 +1,5 @@
-const mysql = require('mysql2/promise');
-require('dotenv').config();
+import mysql, { RowDataPacket } from 'mysql2/promise';
+import 'dotenv/config';
 
 async function main() {
     console.log('Checking order_items table structure...');
@@ -11,7 +11,7 @@ async function main() {
     });
 
     try {
-        const [rows] = await connection.execute('DESCRIBE order_items');
+        const [rows] = await connection.execute<RowDataPacket[]>('DESCRIBE order_items');
         console.table(rows);
     } catch (e) {
         console.error(e);

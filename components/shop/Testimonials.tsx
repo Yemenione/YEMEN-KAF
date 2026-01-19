@@ -10,18 +10,20 @@ interface Testimonial {
     avatar?: string;
 }
 
-interface TestimonialData {
-    id: number;
-    rating: number;
-    comment: string | null;
-    patient: {
+// interface TestimonialData removed (unused)
+
+interface Review {
+    patient?: {
         firstName: string | null;
         lastName: string | null;
         avatar: string | null;
     };
+    isVerified?: boolean;
+    comment: string | null;
+    rating: number;
 }
 
-export default function Testimonials({ reviews = [] }: { reviews?: any[] }) {
+export default function Testimonials({ reviews = [] }: { reviews?: Review[] }) {
     const { t, locale } = useLanguage();
 
     const fallbackTestimonials = [
@@ -81,7 +83,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: any[] }) {
                                 <div className="relative mb-6">
                                     <Quote className="absolute -top-2 -start-2 w-8 h-8 text-[var(--honey-gold)] opacity-50" />
                                     <p className="text-sm leading-relaxed ps-6 italic" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-                                        "{testimonial.text}"
+                                        &quot;{testimonial.text}&quot;
                                     </p>
                                 </div>
                             </div>

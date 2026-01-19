@@ -1,6 +1,6 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
     try {
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
         const search = searchParams.get('search') || '';
         const skip = (page - 1) * limit;
 
-        const where: any = {};
+        const where: Prisma.MediaWhereInput = {};
         if (search) {
             where.OR = [
                 { originalName: { contains: search } },
@@ -38,9 +38,9 @@ export async function GET(req: NextRequest) {
             }
         });
 
-    } catch (error: any) {
+    } catch (error) {
         return NextResponse.json(
-            { error: 'Failed to fetch media', details: error.message },
+            { error: 'Failed to fetch media', details: error instanceof Error ? error.message : "Unknown error" },
             { status: 500 }
         );
     }

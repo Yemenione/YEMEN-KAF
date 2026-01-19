@@ -15,9 +15,9 @@ export async function POST(req: NextRequest) {
         const result = await importProductsFromCSV(text);
 
         return NextResponse.json(result);
-    } catch (error: any) {
+    } catch (error) {
         return NextResponse.json(
-            { error: 'Import failed', details: error.message },
+            { error: 'Import failed', details: error instanceof Error ? error.message : 'Unknown error' },
             { status: 500 }
         );
     }

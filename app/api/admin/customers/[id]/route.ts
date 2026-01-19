@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-    req: NextRequest,
+    _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
@@ -24,8 +24,8 @@ export async function GET(
         }
 
         return NextResponse.json(customer);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }
 
@@ -49,7 +49,7 @@ export async function PUT(
         });
 
         return NextResponse.json(customer);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to update customer" }, { status: 500 });
     }
 }

@@ -9,16 +9,48 @@ import { useLanguage } from "@/context/LanguageContext";
 import BestSellers from "./BestSellers";
 import NewArrivals from "./NewArrivals";
 
+interface VariantAttribute {
+    name: string;
+    value: string;
+}
+
+interface ProductVariant {
+    id: number;
+    name: string;
+    sku: string;
+    price: number | string;
+    compareAtPrice?: number | string | null;
+    stock: number;
+    images: string | null;
+    attributes: VariantAttribute[];
+}
+
 interface Product {
     id: number;
     name: string;
+    slug?: string;
     price: number;
     compare_at_price?: number | null;
     description: string | null;
     images: string | null;
     taxRate?: number;
     category_name?: string;
-    variants: any[];
+    variants: ProductVariant[];
+    stock?: number;
+    stock_quantity?: number;
+    quantity?: number;
+}
+
+interface Review {
+    id: number;
+    rating: number;
+    comment: string;
+    createdAt: string;
+    patient: {
+        firstName: string;
+        lastName: string;
+    };
+    isVerified?: boolean;
 }
 
 interface Carrier {
@@ -36,7 +68,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
     const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
-    const [reviews, setReviews] = useState<any[]>([]);
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [averageRating, setAverageRating] = useState(0);
     const [totalReviews, setTotalReviews] = useState(0);
     const [userRating, setUserRating] = useState(5);
@@ -45,8 +77,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
 
     // Fetch Reviews
     useEffect(() => {
-        if ((product as any).slug) {
-            fetch(`/api/products/${(product as any).slug}/reviews`)
+        if (product.slug) {
+            fetch(`/api/products/${product.slug}/reviews`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.reviews) {
@@ -63,7 +95,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
         e.preventDefault();
         setIsSubmittingReview(true);
         try {
-            const res = await fetch(`/api/products/${(product as any).slug}/reviews`, {
+            const res = await fetch(`/api/products/${product.slug}/reviews`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ rating: userRating, comment: userComment })
@@ -73,8 +105,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                 const newReview = await res.json();
                 setReviews([newReview, ...reviews]);
                 setUserComment("");
-                if ((product as any).slug) {
-                    const refreshStats = await fetch(`/api/products/${(product as any).slug}/reviews`).then(r => r.json());
+                if (product.slug) {
+                    const refreshStats = await fetch(`/api/products/${product.slug}/reviews`).then(r => r.json());
                     if (refreshStats.reviews) {
                         setReviews(refreshStats.reviews);
                         setAverageRating(refreshStats.average);
@@ -103,7 +135,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             }
             const parsed = JSON.parse(product.images);
             if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        } catch (e) {
+        } catch {
             if (product.images.length > 0) return [product.images];
         }
         return ['/images/honey-jar.jpg'];
@@ -113,8 +145,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
 
     // Variants logic
     const hasVariants = product.variants && product.variants.length > 0;
-    const attributes = hasVariants ? product.variants.reduce((acc: any, variant: any) => {
-        variant.attributes.forEach((attr: any) => {
+    const attributes = hasVariants ? product.variants.reduce((acc: Record<string, Set<string>>, variant: ProductVariant) => {
+        variant.attributes.forEach((attr: VariantAttribute) => {
             if (!acc[attr.name]) acc[attr.name] = new Set();
             acc[attr.name].add(attr.value);
         });
@@ -123,8 +155,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
 
     const attributeNames = Object.keys(attributes);
 
-    const selectedVariant = hasVariants ? product.variants.find((v: any) => {
-        return v.attributes.every((attr: any) => selectedOptions[attr.name] === attr.value);
+    const selectedVariant = hasVariants ? product.variants.find((v: ProductVariant) => {
+        return v.attributes.every((attr: VariantAttribute) => selectedOptions[attr.name] === attr.value);
     }) : null;
 
     useEffect(() => {
@@ -133,7 +165,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
         }
     }, [selectedVariant?.id]);
 
-    const getVariantImages = (variant: any) => {
+    const getVariantImages = (variant: ProductVariant) => {
         if (!variant || !variant.images) return null;
         try {
             const parsed = JSON.parse(variant.images);
@@ -153,7 +185,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
         ? (selectedVariant.compareAtPrice ? Number(selectedVariant.compareAtPrice) : null)
         : (product.compare_at_price ? Number(product.compare_at_price) : null);
 
-    const currentStock = selectedVariant ? selectedVariant.stock : ((product as any).stock || (product as any).stock_quantity || (product as any).quantity);
+    const currentStock = selectedVariant ? selectedVariant.stock : (product.stock || product.stock_quantity || product.quantity || 0);
     const isOutOfStock = currentStock <= 0;
 
     const discountPercentage = currentCompareAtPrice && currentCompareAtPrice > currentPrice
@@ -232,7 +264,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                         <div className="mb-8 border-b border-gray-100 pb-8">
                             <h2 className="text-[10px] font-bold text-gray-400 tracking-[0.3em] uppercase mb-4 flex items-center gap-4">
                                 <span className="w-12 h-[1px] bg-gray-300"></span>
-                                {product.category_name || (product as any).category?.name}
+                                {product.category_name}
                             </h2>
                             <h1 className="text-4xl md:text-5xl font-serif text-black mb-6 leading-tight font-medium tracking-tight">{product.name}</h1>
 
@@ -272,8 +304,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                                 let swatchImage = null;
 
                                                 if (isColorAttr && product.variants) {
-                                                    const textVariant = product.variants.find((v: any) =>
-                                                        v.attributes.some((a: any) => a.name === attrName && a.value === strValue)
+                                                    const textVariant = product.variants.find((v: ProductVariant) =>
+                                                        v.attributes.some((a: VariantAttribute) => a.name === attrName && a.value === strValue)
                                                     );
                                                     if (textVariant) {
                                                         const vImages = getVariantImages(textVariant);
@@ -324,7 +356,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                 <span className="w-8 text-center font-bold text-sm tracking-tighter">{quantity}</span>
                                 <button
                                     onClick={() => {
-                                        const stock = selectedVariant?.stock ?? (product as any).stock ?? (product as any).stock_quantity ?? (product as any).quantity ?? 10;
+                                        const stock = selectedVariant?.stock ?? product.stock ?? product.stock_quantity ?? product.quantity ?? 10;
                                         setQuantity(Math.min(stock, quantity + 1));
                                     }}
                                     className="w-12 h-14 flex items-center justify-center text-gray-400 hover:text-black transition-colors"
@@ -499,7 +531,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                     <p className="text-gray-400 font-serif italic">{t('product.noReviews') || 'Aucun avis pour le moment. Soyez le premier à commander et donner votre avis !'}</p>
                                 </div>
                             ) : (
-                                reviews.map((review: any) => (
+                                reviews.map((review: Review) => (
                                     <div key={review.id} className="group border-b border-gray-50 pb-12 last:border-0 hover:border-gray-100 transition-colors">
                                         <div className="flex items-center justify-between mb-6">
                                             <div className="flex items-center gap-4">
@@ -524,7 +556,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                                 ))}
                                             </div>
                                         </div>
-                                        <p className="text-gray-600 leading-loose font-light text-sm italic pr-12">"{review.comment}"</p>
+                                        <p className="text-gray-600 leading-loose font-light text-sm italic pr-12">&quot;{review.comment}&quot;</p>
                                     </div>
                                 ))
                             )}

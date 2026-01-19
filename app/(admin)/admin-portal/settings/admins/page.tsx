@@ -2,8 +2,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Users, Shield, ShieldCheck, ShieldAlert, Mail, Clock, Loader2, Save } from 'lucide-react';
+import { Users, Shield, ShieldCheck, ShieldAlert, Mail, Clock, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import Image from 'next/image';
 
 interface AdminUser {
     id: number;
@@ -45,7 +46,7 @@ export default function AdminsPage() {
                 body: JSON.stringify({ id, role })
             });
             if (res.ok) {
-                setAdmins(admins.map(a => a.id === id ? { ...a, role: role as any } : a));
+                setAdmins(admins.map(a => a.id === id ? { ...a, role: role as AdminUser['role'] } : a));
             }
         } catch (error) {
             console.error('Role update failed:', error);
@@ -84,7 +85,7 @@ export default function AdminsPage() {
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-lg font-bold text-[var(--coffee-brown)] overflow-hidden">
-                                        {admin.avatar ? <img src={admin.avatar} alt={admin.name} /> : admin.name[0]}
+                                        {admin.avatar ? <Image src={admin.avatar} alt={admin.name} width={48} height={48} className="object-cover w-full h-full" /> : admin.name[0]}
                                     </div>
                                     <div>
                                         <h3 className="font-bold">{admin.name}</h3>

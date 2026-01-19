@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, RefreshCw, Save, AlertCircle } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Save } from "lucide-react";
+import Image from "next/image";
 
 interface Attribute {
     id: number;
@@ -40,8 +41,9 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
     useEffect(() => {
         fetchAttributes();
         if (productId && !initialVariants.length) {
-            fetchVariants(); // Only fetch if editing an existing product and no initial passed
+            fetchVariants();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productId]);
 
     // Propagate changes to parent
@@ -67,18 +69,25 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
         setGenerating(true);
 
         // ... (existing logic)
+        // Define type for variant combination being built
+        type Combination = {
+            name: string;
+            skuPart: string;
+            attrs: { attributeId: number; valueId: number; value: string }[];
+        };
+
         const activeAttributes = attributes.filter(a => selectedAttrs.includes(a.id));
 
-        const combine = (acc: any[], idx: number): any[] => {
+        const combine = (acc: Combination[], idx: number): Combination[] => {
             if (idx === activeAttributes.length) return acc;
             const attr = activeAttributes[idx];
-            const nextAcc = [];
+            const nextAcc: Combination[] = [];
 
             if (acc.length === 0) {
-                nextAcc.push(...attr.values.map((v: any) => ({
+                nextAcc.push(...attr.values.map(v => ({
                     name: v.name,
                     skuPart: v.name.toUpperCase().slice(0, 3),
-                    attrs: [{ attributeId: attr.id, valueId: v.id, value: v.value }] // Added value
+                    attrs: [{ attributeId: attr.id, valueId: v.id, value: v.value }]
                 })));
             } else {
                 for (const existing of acc) {
@@ -102,7 +111,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
             price: basePrice,
             stock: 0,
             isActive: true,
-            attributes: c.attrs.map((curr: any) => ({
+            attributes: c.attrs.map(curr => ({
                 attributeId: curr.attributeId,
                 valueId: curr.valueId
             }))
@@ -144,9 +153,9 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
     };
 
 
-    const updateVariant = (index: number, field: keyof Variant, value: any) => {
+    const updateVariant = (index: number, field: keyof Variant, value: unknown) => {
         const updated = [...variants];
-        // @ts-ignore
+        // @ts-expect-error: dynamic property access on variant type
         updated[index][field] = value;
         setVariants(updated);
     };
@@ -177,7 +186,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
                 const newImages = [...currentImages, data.path];
                 updateVariant(index, 'images', JSON.stringify(newImages));
             }
-        } catch (err) {
+        } catch {
             alert('Upload failed');
         }
     };
@@ -309,7 +318,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
                                                 <div className="flex items-center gap-2">
                                                     {variantImages.length > 0 ? (
                                                         <div className="relative w-8 h-8 rounded border overflow-hidden group">
-                                                            <img src={variantImages[0]} alt="Variant" className="w-full h-full object-cover" />
+                                                            <Image src={variantImages[0]} alt="Variant" fill className="object-cover" />
                                                             <button
                                                                 onClick={() => removeImage(index, 0)}
                                                                 className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100"

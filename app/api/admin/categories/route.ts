@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         const query = `
             SELECT * FROM categories 
             ORDER BY display_order ASC, name ASC
         `;
 
-        const [rows]: any = await pool.execute(query);
+        const [rows] = await pool.execute<RowDataPacket[]>(query);
 
         return NextResponse.json(rows);
     } catch (error) {
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `;
 
-        const [result]: any = await pool.execute(query, [
+        const [result] = await pool.execute<ResultSetHeader>(query, [
             name,
             finalSlug,
             description || null,
@@ -54,9 +55,10 @@ export async function POST(req: Request) {
             message: 'Category created successfully'
         });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Category creation error:', error);
-        if (error.code === 'ER_DUP_ENTRY') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((error as any).code === 'ER_DUP_ENTRY') {
             return NextResponse.json({ error: 'Slug already exists' }, { status: 409 });
         }
         return NextResponse.json({ error: 'Failed to create category' }, { status: 500 });

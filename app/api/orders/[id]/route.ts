@@ -1,5 +1,43 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { RowDataPacket } from 'mysql2';
+
+interface OrderRow extends RowDataPacket {
+    id: number;
+    order_number: string;
+    status: string;
+    total_amount: string;
+    shipping_cost: string;
+    shipping_method: string;
+    payment_method: string;
+    created_at: Date;
+    shipping_address: string; // JSON string
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    phone?: string;
+}
+
+interface OrderItemRow extends RowDataPacket {
+    id: number;
+    product_id: number;
+    order_id: number;
+    quantity: number;
+    price: string;
+    name?: string;
+    product_name?: string;
+    slug?: string;
+    product_slug?: string;
+    images?: string; // JSON string or URL
+    product_images?: string;
+}
+
+interface StatusHistoryRow extends RowDataPacket {
+    id: number;
+    order_id: number;
+    status: string;
+    created_at: Date;
+}
 
 // GET: Handle both Admin (ID) and Storefront (OrderNumber) lookups
 export async function GET(
@@ -15,7 +53,7 @@ export async function GET(
 
         if (isNumericId) {
             // --- ADMIN LOGIC (Fetch by ID with Customer info) ---
-            const [orders]: any = await pool.execute(
+            const [orders] = await pool.execute<OrderRow[]>(
                 `SELECT 
                     o.*,
                     c.first_name, c.last_name, c.email, c.phone
@@ -32,7 +70,7 @@ export async function GET(
             const order = orders[0];
 
             // Fetch Items with Product info
-            const [items]: any = await pool.execute(
+            const [items] = await pool.execute<OrderItemRow[]>(
                 `SELECT 
                     oi.*,
                     p.name as product_name,
@@ -45,7 +83,7 @@ export async function GET(
             );
 
             // Fetch Status History
-            const [history]: any = await pool.execute(
+            const [history] = await pool.execute<StatusHistoryRow[]>(
                 `SELECT * FROM order_status_history WHERE order_id = ? ORDER BY created_at DESC`,
                 [order.id]
             );
@@ -54,7 +92,7 @@ export async function GET(
 
         } else {
             // --- STOREFRONT LOGIC (Fetch by OrderNumber) ---
-            const [orders]: any = await pool.execute(
+            const [orders] = await pool.execute<OrderRow[]>(
                 `SELECT * FROM orders WHERE order_number = ?`,
                 [id]
             );
@@ -66,7 +104,7 @@ export async function GET(
             const order = orders[0];
 
             // Fetch Items
-            const [items]: any = await pool.execute(
+            const [items] = await pool.execute<OrderItemRow[]>(
                 `SELECT oi.*, p.name, p.images, p.slug 
                  FROM order_items oi
                  LEFT JOIN products p ON oi.product_id = p.id
@@ -80,19 +118,19 @@ export async function GET(
                 if (typeof shippingAddress === 'string') {
                     shippingAddress = JSON.parse(shippingAddress);
                 }
-            } catch (e) { }
+            } catch { }
 
             return NextResponse.json({
                 id: order.id,
                 orderNumber: order.order_number,
                 status: order.status,
                 totalAmount: parseFloat(order.total_amount),
-                shippingCost: parseFloat(order.shipping_cost || 0),
+                shippingCost: parseFloat(order.shipping_cost || '0'),
                 shippingMethod: order.shipping_method,
                 paymentMethod: order.payment_method,
                 shippingAddress,
                 createdAt: order.created_at,
-                items: items.map((item: any) => ({
+                items: items.map((item) => ({
                     id: item.id,
                     productId: item.product_id,
                     name: item.name || item.product_name, // Handle aliases
@@ -123,13 +161,13 @@ export async function PATCH(
         // Assumption: Admin uses ID for updates. If id is orderNumber, we find ID first.
         let orderId = id;
         if (!/^\d+$/.test(id)) {
-            const [orders]: any = await pool.execute('SELECT id FROM orders WHERE order_number = ?', [id]);
+            const [orders] = await pool.execute<OrderRow[]>('SELECT id FROM orders WHERE order_number = ?', [id]);
             if (orders.length === 0) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-            orderId = orders[0].id;
+            orderId = orders[0].id.toString();
         }
 
         const updates: string[] = [];
-        const values: any[] = [];
+        const values: (string | number | null)[] = [];
 
         if (status) {
             updates.push('status = ?');

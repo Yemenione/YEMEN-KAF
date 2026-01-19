@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+
+// Interface removed as it was unused
 
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const group = searchParams.get('group'); // optional filtering
 
-        const where: any = {};
+        const where: Prisma.TranslationWhereInput = {};
         if (group) where.group = group;
 
         const translations = await prisma.translation.findMany({
@@ -16,7 +19,7 @@ export async function GET(req: NextRequest) {
 
         // Transform into a structure easier for the UI:
         // { "nav.home": { en: "Home", fr: "Accueil" }, ... }
-        const result: any = {};
+        const result: Record<string, Record<string, string>> = {};
 
         translations.forEach(t => {
             if (!result[t.key]) {
@@ -26,8 +29,8 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json(Object.values(result)); // Return array of row objects
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }
 
@@ -58,7 +61,7 @@ export async function PUT(req: NextRequest) {
         });
 
         return NextResponse.json(translation);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }

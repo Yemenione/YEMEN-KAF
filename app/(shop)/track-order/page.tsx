@@ -1,14 +1,12 @@
 "use client";
 
-import { useLanguage } from "@/context/LanguageContext";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 
 export default function TrackOrderPage() {
-    const { t } = useLanguage();
     const [orderId, setOrderId] = useState("");
-    const [status, setStatus] = useState<null | any>(null);
+    const [status, setStatus] = useState<{ status: string; trackingNumber?: string; shippingMethod?: string; orderNumber: string } | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -21,8 +19,8 @@ export default function TrackOrderPage() {
             if (!res.ok) throw new Error("Order not found");
             const data = await res.json();
             setStatus(data);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Error');
             setStatus(null);
         } finally {
             setLoading(false);

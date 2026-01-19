@@ -2,7 +2,6 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
-import QamariyaPattern from "@/components/ui/QamariyaPattern";
 
 interface Product {
     id: number;
@@ -33,7 +32,7 @@ export default function ProductShowcase() {
             if (Array.isArray(parsed) && parsed.length > 0) {
                 return parsed[0];
             }
-        } catch (e) {
+        } catch {
             // Fallback for non-JSON strings
             if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;

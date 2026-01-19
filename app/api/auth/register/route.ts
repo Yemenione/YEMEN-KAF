@@ -4,6 +4,8 @@ import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcrypt';
 
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
+
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
 export async function POST(req: Request) {
@@ -15,7 +17,7 @@ export async function POST(req: Request) {
         }
 
         // Check if user exists
-        const [existingRows]: any = await pool.execute(
+        const [existingRows] = await pool.execute<RowDataPacket[]>(
             'SELECT id FROM customers WHERE email = ? LIMIT 1',
             [email]
         );
@@ -33,7 +35,7 @@ export async function POST(req: Request) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create user using direct SQL
-        const [result]: any = await pool.execute(
+        const [result] = await pool.execute<ResultSetHeader>(
             'INSERT INTO customers (first_name, last_name, email, password_hash, created_at) VALUES (?, ?, ?, ?, NOW())',
             [firstName, lastName, email, hashedPassword]
         );

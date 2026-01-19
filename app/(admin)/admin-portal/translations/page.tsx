@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Save, Globe, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Search, Globe, Loader2, RefreshCw } from 'lucide-react';
 
 interface TranslationSet {
     en: string;
@@ -31,8 +31,8 @@ export default function TranslationsPage() {
             const res = await fetch('/api/admin/translations');
             const data = await res.json();
             setTranslations(data);
-        } catch (error) {
-            console.error('Failed to fetch translations:', error);
+        } catch {
+            console.error('Failed to fetch translations');
         } finally {
             setLoading(false);
         }
@@ -53,8 +53,8 @@ export default function TranslationsPage() {
                     [key]: { ...prev[key], [lang]: value }
                 }));
             }
-        } catch (error) {
-            console.error('Save failed:', error);
+        } catch {
+            console.error('Save failed');
         } finally {
             setSaving(null);
         }
@@ -107,8 +107,8 @@ export default function TranslationsPage() {
                         key={lang}
                         onClick={() => setActiveLang(lang)}
                         className={`px-6 py-2 rounded-md text-sm font-medium uppercase transition-all ${activeLang === lang
-                                ? 'bg-white shadow-sm text-[var(--coffee-brown)]'
-                                : 'text-gray-500 hover:text-gray-700'
+                            ? 'bg-white shadow-sm text-[var(--coffee-brown)]'
+                            : 'text-gray-500 hover:text-gray-700'
                             }`}
                     >
                         {lang === 'en' ? '🇺🇸 English' : lang === 'fr' ? '🇫🇷 French' : '🇾🇪 Arabic'}
@@ -159,8 +159,8 @@ export default function TranslationsPage() {
                                                     }
                                                 }}
                                                 className={`w-full p-3 border rounded-md transition-all resize-none h-20 focus:ring-2 focus:ring-[var(--coffee-brown)] outline-none ${saving === `${key}-${activeLang}`
-                                                        ? 'opacity-50'
-                                                        : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700'
+                                                    ? 'opacity-50'
+                                                    : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700'
                                                     }`}
                                                 dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                             />

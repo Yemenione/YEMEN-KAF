@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Package, TrendingUp, TrendingDown, History, AlertTriangle, CheckCircle, Search } from 'lucide-react';
+import { Package, History, Search } from 'lucide-react';
 
 interface StockMovement {
     quantity: number;
@@ -164,10 +164,10 @@ export default function InventoryPage() {
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${product.stockQuantity < 5
-                                                ? 'bg-red-50 text-red-700 border-red-200'
-                                                : product.stockQuantity < 20
-                                                    ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                                                    : 'bg-green-50 text-green-700 border-green-200'
+                                            ? 'bg-red-50 text-red-700 border-red-200'
+                                            : product.stockQuantity < 20
+                                                ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                                                : 'bg-green-50 text-green-700 border-green-200'
                                             }`}>
                                             {product.stockQuantity}
                                         </span>
@@ -202,8 +202,8 @@ export default function InventoryPage() {
                                     key={type}
                                     onClick={() => setAdjustType(type)}
                                     className={`flex-1 py-1.5 text-sm font-medium rounded capitalize transition-all ${adjustType === type
-                                            ? 'bg-white shadow text-[var(--coffee-brown)]'
-                                            : 'text-gray-500 hover:text-gray-700'
+                                        ? 'bg-white shadow text-[var(--coffee-brown)]'
+                                        : 'text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
                                     {type}

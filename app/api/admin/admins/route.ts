@@ -17,7 +17,7 @@ export async function GET() {
             orderBy: { createdAt: 'desc' }
         });
         return NextResponse.json(admins);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch admins' }, { status: 500 });
     }
 }
@@ -30,7 +30,7 @@ export async function PUT(request: Request) {
             data: { role }
         });
         return NextResponse.json(updated);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Update failed' }, { status: 500 });
     }
 }

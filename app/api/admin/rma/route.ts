@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const status = searchParams.get('status');
-        const search = searchParams.get('search'); // Order ID or Customer Name
+        // const search = searchParams.get('search'); // Unused
 
-        const where: any = {};
+        const where: Prisma.RMAWhereInput = {};
         if (status && status !== 'All') {
             where.status = status;
         }
@@ -29,8 +30,9 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json(rmas);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
 
@@ -55,10 +57,11 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(rma);
-    } catch (error: any) {
-        if (error.code === 'P2002') {
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             return NextResponse.json({ error: "RMA already exists for this order" }, { status: 400 });
         }
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

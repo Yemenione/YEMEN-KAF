@@ -16,8 +16,10 @@ export async function GET() {
         const { payload } = await jwtVerify(token, JWT_SECRET);
         const userId = payload.userId as number;
 
+        // Fetch user details
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const [rows]: any = await pool.execute(
-            'SELECT id, email, first_name as firstName, last_name as lastName, phone, avatar FROM customers WHERE id = ? LIMIT 1',
+            'SELECT first_name, last_name, email, phone FROM customers WHERE id = ?',
             [userId]
         );
 
@@ -29,7 +31,7 @@ export async function GET() {
 
         return NextResponse.json({ user });
 
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 }

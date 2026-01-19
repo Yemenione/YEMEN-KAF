@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function RegisterPage() {
     const { register, loginWithGoogle } = useAuth();
@@ -64,7 +65,7 @@ export default function RegisterPage() {
                             }}
                             className="w-full py-4 border border-black/10 text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
                         >
-                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+                            <Image src="https://www.google.com/favicon.ico" alt="Google" width={16} height={16} className="w-4 h-4" />
                             {t('auth.continueWithGoogle') || "Continue with Google"}
                         </button>
 

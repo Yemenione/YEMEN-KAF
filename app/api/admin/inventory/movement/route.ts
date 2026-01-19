@@ -54,9 +54,10 @@ export async function POST(req: NextRequest) {
             movement: result[0]
         });
 
-    } catch (error: any) {
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return NextResponse.json(
-            { error: 'Failed to adjust stock', details: error.message },
+            { error: 'Failed to adjust stock', details: errorMessage },
             { status: 500 }
         );
     }

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
         }
 
         // Check if subscriber already exists
-        const [existing]: any = await pool.execute(
+        const [existing] = await pool.execute<RowDataPacket[]>(
             'SELECT id FROM newsletter_subscribers WHERE email = ?',
             [email]
         );
@@ -26,8 +26,9 @@ export async function POST(request: Request) {
         );
 
         return NextResponse.json({ message: 'Subscribed successfully' });
-    } catch (error: any) {
+    } catch (error) {
         console.error('Newsletter error:', error);
         return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 });
     }
 }
+import { RowDataPacket } from 'mysql2';

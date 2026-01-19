@@ -2,9 +2,8 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, Stars } from "@react-three/drei";
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
-import clsx from "clsx";
 
 // Utility to map Lat/Lon to Sphere 3D Coords
 function latLongToVector3(lat: number, lon: number, radius: number): [number, number, number] {

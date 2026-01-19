@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const languages = await prisma.language.findMany({
             orderBy: { isDefault: 'desc' } // Default language first
         });
         return NextResponse.json(languages);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }
 
@@ -43,10 +43,11 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(language);
-    } catch (error: any) {
-        if (error.code === 'P2002') {
+    } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((error as any).code === 'P2002') {
             return NextResponse.json({ error: "Language with this ISO code already exists" }, { status: 400 });
         }
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }

@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const brands = await prisma.brand.findMany({
             orderBy: { name: 'asc' },
             include: { _count: { select: { products: true } } }
         });
         return NextResponse.json(brands);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch brands' }, { status: 500 });
     }
 }
@@ -29,8 +30,9 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(brand);
-    } catch (error: any) {
-        if (error.code === 'P2002') {
+        return NextResponse.json(brand);
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             return NextResponse.json({ error: 'Brand slug must be unique' }, { status: 400 });
         }
         return NextResponse.json({ error: 'Failed to create brand' }, { status: 500 });

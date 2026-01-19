@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Users, Plus, Pencil, Trash2, Save, X } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, Save } from 'lucide-react';
 
 interface CustomerGroup {
     id: number;

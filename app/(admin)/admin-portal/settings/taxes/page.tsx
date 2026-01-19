@@ -2,10 +2,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, Percent } from "lucide-react";
+import { Plus, Trash2, Edit2 } from "lucide-react";
+
+interface TaxRule {
+    id: number;
+    name: string;
+    rate: number;
+    country: string;
+    priority: number;
+    isActive: boolean;
+}
 
 export default function TaxRulesPage() {
-    const [rules, setRules] = useState<any[]>([]);
+    const [rules, setRules] = useState<TaxRule[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);

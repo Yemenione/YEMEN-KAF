@@ -13,9 +13,21 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+type TranslationValue = string | TranslationValue[] | { [key: string]: TranslationValue };
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
     const [locale, setLocaleState] = useState<Locale>("fr");
-    const [dynamicTranslations, setDynamicTranslations] = useState<any>(translations);
+    // Use TranslationValue type instead of any, wrapped in a Record for the root object
+    const [dynamicTranslations, setDynamicTranslations] = useState<Record<string, TranslationValue>>(translations);
+
+    const setLocale = (newLocale: Locale) => {
+        setLocaleState(newLocale);
+        if (typeof window !== "undefined") {
+            localStorage.setItem("locale", newLocale);
+            document.documentElement.lang = newLocale;
+            document.documentElement.dir = newLocale === "ar" ? "rtl" : "ltr";
+        }
+    };
 
     useEffect(() => {
         const fetchDynamicTranslations = async () => {
@@ -34,28 +46,25 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
         const stored = localStorage.getItem("locale") as Locale;
         if (stored) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLocale(stored);
         }
     }, []);
 
-    const setLocale = (newLocale: Locale) => {
-        setLocaleState(newLocale);
-        if (typeof window !== "undefined") {
-            localStorage.setItem("locale", newLocale);
-            document.documentElement.lang = newLocale;
-            document.documentElement.dir = newLocale === "ar" ? "rtl" : "ltr";
-        }
-    };
-
     const t = (key: string): string => {
         const keys = key.split(".");
-        let value: any = dynamicTranslations[locale];
+        let value: TranslationValue | undefined = dynamicTranslations[locale];
 
         for (const k of keys) {
-            value = value?.[k];
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+                value = (value as { [key: string]: TranslationValue })[k];
+            } else {
+                value = undefined;
+                break;
+            }
         }
 
-        return value || key;
+        return (typeof value === 'string' ? value : key) || key;
     };
 
     const isRTL = locale === 'ar';

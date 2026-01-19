@@ -7,20 +7,35 @@ import { getAllBlogPosts, deleteBlogPost } from "@/app/actions/blog";
 import { toast } from "sonner";
 import Image from "next/image";
 
+interface BlogPost {
+    id: number;
+    title: string;
+    slug: string;
+    content: string;
+    excerpt: string | null;
+    image: string | null;
+    category: string | null;
+    author: string | null;
+    status: string;
+    views: number;
+    publishedAt: Date | string | null;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+}
+
 export default function BlogManagementPage() {
-    const [posts, setPosts] = useState<any[]>([]);
+    const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        async function fetchPosts() {
+            setLoading(true);
+            const data = await getAllBlogPosts();
+            setPosts(data);
+            setLoading(false);
+        }
         fetchPosts();
     }, []);
-
-    async function fetchPosts() {
-        setLoading(true);
-        const data = await getAllBlogPosts();
-        setPosts(data);
-        setLoading(false);
-    }
 
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure you want to delete this post?')) return;

@@ -1,8 +1,8 @@
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         // Fetch products with their valid stock count and basic info
         // In a real scenario, we might want pagination here
@@ -35,9 +35,9 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json(products);
-    } catch (error: any) {
+    } catch (error) {
         return NextResponse.json(
-            { error: 'Failed to fetch inventory', details: error.message },
+            { error: 'Failed to fetch inventory', details: error instanceof Error ? error.message : "Unknown error" },
             { status: 500 }
         );
     }

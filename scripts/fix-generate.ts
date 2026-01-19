@@ -1,6 +1,6 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 // Basic manual env loading if dotenv fails
 const envPath = path.join(process.cwd(), '.env');
@@ -14,16 +14,24 @@ for (const line of lines) {
 
 console.log('Manually loaded DATABASE_URL:', process.env.DATABASE_URL ? 'YES' : 'NO');
 
+interface ExecError {
+    stdout?: Buffer | string;
+    stderr?: Buffer | string;
+}
+
 try {
     console.log('Running: npx prisma generate...');
     execSync('npx prisma generate', {
         stdio: 'inherit',
-        env: process.env // Explicitly pass env
+        env: process.env as NodeJS.ProcessEnv // Explicitly pass env
     });
     console.log('SUCCESS: Prisma Client generated.');
-} catch (error) {
+} catch (error: unknown) {
     console.error('FAILURE: Prisma Client generation failed.');
-    if (error.stdout) console.log('STDOUT:', error.stdout.toString());
-    if (error.stderr) console.log('STDERR:', error.stderr.toString());
+    if (typeof error === 'object' && error !== null) {
+        const execErr = error as ExecError;
+        if (execErr.stdout) console.log('STDOUT:', execErr.stdout.toString());
+        if (execErr.stderr) console.log('STDERR:', execErr.stderr.toString());
+    }
     process.exit(1);
 }

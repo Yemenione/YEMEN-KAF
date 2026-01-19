@@ -11,7 +11,7 @@ interface Article {
     slug: string;
 }
 
-export default function BlogSection({ articles = [] }: { articles?: any[] }) {
+export default function BlogSection({ articles = [] }: { articles?: Article[] }) {
     const { language } = useLanguage();
 
     const fallbackArticles = {
@@ -90,7 +90,7 @@ export default function BlogSection({ articles = [] }: { articles?: any[] }) {
         title: a.title,
         excerpt: a.excerpt || '',
         image: a.image || '/images/blog/placeholder.jpg',
-        date: a.publishedAt ? new Date(a.publishedAt).toLocaleDateString(language === 'ar' ? 'ar-EG' : language === 'fr' ? 'fr-FR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '',
+        date: a.date,
         slug: a.slug
     })) : (fallbackArticles[language as keyof typeof fallbackArticles] || fallbackArticles.en);
 
@@ -115,7 +115,7 @@ export default function BlogSection({ articles = [] }: { articles?: any[] }) {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {displayArticles.map((article: any, index: number) => (
+                    {displayArticles.map((article: Article, index: number) => (
                         <article
                             key={index}
                             className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-gray-100"

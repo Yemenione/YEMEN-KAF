@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { RowDataPacket } from 'mysql2';
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
         `;
         const values = [`%${query}%`, `%${query}%`];
 
-        const [rows]: any = await pool.execute(sql, values);
+        const [rows] = await pool.execute<RowDataPacket[]>(sql, values);
 
         return NextResponse.json({ suggestions: rows });
     } catch (error) {

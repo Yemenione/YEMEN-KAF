@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Search, Edit, Trash2, X, Save, GripVertical } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Edit2, Trash2, X, GripVertical } from "lucide-react";
 
 interface AttributeValue {
     id?: number;
@@ -20,7 +20,6 @@ interface Attribute {
 
 export default function AttributesPage() {
     const [attributes, setAttributes] = useState<Attribute[]>([]);
-    const [loading, setLoading] = useState(true);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,23 +36,21 @@ export default function AttributesPage() {
         values: []
     });
 
-    useEffect(() => {
-        fetchAttributes();
-    }, []);
-
-    const fetchAttributes = async () => {
+    const fetchAttributes = useCallback(async () => {
         try {
             const res = await fetch('/api/admin/attributes');
-            if (res.ok) {
-                const data = await res.json();
-                setAttributes(data);
-            }
+            const data = await res.json();
+            setAttributes(data);
         } catch (error) {
-            console.error("Failed to fetch attributes");
-        } finally {
-            setLoading(false);
+            console.error('Failed to fetch attributes', error);
         }
-    };
+    }, []);
+
+    // Fetching attributes is handled by useEffect below
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchAttributes();
+    }, [fetchAttributes]);
 
     const handleEdit = (attr: Attribute) => {
         setEditingAttr(attr);
@@ -97,7 +94,7 @@ export default function AttributesPage() {
     const handleValueChange = (index: number, field: keyof AttributeValue, val: string) => {
         setFormData(prev => {
             const newValues = [...prev.values];
-            // @ts-ignore
+            // @ts-expect-error: indexing with dynamic field key
             newValues[index][field] = val;
             return { ...prev, values: newValues };
         });
@@ -125,7 +122,7 @@ export default function AttributesPage() {
             } else {
                 alert("Failed to save attribute");
             }
-        } catch (error) {
+        } catch {
             alert("Error saving attribute");
         }
     };
@@ -136,7 +133,7 @@ export default function AttributesPage() {
         try {
             const res = await fetch(`/api/admin/attributes/${id}`, { method: 'DELETE' });
             if (res.ok) fetchAttributes();
-        } catch (err) { alert('Failed to delete'); }
+        } catch { alert('Failed to delete'); }
     };
 
     return (
@@ -165,7 +162,7 @@ export default function AttributesPage() {
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => handleEdit(attr)} className="text-blue-600 hover:bg-blue-50 p-1.5 rounded-md">
-                                    <Edit size={16} />
+                                    <Edit2 size={16} />
                                 </button>
                                 <button onClick={() => handleDelete(attr.id)} className="text-red-600 hover:bg-red-50 p-1.5 rounded-md">
                                     <Trash2 size={16} />
@@ -213,7 +210,7 @@ export default function AttributesPage() {
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">Used in backend (e.g. "color_v2")</p>
+                                    <p className="text-xs text-gray-500 mt-1">Used in backend (e.g. &quot;color_v2&quot;)</p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Public Name</label>

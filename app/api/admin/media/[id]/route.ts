@@ -41,9 +41,9 @@ export async function DELETE(
 
         return NextResponse.json({ success: true });
 
-    } catch (error: any) {
+    } catch (error) {
         return NextResponse.json(
-            { error: 'Delete failed', details: error.message },
+            { error: 'Delete failed', details: error instanceof Error ? error.message : "Unknown error" },
             { status: 500 }
         );
     }

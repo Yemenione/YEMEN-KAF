@@ -2,10 +2,24 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
 import { verifyAdmin } from '@/lib/admin-auth';
 import { prisma } from '@/lib/prisma';
+import { RowDataPacket } from 'mysql2';
+import { Prisma } from '@prisma/client';
+
+interface ProductRow extends RowDataPacket {
+    id: number;
+    name: string;
+    description: string;
+    price: string;
+    category_name: string;
+    category_slug: string;
+    stock_quantity: number;
+    created_at: Date;
+    is_active: number;
+}
 
 export async function GET(req: Request) {
     try {
-        const { searchParams } = new URL(req.url);
+        const { searchParams } = new URL(req.url); // Restored logic starts here
         const category = searchParams.get('category');
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');
@@ -23,7 +37,7 @@ export async function GET(req: Request) {
             WHERE p.is_active = 1
         `;
 
-        const params: any[] = [];
+        const params: (string | number)[] = [];
 
         if (category && category !== 'all') {
             query += ` AND c.slug = ?`;
@@ -75,7 +89,7 @@ export async function GET(req: Request) {
         query += ` LIMIT ? OFFSET ?`;
         params.push(limit, offset);
 
-        const [products]: any = await pool.execute(query, params);
+        const [products] = await pool.execute<ProductRow[]>(query, params);
 
         return NextResponse.json({ products });
 
@@ -234,11 +248,12 @@ export async function POST(req: Request) {
             product: result
         });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Product creation error:', error);
-        if (error.code === 'P2002') { // Prisma unique constraint error
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') { // Prisma unique constraint error
             return NextResponse.json({ error: 'SKU or Slug already exists' }, { status: 409 });
         }
-        return NextResponse.json({ error: 'Failed to create product', details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to create product', details: errorMessage }, { status: 500 });
     }
 }

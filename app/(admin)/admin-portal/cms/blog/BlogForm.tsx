@@ -11,10 +11,24 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
 import Image from "next/image";
 
-export default function BlogForm({ post }: { post?: any }) {
+interface BlogFormProps {
+    post?: {
+        id: number;
+        title: string;
+        slug: string;
+        content: string;
+        excerpt: string;
+        image: string;
+        category: string;
+        status: string;
+    }
+}
+
+export default function BlogForm({ post }: BlogFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [firebaseConfig, setFirebaseConfig] = useState<any>(null);
 
     const [formData, setFormData] = useState({
@@ -61,8 +75,8 @@ export default function BlogForm({ post }: { post?: any }) {
 
         setLoading(true);
         const res = post
-            ? await updateBlogPost(post.id, formData)
-            : await createBlogPost(formData);
+            ? await updateBlogPost(post.id, { ...formData, status: formData.status as "DRAFT" | "PUBLISHED" })
+            : await createBlogPost({ ...formData, status: formData.status as "DRAFT" | "PUBLISHED" });
 
         if (res.success) {
             toast.success(post ? "Article mis à jour" : "Article créé");
@@ -82,7 +96,7 @@ export default function BlogForm({ post }: { post?: any }) {
                         <ArrowLeft size={20} />
                     </Link>
                     <div>
-                        <h1 className="text-xl font-bold">{post ? "Modifier l'article" : "Nouvel Article"}</h1>
+                        <h1 className="text-xl font-bold">{post ? "Modifier l&apos;article" : "Nouvel Article"}</h1>
                         <p className="text-xs text-gray-500">Rédigez du contenu de qualité pour vos clients.</p>
                     </div>
                 </div>
@@ -103,7 +117,7 @@ export default function BlogForm({ post }: { post?: any }) {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4">
                         <div>
-                            <label className="block text-sm font-bold mb-2">Titre de l'article</label>
+                            <label className="block text-sm font-bold mb-2">Titre de l&apos;article</label>
                             <input
                                 type="text"
                                 value={formData.title}

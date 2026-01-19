@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Home, Save, Loader2, Plus, X, Search, LayoutTemplate } from 'lucide-react';
+import { Home, Save, Loader2, X, LayoutTemplate } from 'lucide-react';
 
 interface Product {
     id: number;

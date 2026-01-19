@@ -3,6 +3,23 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import pool from '@/lib/mysql';
 
+import { RowDataPacket } from 'mysql2';
+
+// Define interfaces for query results
+interface RecentOrderRow extends RowDataPacket {
+    id: number;
+    totalAmount: string;
+    status: string;
+    createdAt: Date;
+}
+
+interface StatsRow extends RowDataPacket {
+    totalOrders: number;
+    totalSpent: string; // Decimal is returned as string
+}
+
+
+
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
 export async function GET() {
@@ -17,7 +34,7 @@ export async function GET() {
         const userId = payload.userId as number;
 
         // Get total orders and total spent
-        const [statsRows]: any = await pool.execute(
+        const [statsRows] = await pool.execute<StatsRow[]>(
             `SELECT 
                 COUNT(*) as totalOrders,
                 COALESCE(SUM(total_amount), 0) as totalSpent
@@ -27,7 +44,7 @@ export async function GET() {
         );
 
         // Get recent orders (last 3)
-        const [recentOrders]: any = await pool.execute(
+        const [recentOrders] = await pool.execute<RecentOrderRow[]>(
             `SELECT 
                 o.id,
                 o.total_amount as totalAmount,
@@ -45,9 +62,12 @@ export async function GET() {
         return NextResponse.json({
             stats: {
                 totalOrders: stats.totalOrders,
-                totalSpent: stats.totalSpent
+                totalSpent: parseFloat(stats.totalSpent)
             },
-            recentOrders
+            recentOrders: recentOrders.map(order => ({
+                ...order,
+                totalAmount: parseFloat(order.totalAmount)
+            }))
         });
 
     } catch (error) {

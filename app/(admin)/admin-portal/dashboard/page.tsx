@@ -2,14 +2,38 @@
 
 import { useEffect, useState } from "react";
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import { DollarSign, ShoppingBag, Users, AlertTriangle, Package, Ticket } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
+interface DashboardData {
+    kpi: {
+        revenue: number;
+        orders: number;
+        customers: number;
+        lowStock: number;
+    };
+    salesChart: { date: string; sales: number }[];
+    recentOrders: {
+        id: number;
+        orderNumber: string;
+        status: string;
+        totalAmount: number;
+        customer?: { firstName: string; lastName: string; };
+    }[];
+    recentTickets: {
+        id: number;
+        subject: string;
+        status: string;
+        customer?: { firstName: string; lastName: string; };
+    }[];
+    error?: string;
+}
+
 export default function AdminDashboard() {
     const { t } = useLanguage();
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,14 +47,14 @@ export default function AdminDashboard() {
 
             if (!res.ok) {
                 console.error('API Error:', json.error);
-                setData({ error: json.error || 'Failed to load dashboard data' });
+                setData({ error: json.error || 'Failed to load dashboard data' } as DashboardData);
                 return;
             }
 
             setData(json);
-        } catch (error) {
-            console.error('Failed to load dashboard data', error);
-            setData({ error: 'Failed to connect to analytics server' });
+        } catch {
+            console.error('Failed to load dashboard data');
+            setData({ error: 'Failed to connect to analytics server' } as DashboardData);
         } finally {
             setLoading(false);
         }
@@ -123,10 +147,10 @@ export default function AdminDashboard() {
                     <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
                         <h3 className="font-semibold mb-3 md:mb-4">Recent Orders</h3>
                         <div className="space-y-3 md:space-y-4">
-                            {data.recentOrders.length === 0 ? (
+                            {data.recentOrders?.length === 0 ? (
                                 <p className="text-gray-500 text-sm">No orders yet.</p>
                             ) : (
-                                data.recentOrders.map((order: any) => (
+                                data.recentOrders?.map((order) => (
                                     <div key={order.id} className="flex items-center gap-3 border-b border-gray-50 dark:border-zinc-800 pb-3 last:border-0 last:pb-0">
                                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
                                             <Package className="w-4 h-4" />
@@ -153,10 +177,10 @@ export default function AdminDashboard() {
                 <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
                     <h3 className="font-semibold mb-3 md:mb-4">Latest Support Tickets</h3>
                     <div className="space-y-3 md:space-y-4">
-                        {data.recentTickets.length === 0 ? (
+                        {data.recentTickets?.length === 0 ? (
                             <p className="text-gray-500 text-sm">No active tickets.</p>
                         ) : (
-                            data.recentTickets.map((ticket: any) => (
+                            data.recentTickets?.map((ticket) => (
                                 <div key={ticket.id} className="flex items-center gap-3">
                                     <div className="p-2 bg-orange-50 text-orange-600 rounded-lg shrink-0">
                                         <Ticket className="w-4 h-4" />
@@ -180,7 +204,15 @@ export default function AdminDashboard() {
     );
 }
 
-function KPICard({ title, value, icon, color, negative }: any) {
+interface KPICardProps {
+    title: string;
+    value: string | number;
+    icon: React.ReactNode;
+    color: 'green' | 'blue' | 'purple' | 'red';
+    negative?: boolean;
+}
+
+function KPICard({ title, value, icon, color, negative }: KPICardProps) {
     const colorClasses = {
         green: 'bg-green-50 text-green-600',
         blue: 'bg-blue-50 text-blue-600',
@@ -190,7 +222,7 @@ function KPICard({ title, value, icon, color, negative }: any) {
 
     return (
         <div className={`bg-white dark:bg-zinc-900 p-3 md:p-5 rounded-xl border ${negative ? 'border-red-200 bg-red-50/50' : 'border-gray-200 dark:border-zinc-800'} shadow-sm flex items-center gap-3 md:gap-4`}>
-            <div className={`p-2 md:p-3 rounded-lg ${colorClasses[color as keyof typeof colorClasses] || 'bg-gray-100'}`}>
+            <div className={`p-2 md:p-3 rounded-lg ${colorClasses[color] || 'bg-gray-100'}`}>
                 {icon}
             </div>
             <div>

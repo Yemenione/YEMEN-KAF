@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Tag, Edit2, Calendar, DollarSign, Percent, Check, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Tag, Edit2, Calendar, DollarSign, Percent, Check } from "lucide-react";
 
 interface CartRule {
     id: number;
@@ -44,8 +44,8 @@ export default function CouponsPage() {
             const res = await fetch('/api/admin/marketing/coupons');
             const data = await res.json();
             setCoupons(data.length ? data : []);
-        } catch (error) {
-            console.error('Failed to fetch coupons:', error);
+        } catch {
+            console.error('Failed to fetch coupons');
         } finally {
             setLoading(false);
         }
@@ -72,7 +72,7 @@ export default function CouponsPage() {
                 const err = await res.json();
                 alert(err.error);
             }
-        } catch (error) {
+        } catch {
             alert('Operation failed');
         }
     };
@@ -82,7 +82,7 @@ export default function CouponsPage() {
         try {
             const res = await fetch(`/api/admin/marketing/coupons/${id}`, { method: 'DELETE' });
             if (res.ok) fetchCoupons();
-        } catch (error) {
+        } catch {
             alert('Delete failed');
         }
     };
@@ -130,10 +130,10 @@ export default function CouponsPage() {
 
                         {/* Tabs */}
                         <div className="flex gap-2 mb-4 border-b dark:border-zinc-800 pb-2">
-                            {['info', 'conditions', 'actions'].map((tab) => (
+                            {(['info', 'conditions', 'actions'] as const).map((tab) => (
                                 <button
                                     key={tab}
-                                    onClick={() => setActiveTab(tab as any)}
+                                    onClick={() => setActiveTab(tab)}
                                     className={`px-3 py-1 text-xs font-medium rounded-full ${activeTab === tab ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
                                     {tab.charAt(0).toUpperCase() + tab.slice(1)}

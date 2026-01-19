@@ -53,6 +53,7 @@ interface LabelResult {
     trackingNumber: string;
     labelUrl: string;
     customsFormUrl?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     carrierData: any;
 }
 
@@ -290,10 +291,18 @@ export async function generateLabel(params: ShippingParams & {
             }
         };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Colissimo label generation failed:', error);
-        throw new Error(`Failed to generate Colissimo label: ${error.message}`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        throw new Error(`Failed to generate Colissimo label: ${(error as any).message}`);
     }
+}
+
+interface LaPosteEvent {
+    date: string;
+    site?: { name: string };
+    label: string;
+    code: string;
 }
 
 /**
@@ -321,7 +330,7 @@ export async function trackShipment(trackingNumber: string): Promise<TrackingRes
         const data = await response.json();
         const shipment = data.shipment;
 
-        const events: TrackingEvent[] = (shipment.event || []).map((evt: any) => ({
+        const events: TrackingEvent[] = (shipment.event || []).map((evt: LaPosteEvent) => ({
             date: evt.date,
             location: evt.site?.name || 'Unknown',
             description: evt.label || 'Status update',
@@ -335,7 +344,7 @@ export async function trackShipment(trackingNumber: string): Promise<TrackingRes
             events
         };
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Colissimo tracking failed:', error);
 
         // Return minimal data if tracking fails

@@ -27,7 +27,21 @@ export async function getAllBlogPosts() {
     }
 }
 
-export async function createBlogPost(data: any) {
+interface BlogPostInput {
+    title: string;
+    content: string;
+    excerpt?: string;
+    image?: string;
+    status: 'DRAFT' | 'PUBLISHED';
+    slug: string;
+    author?: string;
+    readTime?: string;
+    tags?: string; // JSON string or array
+    categoryId?: number;
+    publishedAt?: Date | string | null;
+}
+
+export async function createBlogPost(data: BlogPostInput) {
     try {
         const post = await prisma.blogPost.create({
             data: {
@@ -44,7 +58,7 @@ export async function createBlogPost(data: any) {
     }
 }
 
-export async function updateBlogPost(id: number, data: any) {
+export async function updateBlogPost(id: number, data: Partial<BlogPostInput>) {
     try {
         const post = await prisma.blogPost.update({
             where: { id },

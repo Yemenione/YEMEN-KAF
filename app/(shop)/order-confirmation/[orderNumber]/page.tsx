@@ -17,6 +17,18 @@ interface OrderItem {
     price: number;
 }
 
+interface ShippingAddress {
+    firstName?: string;
+    lastName?: string;
+    address?: string;
+    apartment?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+    phone?: string;
+    email?: string;
+}
+
 interface OrderDetails {
     id: number;
     orderNumber: string;
@@ -25,7 +37,7 @@ interface OrderDetails {
     shippingCost: number;
     shippingMethod: string;
     paymentMethod: string;
-    shippingAddress: any;
+    shippingAddress: ShippingAddress;
     createdAt: string;
     items: OrderItem[];
 }
@@ -38,6 +50,7 @@ export default function OrderConfirmationPage() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
 
         if (orderNumber) {
@@ -76,7 +89,7 @@ export default function OrderConfirmationPage() {
                 <Navbar />
                 <div className="max-w-3xl mx-auto px-6 pt-40 pb-20 text-center">
                     <h1 className="text-4xl font-serif text-black mb-6">Order Not Found</h1>
-                    <p className="text-gray-500 mb-8">We couldn't find an order with this number.</p>
+                    <p className="text-gray-500 mb-8">We couldn&apos;t find an order with this number.</p>
                     <Link
                         href="/shop"
                         className="inline-block px-8 py-4 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 transition-all rounded-xl"

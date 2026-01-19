@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronLeft, Save, Package, User, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { ChevronLeft, Save, Package, User, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 interface RMA {
@@ -23,7 +23,7 @@ interface RMA {
         id: number;
         orderNumber: string;
         totalAmount: number;
-        items: any[];
+        items: { id: number; productTitle?: string; price: number; quantity: number }[];
     };
 }
 
@@ -44,25 +44,25 @@ export default function RMADetailPage() {
     });
 
     useEffect(() => {
+        const fetchRMA = async () => {
+            try {
+                const res = await fetch(`/api/admin/rma/${id}`);
+                const data = await res.json();
+                setRMA(data);
+                setFormData({
+                    status: data.status,
+                    resolution: data.resolution,
+                    adminNotes: data.adminNotes || ''
+                });
+            } catch {
+                console.error('Failed to fetch RMA');
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (id) fetchRMA();
     }, [id]);
-
-    const fetchRMA = async () => {
-        try {
-            const res = await fetch(`/api/admin/rma/${id}`);
-            const data = await res.json();
-            setRMA(data);
-            setFormData({
-                status: data.status,
-                resolution: data.resolution,
-                adminNotes: data.adminNotes || ''
-            });
-        } catch (error) {
-            console.error('Failed to fetch RMA:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleSave = async () => {
         setSaving(true);
@@ -79,8 +79,8 @@ export default function RMADetailPage() {
             } else {
                 alert('Failed to update RMA');
             }
-        } catch (error) {
-            console.error('Update failed:', error);
+        } catch {
+            console.error('Update failed');
         } finally {
             setSaving(false);
         }
@@ -163,7 +163,7 @@ export default function RMADetailPage() {
                         <h3 className="font-semibold mb-4 flex items-center gap-2">
                             <Package className="w-4 h-4" /> Order Items Context
                         </h3>
-                        <p className="text-sm text-gray-500 mb-4">Original Customer Reason: <span className="text-gray-900 font-medium">"{rma.reason}"</span></p>
+                        <p className="text-sm text-gray-500 mt-1">&quot;{rma.reason}&quot;</p>
 
                         <div className="border rounded-md overflow-hidden">
                             <table className="w-full text-sm">
@@ -175,7 +175,7 @@ export default function RMADetailPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rma.order.items.map((item: any) => (
+                                    {rma.order.items.map((item: { id: number; productTitle?: string; price: number; quantity: number }) => (
                                         <tr key={item.id} className="border-t border-gray-100 dark:border-zinc-800">
                                             <td className="px-4 py-2">{item.productTitle || 'Product'}</td>
                                             <td className="px-4 py-2 text-right">{item.price} €</td>
@@ -219,6 +219,6 @@ export default function RMADetailPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

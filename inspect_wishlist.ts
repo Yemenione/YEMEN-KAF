@@ -6,7 +6,9 @@ async function inspectWishlist() {
     const connection = await mysql.createConnection(process.env.DATABASE_URL!);
     try {
         console.log("--- WISHLISTS TABLE ---");
-        const [cols]: any = await connection.execute('SHOW COLUMNS FROM wishlists');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [cols] = await connection.execute<any[]>('SHOW COLUMNS FROM wishlists');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         console.table(cols.map((c: any) => ({ Field: c.Field, Type: c.Type, Null: c.Null, Key: c.Key })));
 
         process.exit(0);

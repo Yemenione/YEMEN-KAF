@@ -130,7 +130,7 @@ export default function SearchBar() {
                         </div>
                     ) : (
                         <div className="p-8 text-center">
-                            <p className="text-gray-500 mb-4">No products found for "{query}"</p>
+                            <p className="text-gray-500 mb-4">No products found for &quot;{query}&quot;</p>
                             <Link
                                 href="/shop"
                                 onClick={() => setIsOpen(false)}

@@ -47,7 +47,7 @@ export default function OrdersPage() {
     };
 
     const getTranslatedStatus = (status: string) => {
-        const key = `account.status.${status.toLowerCase()}` as any;
+        const key = `account.status.${status.toLowerCase()}`;
         return t(key) || status;
     };
 

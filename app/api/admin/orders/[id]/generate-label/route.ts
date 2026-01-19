@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { RowDataPacket } from 'mysql2';
 import { verifyAdmin } from '@/lib/admin-auth';
 import { generateLabel, calculateTotalWeight } from '@/lib/shipping/colissimo';
 
@@ -22,7 +23,7 @@ export async function POST(
         const orderId = parseInt(id);
 
         // Fetch order details with items
-        const [orderRows]: any = await pool.execute(
+        const [orderRows] = await pool.execute<RowDataPacket[]>(
             `SELECT o.*, c.email as customer_email, c.first_name, c.last_name 
              FROM orders o 
              LEFT JOIN customers c ON o.customer_id = c.id 
@@ -45,7 +46,7 @@ export async function POST(
         }
 
         // Fetch order items with product details
-        const [items]: any = await pool.execute(
+        const [items] = await pool.execute<RowDataPacket[]>(
             `SELECT oi.*, p.weight, p.hs_code, p.origin_country 
              FROM order_items oi
              LEFT JOIN products p ON oi.product_id = p.id
@@ -58,9 +59,9 @@ export async function POST(
         }
 
         // Calculate total weight
-        const itemsWithWeight = items.map((item: any) => ({
+        const itemsWithWeight = items.map((item) => ({
             weight: item.weight ? parseFloat(item.weight) : 0.5,
-            quantity: item.quantity
+            quantity: item.quantity as number
         }));
         const totalWeight = calculateTotalWeight(itemsWithWeight);
 
@@ -122,11 +123,11 @@ export async function POST(
             carrierData: labelResult.carrierData
         });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Label generation error:', error);
         return NextResponse.json({
             error: 'Failed to generate label',
-            details: error.message
+            details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 });
     }
 }

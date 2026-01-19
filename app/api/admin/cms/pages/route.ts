@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const pages = await prisma.page.findMany({
             orderBy: { createdAt: 'desc' }
         });
         return NextResponse.json(pages);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }
 
@@ -42,10 +43,10 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(page);
-    } catch (error: any) {
-        if (error.code === 'P2002') {
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             return NextResponse.json({ error: "Page slug must be unique" }, { status: 400 });
         }
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to create page" }, { status: 500 });
     }
 }

@@ -9,7 +9,8 @@ export default function OurStoryPage() {
     const { t } = useLanguage();
 
     // Helper to get array from translations
-    const steps = t('story.steps') as unknown as any[];
+    interface StoryStep { title: string; desc: string; }
+    const steps = (t('story.steps') as unknown) as StoryStep[];
 
     return (
         <main className="min-h-screen bg-white">

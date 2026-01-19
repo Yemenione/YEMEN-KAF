@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const attributes = await prisma.attribute.findMany({
             include: {
@@ -10,9 +10,15 @@ export async function GET(req: NextRequest) {
             orderBy: { name: 'asc' }
         });
         return NextResponse.json(attributes);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch attributes' }, { status: 500 });
     }
+}
+
+interface AttributeValueInput {
+    name: string;
+    value: string;
+    position?: number;
 }
 
 export async function POST(req: NextRequest) {
@@ -26,7 +32,7 @@ export async function POST(req: NextRequest) {
                 publicName,
                 type,
                 values: {
-                    create: values.map((v: any) => ({
+                    create: values.map((v: AttributeValueInput) => ({
                         name: v.name,
                         value: v.value,
                         position: v.position || 0

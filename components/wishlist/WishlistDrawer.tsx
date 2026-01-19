@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Trash2, ShoppingBag } from "lucide-react";
+import { X, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useWishlist } from "@/context/WishlistContext";
@@ -36,6 +36,7 @@ export default function WishlistDrawer() {
             if (res.ok) {
                 const data = await res.json();
                 // Parse images for each product
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const parsedItems = (data.wishlist || []).map((item: any) => ({
                     id: item.id,
                     name: item.name,

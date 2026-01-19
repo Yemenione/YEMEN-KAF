@@ -160,7 +160,7 @@ export default function MenuBuilder() {
                         <Menu className="w-8 h-8 text-[var(--coffee-brown)]" />
                         Navigation Builder
                     </h1>
-                    <p className="text-gray-500 text-sm">Manage your site's header and footer links.</p>
+                    <p className="text-gray-500 text-sm">Manage your site&apos;s header and footer links.</p>
                 </div>
                 <button
                     onClick={handleSave}

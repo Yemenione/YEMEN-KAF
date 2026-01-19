@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { PackageX, RefreshCcw, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 
 interface RMA {
@@ -35,8 +34,8 @@ export default function RMAPage() {
             const res = await fetch('/api/admin/rma');
             const data = await res.json();
             setRMAs(data);
-        } catch (error) {
-            console.error('Failed to fetch RMAs:', error);
+        } catch {
+            console.error('Failed to fetch RMAs');
         } finally {
             setLoading(false);
         }

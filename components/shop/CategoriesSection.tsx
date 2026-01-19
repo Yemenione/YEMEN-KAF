@@ -29,7 +29,7 @@ export default function CategoriesSection() {
                     if (settings.homepage_featured_categories) {
                         const ids = JSON.parse(settings.homepage_featured_categories);
                         if (Array.isArray(ids) && ids.length > 0) {
-                            cats = cats.filter((c: any) => ids.includes(c.id));
+                            cats = cats.filter((c: Category) => ids.includes(c.id));
                         }
                     }
 

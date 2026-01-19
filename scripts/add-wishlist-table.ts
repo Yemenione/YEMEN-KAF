@@ -1,9 +1,5 @@
-
-const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
-
-// Load env vars from .env file
-dotenv.config({ path: '.env' });
+import mysql from 'mysql2/promise';
+import 'dotenv/config';
 
 async function main() {
     console.log('Starting wishlist table creation...');

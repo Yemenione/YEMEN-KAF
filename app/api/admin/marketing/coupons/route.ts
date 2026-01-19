@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest) {
+import { Prisma } from "@prisma/client";
+
+export async function GET() {
     try {
         const coupons = await prisma.cartRule.findMany({
             orderBy: { createdAt: 'desc' }
         });
         return NextResponse.json(coupons);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
 
 export async function POST(req: NextRequest) {
     try {
+        // ... (body parsing and validation)
+
         const body = await req.json();
         const {
             name, description, code, priority, isActive,
@@ -47,10 +52,11 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(coupon);
-    } catch (error: any) {
-        if (error.code === 'P2002') {
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             return NextResponse.json({ error: "Coupon code already exists" }, { status: 400 });
         }
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

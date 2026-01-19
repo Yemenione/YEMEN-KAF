@@ -6,15 +6,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { Calendar, ArrowRight, Clock } from "lucide-react";
 
-interface Article {
-    title: string;
-    excerpt: string;
-    image: string;
-    date: string;
-    slug: string;
-    readTime: string;
-    category: string;
-}
+// Interface removed (unused)
 
 export default function BlogPage() {
     const { language } = useLanguage();

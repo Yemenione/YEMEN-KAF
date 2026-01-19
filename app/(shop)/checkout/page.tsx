@@ -16,6 +16,39 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useSettings } from "@/context/SettingsContext";
 
+interface ShippingRate {
+    id: string;
+    name: string;
+    price: number;
+    estimatedDays: string;
+}
+
+interface Address {
+    id: number;
+    label?: string;
+    street_address: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    country: string;
+    phone?: string;
+    is_default?: boolean;
+}
+
+interface Coupon {
+    code: string;
+    discountType: 'PERCENTAGE' | 'FIXED';
+    discountValue: number;
+}
+
+interface PaymentMethod {
+    id: string;
+    provider: string;
+    name: string;
+    description?: string;
+    isEnabled: boolean;
+}
+
 export default function CheckoutPage() {
     const { settings } = useSettings();
     const stripePromise = getStripe(settings.stripe_publishable_key);
@@ -28,10 +61,10 @@ export default function CheckoutPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [clientSecret, setClientSecret] = useState("");
 
-    const [shippingRates, setShippingRates] = useState<any[]>([]);
+    const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
     const [cartWeight, setCartWeight] = useState(0);
-    const [selectedShippingRate, setSelectedShippingRate] = useState<any>(null);
-    const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+    const [selectedShippingRate, setSelectedShippingRate] = useState<ShippingRate | null>(null);
+    const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<string>("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -39,7 +72,7 @@ export default function CheckoutPage() {
     const [couponCode, setCouponCode] = useState("");
     const [couponError, setCouponError] = useState("");
     const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
-    const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+    const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
     const [discountAmount, setDiscountAmount] = useState(0);
 
     const handleApplyCoupon = async () => {
@@ -61,7 +94,7 @@ export default function CheckoutPage() {
                 setAppliedCoupon(null);
                 setDiscountAmount(0);
             }
-        } catch (err) {
+        } catch {
             setCouponError("Failed to apply coupon");
         } finally {
             setIsApplyingCoupon(false);
@@ -84,7 +117,7 @@ export default function CheckoutPage() {
 
     const {
         register,
-        handleSubmit,
+        // handleSubmit removed (unused)
         formState: { errors, isValid },
         getValues,
         trigger,
@@ -122,8 +155,8 @@ export default function CheckoutPage() {
                     // Default to first option if current selection is invalid or null
                     if (data.rates && data.rates.length > 0) {
                         // Keep current if exists in new list, else set first
-                        setSelectedShippingRate((prev: any) => {
-                            const exists = data.rates.find((r: any) => r.id === prev?.id);
+                        setSelectedShippingRate((prev) => {
+                            const exists = data.rates.find((r: ShippingRate) => r.id === prev?.id);
                             return exists || data.rates[0];
                         });
                         setSelectedShippingMethod(data.rates[0].id); // Legacy support for string ID
@@ -148,7 +181,7 @@ export default function CheckoutPage() {
                     if (data.addresses && data.addresses.length > 0) {
                         setSavedAddresses(data.addresses);
                         // Auto-select default address if exists
-                        const defaultAddr = data.addresses.find((a: any) => a.is_default);
+                        const defaultAddr = data.addresses.find((a: Address) => a.is_default);
                         if (defaultAddr) {
                             setSelectedAddressId(defaultAddr.id.toString());
                             fillFormWithAddress(defaultAddr);
@@ -165,7 +198,7 @@ export default function CheckoutPage() {
                 } else {
                     setIsAuthenticated(false);
                 }
-            } catch (error) {
+            } catch {
                 console.log('Not logged in or no addresses');
                 setIsAuthenticated(false);
             }
@@ -174,7 +207,7 @@ export default function CheckoutPage() {
     }, []);
 
     // Fill form with selected address
-    const fillFormWithAddress = (address: any) => {
+    const fillFormWithAddress = (address: Address) => {
         const names = (address.label || '').split(' ');
         const formData = {
             firstName: names[0] || '',
@@ -456,9 +489,6 @@ export default function CheckoutPage() {
                                         type="checkbox"
                                         id="save-address"
                                         className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black"
-                                        onChange={(e) => {
-                                            (window as any).saveAddressChecked = e.target.checked;
-                                        }}
                                     />
                                     <label htmlFor="save-address" className="text-sm text-gray-600">{t('checkout.saveAddress')}</label>
                                 </div>
@@ -524,12 +554,12 @@ export default function CheckoutPage() {
                         {/* Payment Method Selector */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             {(() => {
-                                let methods = [];
+                                let methods: PaymentMethod[] = [];
                                 try {
                                     if (settings.payment_methods) {
-                                        methods = JSON.parse(settings.payment_methods).filter((m: any) => m.isEnabled);
+                                        methods = JSON.parse(settings.payment_methods).filter((m: PaymentMethod) => m.isEnabled);
                                     }
-                                } catch (e) { }
+                                } catch { }
 
                                 // Fallback if no methods are enabled/configured
                                 if (methods.length === 0) {
@@ -555,7 +585,7 @@ export default function CheckoutPage() {
                                     );
                                 }
 
-                                return methods.map((method: any) => (
+                                return methods.map((method: PaymentMethod) => (
                                     <label key={method.id} className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
                                         <input
                                             type="radio"

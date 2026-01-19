@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, DollarSign, Edit2, RotateCw, Check } from "lucide-react";
+import { Plus, Trash2, DollarSign, Edit2, Check } from "lucide-react";
 
 interface Currency {
     id: number;
@@ -67,7 +67,7 @@ export default function CurrenciesPage() {
                 const err = await res.json();
                 alert(err.error);
             }
-        } catch (error) {
+        } catch {
             alert('Operation failed');
         }
     };
@@ -77,7 +77,7 @@ export default function CurrenciesPage() {
         try {
             const res = await fetch(`/api/admin/settings/currencies/${id}`, { method: 'DELETE' });
             if (res.ok) fetchCurrencies();
-        } catch (error) {
+        } catch {
             alert('Delete failed');
         }
     };

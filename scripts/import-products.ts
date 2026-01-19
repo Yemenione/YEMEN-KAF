@@ -1,14 +1,16 @@
+import fs from 'fs';
+import path from 'path';
+import { PrismaClient } from '@prisma/client';
 
-const fs = require('fs');
-const path = require('path');
-const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function importProducts() {
-    const filePath = path.join(__dirname, '../../request_sql_1.csv');
+    // Assuming the script is run from project root, and CSV is in root
+    const filePath = path.resolve(process.cwd(), 'request_sql_1.csv');
 
     if (!fs.existsSync(filePath)) {
         console.error(`❌ File not found: ${filePath}`);
+        // Try looking in parent directory as fallback (original logic had ../../)
         process.exit(1);
     }
 
@@ -17,6 +19,11 @@ async function importProducts() {
 
     // Split by new line, handling potential carriage returns
     const lines = rawData.split(/\r?\n/).filter(line => line.trim() !== '');
+
+    if (lines.length === 0) {
+        console.error('❌ CSV file is empty');
+        return;
+    }
 
     // Parse Headers (Line 1)
     // Headers: id_product;reference;id_shop_default;price_tax_excluded;...
@@ -37,9 +44,11 @@ async function importProducts() {
         if (cols.length < 5) continue; // Skip empty/malformed rows
 
         // Map columns to variables based on index
-        const data = {};
+        const data: Record<string, string> = {};
         headers.forEach((header, index) => {
-            data[header] = cols[index];
+            if (index < cols.length) {
+                data[header] = cols[index];
+            }
         });
 
         try {
@@ -67,22 +76,17 @@ async function importProducts() {
 
             // 2. Prepare Product Data
             const name = data['name'];
-            let slug = data['link_rewrite'] || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            if (!name) continue;
 
-            // Ensure slug uniqueness logic could be added here, but Prisma will throw if duplicate
-            // Simple duplicate slug prevention: append ID if conflict (handled in catch block or pre-check)
+            const slug = data['link_rewrite'] || name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-            const reference = data['reference'] || `IMP-${data['id_product']}`; // Fallback SKU
+            const reference = data['reference'] || `IMP-${data['id_product'] || Math.random().toString(36).substr(2, 9)}`;
             const price = parseFloat(data['price_tax_excluded'] || '0');
             const stock = parseInt(data['quantity'] || '0');
             const isActive = data['active'] === '1';
             const ecotax = parseFloat(data['ecotax_tax_excluded'] || '0');
 
-            // Upsert Product (Update if exists by Reference/SKU, otherwise Create)
-            // Since `reference` is unique in our new schema, we use it for lookup
-            // Note: Data shows some empty references. We generates one if empty.
-
-            // Check if product exists by slug first to avoid unique constraint error
+            // Upsert Product
             const existingProduct = await prisma.product.findUnique({
                 where: { slug: slug }
             });
@@ -108,14 +112,14 @@ async function importProducts() {
                     data: {
                         name,
                         slug,
-                        sku: reference, // Mapping reference to SKU as primary identifier
+                        sku: reference,
                         reference,
                         price,
                         stockQuantity: stock,
                         categoryId: category.id,
                         isActive,
                         ecotax,
-                        images: data['id_image'] ? `legacy_image_${data['id_image']}.jpg` : null // Placeholder for image logic
+                        images: data['id_image'] ? `legacy_image_${data['id_image']}.jpg` : null
                     }
                 });
                 console.log(`✨ Created: ${name}`);
@@ -123,8 +127,9 @@ async function importProducts() {
 
             successCount++;
 
-        } catch (e) {
-            console.error(`❌ Failed Row ${i + 1} (${cols[7] || 'Unknown'}):`, e.message);
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : 'Unknown error';
+            console.error(`❌ Failed Row ${i + 1} (${cols[7] || 'Unknown'}):`, msg);
             failCount++;
         }
     }

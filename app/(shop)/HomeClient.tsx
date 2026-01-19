@@ -14,9 +14,27 @@ import Newsletter from "@/components/shop/Newsletter";
 import { Truck, ShieldCheck, Star } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
+interface Review {
+    id: number;
+    name: string;
+    rating: number;
+    comment: string;
+    avatar?: string;
+}
+
+interface Article {
+    title: string;
+    excerpt: string;
+    image: string;
+    date: string;
+    slug: string;
+    readTime: string;
+    category: string;
+}
+
 interface HomeClientProps {
-    reviews: any[];
-    posts: any[];
+    reviews: Review[];
+    posts: Article[];
 }
 
 export default function HomeClient({ reviews, posts }: HomeClientProps) {

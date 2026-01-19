@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { ScrollText, Loader2, Search, Filter, Clock, User, ShieldAlert } from 'lucide-react';
+import { ScrollText, Loader2, Search, Filter, Clock, ShieldAlert } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Log {
@@ -10,7 +10,7 @@ interface Log {
     action: string;
     entityType: string;
     entityId: string | null;
-    details: any;
+    details: Record<string, unknown>;
     ipAddress: string | null;
     createdAt: string;
     admin: {

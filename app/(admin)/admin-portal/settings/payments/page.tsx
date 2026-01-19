@@ -19,6 +19,17 @@ interface PaymentMethod {
     };
 }
 
+interface ConfigResponse {
+    payment_methods?: string;
+    stripe_publishable_key?: string;
+    stripe_secret_key?: string;
+    stripe_webhook_secret?: string;
+    stripe_mode?: 'test' | 'live';
+    paypal_client_id?: string;
+    paypal_secret_key?: string;
+    paypal_mode?: 'test' | 'live';
+}
+
 export default function PaymentsPage() {
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
     const [loading, setLoading] = useState(true);
@@ -32,7 +43,7 @@ export default function PaymentsPage() {
         setLoading(true);
         try {
             const res = await fetch('/api/admin/config?includeSecrets=true');
-            const configs = await res.json();
+            const configs: ConfigResponse = await res.json();
 
             let parsedMethods: PaymentMethod[] = [];
             if (configs.payment_methods) {
@@ -55,7 +66,7 @@ export default function PaymentsPage() {
                             publicKey: configs.stripe_publishable_key || m.config?.publicKey || '',
                             secretKey: configs.stripe_secret_key || m.config?.secretKey || '',
                             webhookSecret: configs.stripe_webhook_secret || m.config?.webhookSecret || '',
-                            mode: (configs.stripe_mode as any) || m.config?.mode || 'test'
+                            mode: configs.stripe_mode || m.config?.mode || 'test'
                         }
                     };
                 }
@@ -66,7 +77,7 @@ export default function PaymentsPage() {
                             ...m.config,
                             publicKey: configs.paypal_client_id || m.config?.publicKey || '',
                             secretKey: configs.paypal_secret_key || m.config?.secretKey || '',
-                            mode: (configs.paypal_mode as any) || m.config?.mode || 'test'
+                            mode: configs.paypal_mode || m.config?.mode || 'test'
                         }
                     };
                 }
@@ -115,7 +126,7 @@ export default function PaymentsPage() {
         setMethods(methods.map(m => m.id === id ? { ...m, isEnabled: !m.isEnabled } : m));
     };
 
-    const updateConfig = (id: string, field: string, value: any) => {
+    const updateConfig = (id: string, field: string, value: string) => {
         setMethods(methods.map(m => {
             if (m.id === id) {
                 if (field === 'instructions') return { ...m, instructions: value };
@@ -125,7 +136,7 @@ export default function PaymentsPage() {
                     config: {
                         ...currentConfig,
                         [field]: value
-                    } as any
+                    }
                 };
             }
             return m;

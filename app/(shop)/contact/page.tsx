@@ -34,7 +34,7 @@ export default function ContactPage() {
             } else {
                 setSubmitStatus('error');
             }
-        } catch (error) {
+        } catch {
             setSubmitStatus('error');
         } finally {
             setIsSubmitting(false);
@@ -57,7 +57,7 @@ export default function ContactPage() {
                         {t('contact.title') || 'Contact Us'}
                     </h1>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                        {t('contact.subtitle') || 'Have questions? We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.'}
+                        {t('contact.subtitle') || 'Have questions? We&apos;d love to hear from you. Send us a message and we&apos;ll respond as soon as possible.'}
                     </p>
                 </div>
 
@@ -216,7 +216,7 @@ export default function ContactPage() {
 
                                 {submitStatus === 'success' && (
                                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                                        ✅ Message sent successfully! We'll get back to you soon.
+                                        ✅ Message sent successfully! We&apos;ll get back to you soon.
                                     </div>
                                 )}
 

@@ -2,14 +2,44 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, UploadCloud, Box, DollarSign, FileText, Layers, Truck, Tag, Globe, Settings, Trash2, Percent } from "lucide-react";
+import { ArrowLeft, Save, UploadCloud, Box, DollarSign, FileText, Layers, Truck, Globe, Trash2, Percent } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import ProductVariantsManager from "@/components/admin/products/ProductVariantsManager";
 
 interface ProductFormProps {
-    initialData?: any;
+    initialData?: Partial<Product>; // Use Partial<Product> or define a proper shape
     isEdit?: boolean;
+}
+
+// Need to define Product interface if not imported
+interface Product {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    price: number;
+    compare_at_price?: number | null;
+    cost_price?: number;
+    stock_quantity: number;
+    images: string; // JSON string in DB
+    category_id: number;
+    brand_id: number;
+    tax_rule_id: number;
+    is_active: boolean | number;
+    is_featured: boolean | number;
+    meta_title?: string;
+    meta_description?: string;
+    related_ids?: string;
+    hs_code?: string;
+    origin_country?: string;
+    weight?: number;
+    width?: number;
+    height?: number;
+    depth?: number;
+    carriers?: { id: number }[];
+    // Removed index signature to enforce stricter typing, add optional fields if needed
+    [key: string]: unknown; // Safer than any if strictly necessary, or remove entirely if possible
 }
 
 export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
@@ -19,13 +49,14 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
     const [activeTab, setActiveTab] = useState("general");
 
     // Data Sources
-    const [categories, setCategories] = useState<any[]>([]);
-    const [brands, setBrands] = useState<any[]>([]);
-    const [taxRules, setTaxRules] = useState<any[]>([]);
-    const [variants, setVariants] = useState<any[]>([]);
-    const [carriers, setCarriers] = useState<any[]>([]);
+    const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+    const [brands, setBrands] = useState<{ id: number; name: string }[]>([]);
+    const [taxRules, setTaxRules] = useState<{ id: number; name: string; rate: number; country: string }[]>([]);
+    // Use a more specific type than any[] for variants if possible, or unknown[] for now
+    const [variants, setVariants] = useState<unknown[]>([]);
+    const [carriers, setCarriers] = useState<{ id: number; name: string; logo: string | null }[]>([]);
 
-    const [allProducts, setAllProducts] = useState<any[]>([]);
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -75,8 +106,8 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     setAllProducts(data.products || []);
                 }
                 if (carrRes.ok) setCarriers(await carrRes.json());
-            } catch (error) {
-                console.error("Failed to load form data", error);
+            } catch {
+                console.error("Failed to load form data");
             }
         };
         fetchData();
@@ -87,8 +118,10 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         if (initialData) {
             let images: string[] = [];
             try {
-                const parsed = JSON.parse(initialData.images);
-                images = Array.isArray(parsed) ? parsed : [initialData.images];
+                if (initialData.images) {
+                    const parsed = JSON.parse(initialData.images);
+                    images = Array.isArray(parsed) ? parsed : [initialData.images];
+                }
             } catch {
                 if (initialData.images) images = [initialData.images];
             }
@@ -96,29 +129,29 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             setFormData({
                 name: initialData.name || "",
                 slug: initialData.slug || "",
-                sku: initialData.sku || "",
+                sku: initialData.sku ? String(initialData.sku) : "",
                 description: initialData.description || "",
-                price: parseFloat(initialData.price) || 0,
-                compare_at_price: parseFloat(initialData.compareAtPrice) || 0,
-                cost_price: parseFloat(initialData.cost_price) || 0,
-                tax_rule_id: initialData.taxRuleId?.toString() || "",
-                stock_quantity: initialData.stock_quantity || 0,
-                weight: parseFloat(initialData.weight) || 0,
-                width: parseFloat(initialData.width) || 0,
-                height: parseFloat(initialData.height) || 0,
-                depth: parseFloat(initialData.depth) || 0,
-                category_id: (initialData.category_id || initialData.categoryId)?.toString() || "",
-                brand_id: (initialData.brand_id || initialData.brandId)?.toString() || "",
+                price: Number(initialData.price ?? 0),
+                compare_at_price: Number(initialData.compare_at_price ?? initialData.compareAtPrice ?? 0),
+                cost_price: Number(initialData.cost_price ?? 0),
+                tax_rule_id: initialData.tax_rule_id != null ? String(initialData.tax_rule_id) : (initialData.taxRuleId != null ? String(initialData.taxRuleId) : ""),
+                stock_quantity: Number(initialData.stock_quantity ?? 0),
+                weight: Number(initialData.weight ?? 0),
+                width: Number(initialData.width ?? 0),
+                height: Number(initialData.height ?? 0),
+                depth: Number(initialData.depth ?? 0),
+                category_id: initialData.category_id != null ? String(initialData.category_id) : (initialData.categoryId != null ? String(initialData.categoryId) : ""),
+                brand_id: initialData.brand_id != null ? String(initialData.brand_id) : (initialData.brandId != null ? String(initialData.brandId) : ""),
                 images: images,
                 image_url: images[0] || "",
-                is_active: initialData.isActive ?? (initialData.is_active === 1 || initialData.is_active === true),
-                is_featured: initialData.isFeatured ?? (initialData.is_featured === 1 || initialData.is_featured === true),
+                is_active: initialData.isActive === true || initialData.is_active === 1 || initialData.is_active === true,
+                is_featured: initialData.isFeatured === true || initialData.is_featured === 1 || initialData.is_featured === true,
                 meta_title: initialData.meta_title || "",
                 meta_description: initialData.meta_description || "",
                 related_ids: initialData.related_ids || "[]",
                 hs_code: initialData.hs_code || "",
                 origin_country: initialData.origin_country || "Yemen",
-                carriers: initialData.carriers ? initialData.carriers.map((c: any) => c.id) : []
+                carriers: initialData.carriers ? initialData.carriers.map((c: { id: number }) => c.id) : []
             });
         }
     }, [initialData]);
@@ -159,7 +192,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 images: [...prev.images, ...validUrls],
                 image_url: prev.image_url || validUrls[0] || "" // Set primary if empty
             }));
-        } catch (err) { alert('Upload failed'); }
+        } catch { alert('Upload failed'); }
         finally { setUploadingImage(false); }
     };
 
@@ -179,7 +212,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         e.preventDefault();
         setLoading(true);
 
-        const url = isEdit ? `/api/products/${initialData.id}` : '/api/products';
+        const url = (isEdit && initialData) ? `/api/products/${initialData.id}` : '/api/products';
         const method = isEdit ? 'PUT' : 'POST';
 
         const payload = {
@@ -206,14 +239,14 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 const err = await res.json();
                 alert(`Error: ${err.error || 'Failed to save product'}`);
             }
-        } catch (error) {
+        } catch {
             alert("Something went wrong");
         } finally {
             setLoading(false);
         }
     };
 
-    const tabs = [
+    const tabs: { id: string; label: string; icon: any; hidden?: boolean }[] = [
         { id: "general", label: "General", icon: FileText },
         { id: "pricing", label: "Pricing", icon: DollarSign },
         { id: "logistics", label: "Shipping", icon: Truck },
@@ -251,7 +284,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 <div className="col-span-12 md:col-span-3">
                     <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden sticky top-6">
                         <nav className="flex flex-col">
-                            {(tabs as any[]).filter(t => !t.hidden).map(tab => (
+                            {tabs.filter(t => !t.hidden).map(tab => (
                                 <button
                                     key={tab.id}
                                     type="button"
@@ -350,14 +383,14 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                                 try {
                                                     const { generateProductDescription } = await import('@/app/actions/ai');
                                                     // Use name + category name as keywords base
-                                                    const categoryName = categories.find(c => c.id == formData.category_id)?.name || "";
+                                                    const categoryName = categories.find(c => String(c.id) === formData.category_id)?.name || "";
                                                     const res = await generateProductDescription(formData.name, categoryName, `${formData.name}, ${categoryName}, luxury, yemen`);
 
                                                     if (res.error) alert(res.error);
                                                     else if (res.description) {
                                                         setFormData(prev => ({ ...prev, description: res.description }));
                                                     }
-                                                } catch (e) {
+                                                } catch {
                                                     alert("AI Generation failed");
                                                 } finally {
                                                     setLoading(false);
@@ -480,7 +513,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                             onChange={e => setFormData({ ...formData, tax_rule_id: e.target.value })}
                                         >
                                             <option value="">No Tax (0%)</option>
-                                            {taxRules.map((rule: any) => (
+                                            {taxRules.map((rule) => (
                                                 <option key={rule.id} value={rule.id}>
                                                     {rule.name} ({rule.rate}%) - {rule.country}
                                                 </option>
@@ -679,7 +712,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                         onChange={e => setFormData({ ...formData, category_id: e.target.value })}
                                     >
                                         <option value="">Select Category</option>
-                                        {categories.map((cat: any) => (
+                                        {categories.map((cat) => (
                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                                         ))}
                                     </select>
@@ -693,7 +726,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                         onChange={e => setFormData({ ...formData, brand_id: e.target.value })}
                                     >
                                         <option value="">Select Brand</option>
-                                        {brands.map((brand: any) => (
+                                        {brands.map((brand) => (
                                             <option key={brand.id} value={brand.id}>{brand.name}</option>
                                         ))}
                                     </select>
@@ -703,7 +736,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                             <div className="pt-6 border-t dark:border-zinc-800">
                                 <label className="block text-sm font-medium mb-3">Related Products / Accessories</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                    {allProducts.filter(p => p.id !== initialData?.id).map((prod: any) => {
+                                    {allProducts.filter(p => p.id !== initialData?.id).map((prod) => {
                                         const relatedIds = JSON.parse(formData.related_ids || "[]");
                                         const isSelected = relatedIds.includes(prod.id);
                                         return (

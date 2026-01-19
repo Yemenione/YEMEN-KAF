@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingBag, Heart, User, Search, Menu } from "lucide-react";
+import { Home, ShoppingBag, Heart, User, Search } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import clsx from "clsx";

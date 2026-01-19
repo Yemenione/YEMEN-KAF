@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { Send, User, ChevronLeft, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { Send, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 
 interface Message {
@@ -42,28 +42,21 @@ export default function TicketDetailPage() {
     const [sending, setSending] = useState(false);
     const [isInternal, setIsInternal] = useState(false);
 
-    useEffect(() => {
-        if (id) fetchTicket();
-    }, [id]);
-
-    useEffect(() => {
-        // Scroll to bottom on new messages
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [ticket?.messages]);
-
-    const fetchTicket = async () => {
+    const fetchTicket = useCallback(async () => {
         try {
             const res = await fetch(`/api/admin/tickets/${id}`);
             const data = await res.json();
             setTicket(data);
-        } catch (error) {
-            console.error('Failed to fetch ticket:', error);
+        } catch {
+            console.error('Failed to fetch ticket');
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        if (id) fetchTicket();
+    }, [id, fetchTicket]);
 
     const handleSend = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -84,8 +77,8 @@ export default function TicketDetailPage() {
                 setReply('');
                 fetchTicket(); // Refresh to see new message
             }
-        } catch (error) {
-            console.error('Failed to send message:', error);
+        } catch {
+            console.error('Failed to send message');
         } finally {
             setSending(false);
         }
@@ -99,10 +92,17 @@ export default function TicketDetailPage() {
                 body: JSON.stringify({ status: newStatus })
             });
             if (res.ok) fetchTicket();
-        } catch (error) {
-            console.error('Failed to update status:', error);
+        } catch {
+            console.error('Failed to update status');
         }
     };
+
+    useEffect(() => {
+        // Scroll to bottom on new messages
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [ticket?.messages]);
 
     if (loading) return <div>Loading ticket...</div>;
     if (!ticket) return <div>Ticket not found</div>;
@@ -155,10 +155,10 @@ export default function TicketDetailPage() {
                             className={`flex ${msg.senderType === 'ADMIN' ? 'justify-end' : 'justify-start'}`}
                         >
                             <div className={`max-w-[70%] rounded-lg p-4 shadow-sm ${msg.senderType === 'ADMIN'
-                                    ? msg.isInternal
-                                        ? 'bg-yellow-50 border border-yellow-200 text-yellow-900' // Internal Note style
-                                        : 'bg-[var(--coffee-brown)] text-white' // Admin Reply style
-                                    : 'bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700' // Customer style
+                                ? msg.isInternal
+                                    ? 'bg-yellow-50 border border-yellow-200 text-yellow-900' // Internal Note style
+                                    : 'bg-[var(--coffee-brown)] text-white' // Admin Reply style
+                                : 'bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700' // Customer style
                                 }`}>
                                 <div className="text-xs opacity-70 mb-1 flex justify-between gap-4">
                                     <span className="font-bold">
@@ -198,8 +198,8 @@ export default function TicketDetailPage() {
                                 type="submit"
                                 disabled={sending || !reply.trim()}
                                 className={`flex-1 flex items-center justify-center gap-2 px-6 py-2 rounded-lg text-white font-medium transition-colors ${isInternal
-                                        ? 'bg-yellow-600 hover:bg-yellow-700'
-                                        : 'bg-[var(--coffee-brown)] hover:bg-[#5a4635]'
+                                    ? 'bg-yellow-600 hover:bg-yellow-700'
+                                    : 'bg-[var(--coffee-brown)] hover:bg-[#5a4635]'
                                     } disabled:opacity-50`}
                             >
                                 <Send className="w-4 h-4" /> {sending ? 'Sending...' : 'Send'}

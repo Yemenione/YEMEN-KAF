@@ -59,10 +59,11 @@ export async function GET(
             image_url: product.images ? JSON.parse(product.images)[0] : null, // Helper
             carriers: product.carriers,
             // Flatten variants for easier usage
-            variants: product.variants.map((v: any) => ({
+            // Flatten variants for easier usage
+            variants: product.variants.map((v) => ({
                 ...v,
                 price: v.price.toNumber(),
-                attributes: v.attributeValues.map((av: any) => ({
+                attributes: v.attributeValues.map((av) => ({
                     name: av.attributeValue.attribute.publicName || av.attributeValue.attribute.name,
                     value: av.attributeValue.name,
                     type: av.attributeValue.attribute.type
@@ -134,19 +135,21 @@ export async function PUT(
                 originCountry: origin_country,
                 taxRuleId: tax_rule_id ? parseInt(tax_rule_id) : null,
                 carriers: carriers ? {
-                    set: Array.isArray(carriers) ? carriers.map((cid: any) => ({ id: parseInt(cid) })) : []
+                    set: Array.isArray(carriers) ? carriers.map((cid: string | number) => ({ id: parseInt(cid.toString()) })) : []
                 } : undefined
             }
         });
 
         return NextResponse.json({ success: true, message: 'Product updated successfully', product: updatedProduct });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Product update error:', error);
-        if (error.code === 'P2002') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const e = error as any;
+        if (e.code === 'P2002') {
             return NextResponse.json({ error: 'SKU or Slug already exists' }, { status: 409 });
         }
-        if (error.code === 'P2025') {
+        if (e.code === 'P2025') {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
         return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
@@ -154,6 +157,8 @@ export async function PUT(
 }
 
 // DELETE Product (Admin - uses ID)
+import { ResultSetHeader } from 'mysql2';
+
 export async function DELETE(
     req: Request,
     { params }: { params: Promise<{ slug: string }> }
@@ -166,7 +171,7 @@ export async function DELETE(
         const id = slug; // Rename for clarity
 
         try {
-            const [result]: any = await pool.execute('DELETE FROM products WHERE id = ?', [id]);
+            const [result] = await pool.execute<ResultSetHeader>('DELETE FROM products WHERE id = ?', [id]);
 
             if (result.affectedRows === 0) {
                 return NextResponse.json({ error: 'Product not found' }, { status: 404 });
@@ -174,8 +179,10 @@ export async function DELETE(
 
             return NextResponse.json({ success: true, message: 'Product deleted successfully' });
 
-        } catch (dbError: any) {
-            if (dbError.code === 'ER_ROW_IS_REFERENCED_2') {
+        } catch (dbError) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const e = dbError as any;
+            if (e.code === 'ER_ROW_IS_REFERENCED_2') {
                 // Fallback to soft delete if referenced
                 await pool.execute('UPDATE products SET is_active = 0 WHERE id = ?', [id]);
                 return NextResponse.json({ success: true, message: 'Product archived (soft deleted) due to existing orders' });

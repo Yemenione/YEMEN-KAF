@@ -14,12 +14,16 @@ interface Category {
     image_url?: string;
 }
 
+import { useSearchParams } from "next/navigation";
+// ... imports
+
 export default function CategoryRail() {
     const { t } = useLanguage();
     const [categories, setCategories] = useState<Category[]>([]);
-    const [activeCategory, setActiveCategory] = useState<string>('all');
+    const searchParams = useSearchParams();
+    const activeCategory = searchParams.get('category') || 'all';
 
-    // Hardcoded images mapping for demo purposes/fallback
+    // ... categoryImages mapping ...
     const categoryImages: Record<string, string> = {
         'honey': '/images/honey-jar.jpg',
         'coffee': '/images/coffee-beans.jpg',
@@ -45,13 +49,6 @@ export default function CategoryRail() {
             }
         };
         fetchCats();
-
-        // Check active category from URL
-        const params = new URLSearchParams(window.location.search);
-        const cat = params.get('category');
-        if (cat) setActiveCategory(cat);
-        else setActiveCategory('all');
-
     }, [t]);
 
     const getImageForCategory = (cat: Category) => {
@@ -80,7 +77,6 @@ export default function CategoryRail() {
                     <Link
                         key={cat.id}
                         href={cat.slug === 'all' ? '/shop' : `/shop?category=${cat.slug}`}
-                        onClick={() => setActiveCategory(cat.slug)}
                         className="flex flex-col items-center gap-2 min-w-[72px] lg:min-w-[100px] snap-start transition-opacity hover:opacity-80 group"
                     >
                         <div className={clsx(

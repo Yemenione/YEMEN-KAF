@@ -28,8 +28,8 @@ export default function CookieBanner() {
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex-1 pr-8">
                     <h3 className="text-lg font-serif text-black mb-2">We value your privacy</h3>
-                    <p className="text-sm text-gray-500 leading-relaxed">
-                        We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                        Nous utilisons des cookies pour am&eacute;liorer votre exp&eacute;rience. En continuant, vous acceptez notre utilisation des cookies. By clicking &quot;Accept All&quot;, you consent to our use of cookies.
                         <Link href="/privacy" className="underline ml-1 text-black hover:text-gray-600">Read our Privacy Policy</Link>.
                     </p>
                 </div>

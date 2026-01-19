@@ -4,8 +4,19 @@ import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcrypt';
 
+import { RowDataPacket } from 'mysql2';
+
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
+interface UserRow extends RowDataPacket {
+    id: number;
+    email: string;
+    password_hash: string;
+    first_name: string;
+    last_name: string;
+    role?: string;
+    name?: string; // For Admin table compatibility if needed
+}
 
 export async function POST(req: Request) {
     try {
@@ -16,7 +27,7 @@ export async function POST(req: Request) {
         }
 
         // 1. Try finding in CUSTOMERS first
-        let [rows]: any = await pool.execute(
+        const [rows] = await pool.execute<UserRow[]>(
             'SELECT * FROM customers WHERE email = ? LIMIT 1',
             [email]
         );
@@ -26,7 +37,7 @@ export async function POST(req: Request) {
 
         // 2. If not found in customers, try ADMINS table
         if (!user) {
-            const [adminRows]: any = await pool.execute(
+            const [adminRows] = await pool.execute<UserRow[]>(
                 'SELECT * FROM admins WHERE email = ? LIMIT 1',
                 [email]
             );

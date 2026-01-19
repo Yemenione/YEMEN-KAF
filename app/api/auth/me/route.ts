@@ -3,7 +3,16 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import pool from '@/lib/mysql';
 
+import { RowDataPacket } from 'mysql2';
+
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
+
+interface UserRow extends RowDataPacket {
+    id: number;
+    email: string;
+    firstName: string;
+    lastName: string;
+}
 
 export async function GET() {
     try {
@@ -17,7 +26,7 @@ export async function GET() {
         const userId = payload.userId as number;
 
         // Fetch user using direct SQL
-        const [rows]: any = await pool.execute(
+        const [rows] = await pool.execute<UserRow[]>(
             'SELECT id, email, first_name as firstName, last_name as lastName FROM customers WHERE id = ? LIMIT 1',
             [userId]
         );
@@ -30,8 +39,9 @@ export async function GET() {
 
         return NextResponse.json({ user });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Auth error:", error);
-        return NextResponse.json({ error: 'Authentication failed', details: error.message }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: 'Authentication failed', details: errorMessage }, { status: 500 });
     }
 }

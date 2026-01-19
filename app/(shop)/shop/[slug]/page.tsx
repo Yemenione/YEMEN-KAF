@@ -34,13 +34,16 @@ async function getProduct(slug: string) {
 
         if (!product) return null;
 
-        const { taxRule, ...rest } = product as any;
         return {
-            ...rest,
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            sku: product.sku,
             price: Number(product.price),
             compare_at_price: product.compareAtPrice ? Number(product.compareAtPrice) : null,
             compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
             stock_quantity: product.stockQuantity,
+            images: product.images,
             category_name: product.category?.name || 'Uncategorized',
             description: product.description || '',
             weight: product.weight ? Number(product.weight) : 0.5,
@@ -52,6 +55,7 @@ async function getProduct(slug: string) {
             origin_country: product.originCountry || "Yemen",
             taxRate: product.taxRule?.rate ? Number(product.taxRule.rate) : 0,
             category_slug: product.category?.slug,
+            categoryId: product.categoryId,
             variants: product.variants.map(v => ({
                 id: v.id,
                 name: v.name,
@@ -136,15 +140,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         try {
             const parsed = JSON.parse(product.images);
             if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
-        } catch (e) { }
+        } catch { }
     }
 
     return {
         title: `${product.name} | Yemeni Market`,
-        description: (product as any).description || `Buy authentic ${product.name} from Yemeni Market.`,
+        description: product.description || `Buy authentic ${product.name} from Yemeni Market.`,
         openGraph: {
             title: product.name,
-            description: (product as any).description || `Buy authentic ${product.name} from Yemeni Market.`,
+            description: product.description || `Buy authentic ${product.name} from Yemeni Market.`,
             images: [imageUrl],
         },
     };
@@ -158,25 +162,30 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         notFound();
     }
 
+    // Since we spread ...rest in getProduct, we need to ensure the types match what components expect.
+    // The components ProductDetails, ProductSpecs, etc. likely take specific interfaces.
+    // We should cast 'product' to the expected interface or ensure getProduct returns strict types.
+    // For now, let's fix the obvious 'any' casts by trusting the returned structure from strict getProduct.
+
     const [relatedProducts, newArrivals, carriers] = await Promise.all([
-        getRelatedProducts((product as any).categoryId, product.id),
+        getRelatedProducts(product.categoryId ?? null, product.id),
         getNewArrivals(),
         getCarriers()
     ]);
 
     return (
         <main className="min-h-screen">
-            <ProductDetails product={product as any} carriers={carriers as any} />
+            <ProductDetails product={product} carriers={carriers} />
             <div className="max-w-7xl mx-auto px-6 pb-20">
                 <ProductSpecs
-                    weight={(product as any).weight || 0.5}
-                    origin={(product as any).origin_country || "Yemen"}
+                    weight={product.weight || 0.5}
+                    origin={product.origin_country || "Yemen"}
                     shelfLife="24 months"
-                    description={(product as any).description || ''}
-                    category={(product as any).category_slug || 'honey'}
+                    description={product.description || ''}
+                    category={product.category_slug || 'honey'}
                 />
-                <ProductCarousel title="Produits Similaires" products={relatedProducts as any} />
-                <ProductCarousel title="Nouveautés" products={newArrivals as any} />
+                <ProductCarousel title="Produits Similaires" products={relatedProducts} />
+                <ProductCarousel title="Nouveautés" products={newArrivals} />
             </div>
         </main>
     );

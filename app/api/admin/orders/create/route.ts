@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 export async function POST(req: Request) {
     try {
@@ -11,15 +12,15 @@ export async function POST(req: Request) {
         }
 
         // 1. Calculate Totals & Verify Items
-        let orderItems = [];
+        const orderItems = [];
         let totalAmount = 0;
 
         for (const item of items) {
-            const [rows]: any = await pool.execute('SELECT * FROM products WHERE id = ?', [item.id]);
+            const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM products WHERE id = ?', [item.id]);
             if (rows.length === 0) continue;
 
             const product = rows[0];
-            const price = parseFloat(product.price); // Use database price OR allow override? 
+            const price = parseFloat(product.price as string); // Use database price OR allow override? 
             // For now, let's stick to DB price but manual override can be added later
 
             const lineTotal = price * item.quantity;
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
         // 2. Create Order
         const orderNumber = `MAN-${Date.now()}`;
 
-        const [orderResult]: any = await pool.execute(
+        const [orderResult] = await pool.execute<ResultSetHeader>(
             `INSERT INTO orders (
                 customer_id, order_number, total_amount, status, 
                 shipping_address, payment_method, shipping_method, 
@@ -82,8 +83,9 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ success: true, orderId, orderNumber });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Manual order creation failed:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }

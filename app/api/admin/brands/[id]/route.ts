@@ -15,7 +15,7 @@ export async function GET(
 
         if (!brand) return NextResponse.json({ error: 'Brand not found' }, { status: 404 });
         return NextResponse.json(brand);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch brand' }, { status: 500 });
     }
 }
@@ -42,7 +42,7 @@ export async function PUT(
         });
 
         return NextResponse.json(brand);
-    } catch (error: any) {
+    } catch {
         return NextResponse.json({ error: 'Failed to update brand' }, { status: 500 });
     }
 }
@@ -62,7 +62,7 @@ export async function DELETE(
 
         await prisma.brand.delete({ where: { id } });
         return NextResponse.json({ success: true, message: 'Brand deleted' });
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to delete brand' }, { status: 500 });
     }
 }

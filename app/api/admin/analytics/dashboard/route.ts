@@ -1,83 +1,131 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import pool from '@/lib/mysql';
 
-export async function GET(req: NextRequest) {
+import { RowDataPacket } from 'mysql2';
+
+interface KpiRow extends RowDataPacket {
+    totalOrders: number;
+    totalRevenue: string; // Decimal sum
+    totalCustomers: number;
+    lowStock: number;
+}
+
+interface SalesRow extends RowDataPacket {
+    date: string;
+    sales: string;
+}
+
+interface RecentOrderRow extends RowDataPacket {
+    id: number;
+    orderNumber: string;
+    totalAmount: string;
+    status: string;
+    createdAt: Date;
+    customerName: string;
+}
+
+interface RecentTicketRow extends RowDataPacket {
+    id: number;
+    subject: string;
+    status: string;
+    createdAt: Date;
+    customerName: string;
+}
+
+export async function GET() {
     try {
-        // 1. KPIs
-        // 1. KPIs
-        // WORKAROUND: Avoid prisma.order.aggregate due to "timer has gone away" panic on hosting
-        const allOrders = await prisma.order.findMany({
-            where: { status: { not: 'Cancelled' } },
-            select: { totalAmount: true }
-        });
-        const totalRevenue = allOrders.reduce((sum: number, order: { totalAmount: any }) => sum + Number(order.totalAmount), 0);
+        // 1. Get total revenue, orders, customers
+        const [counts] = await pool.execute<KpiRow[]>(
+            `SELECT 
+                (SELECT COUNT(*) FROM orders WHERE status != 'cancelled') as totalOrders,
+                (SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status != 'cancelled') as totalRevenue,
+                (SELECT COUNT(*) FROM customers) as totalCustomers,
+                (SELECT COUNT(*) FROM products WHERE stock_quantity <= 5) as lowStock`
+        );
 
-        const totalOrders = await prisma.order.count();
-        const totalCustomers = await prisma.customer.count();
-        const lowStockCount = await prisma.product.count({
-            where: { stockQuantity: { lte: 5 } }
-        });
+        const kpi = {
+            revenue: parseFloat(counts[0].totalRevenue),
+            orders: counts[0].totalOrders,
+            customers: counts[0].totalCustomers,
+            lowStock: counts[0].lowStock
+        };
 
         // 2. Sales Chart (Last 30 Days)
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const [dailySales] = await pool.execute<SalesRow[]>(
+            `SELECT 
+                DATE_FORMAT(created_at, '%Y-%m-%d') as date,
+                SUM(total_amount) as sales
+             FROM orders
+             WHERE status != 'cancelled' 
+               AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+             GROUP BY date
+             ORDER BY date ASC`
+        );
 
-        const salesRaw = await prisma.order.findMany({
-            where: {
-                createdAt: { gte: thirtyDaysAgo },
-                status: { not: 'Cancelled' }
-            },
-            select: {
-                createdAt: true,
-                totalAmount: true
-            }
-        });
-
-        // Aggregate by day
+        // Fill in missing days
         const salesMap = new Map();
-        salesRaw.forEach((order: any) => {
-            const dateStr = order.createdAt.toISOString().split('T')[0];
-            const amount = Number(order.totalAmount);
-            salesMap.set(dateStr, (salesMap.get(dateStr) || 0) + amount);
+        dailySales.forEach((day) => {
+            salesMap.set(day.date, parseFloat(day.sales));
         });
 
         const salesChart = [];
-        for (let i = 0; i < 30; i++) {
+        for (let i = 29; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
             const dateStr = d.toISOString().split('T')[0];
-            salesChart.unshift({
+            salesChart.push({
                 date: dateStr,
                 sales: salesMap.get(dateStr) || 0
             });
         }
 
+        // 3. Get recent orders
+        const [recentOrders] = await pool.execute<RecentOrderRow[]>(
+            `SELECT 
+                o.id,
+                o.order_number as orderNumber,
+                o.total_amount as totalAmount,
+                o.status,
+                o.created_at as createdAt,
+                CONCAT(c.first_name, ' ', c.last_name) as customerName
+             FROM orders o
+             LEFT JOIN customers c ON o.customer_id = c.id
+             ORDER BY o.created_at DESC
+             LIMIT 5`
+        );
 
-        // 3. Recent Activity (Orders & Tickets)
-        const recentOrders = await prisma.order.findMany({
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            include: { customer: { select: { firstName: true, lastName: true } } }
-        });
-
-        const recentTickets = await (prisma as any).ticket.findMany({
-            take: 3,
-            orderBy: { createdAt: 'desc' },
-            include: { customer: { select: { firstName: true, lastName: true } } }
-        });
+        // 4. Recent Tickets (Mock or fetch from tickets table if exists, previously prisma.ticket)
+        // Assuming 'tickets' table exists based on previous prism usage, but if not we return empty array to be safe
+        let recentTickets: RecentTicketRow[] = [];
+        try {
+            const [tickets] = await pool.execute<RecentTicketRow[]>(
+                `SELECT 
+                    t.id, 
+                    t.subject, 
+                    t.status, 
+                    t.created_at as createdAt,
+                    CONCAT(c.first_name, ' ', c.last_name) as customerName
+                 FROM tickets t
+                 LEFT JOIN customers c ON t.customer_id = c.id
+                 ORDER BY t.created_at DESC 
+                 LIMIT 3`
+            );
+            recentTickets = tickets;
+        } catch (e) {
+            console.warn("Tickets table might not exist or error fetching tickets", e);
+        }
 
         return NextResponse.json({
-            kpi: {
-                revenue: totalRevenue,
-                orders: totalOrders,
-                customers: totalCustomers,
-                lowStock: lowStockCount
-            },
+            kpi,
             salesChart,
             recentOrders,
             recentTickets
         });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+
+    } catch (error: unknown) {
+        console.error("Dashboard analytics error:", error);
+        return NextResponse.json({
+            error: error instanceof Error ? error.message : 'Internal Server Error'
+        }, { status: 500 });
     }
 }

@@ -49,7 +49,7 @@ export default function CategoriesPage() {
                 const data = await res.json();
                 setCategories(data);
             }
-        } catch (error) {
+        } catch {
             console.error("Failed to fetch categories");
         } finally {
             setLoading(false);
@@ -65,11 +65,8 @@ export default function CategoriesPage() {
             image_url: cat.image_url || "",
             is_active: cat.is_active,
             display_order: cat.display_order,
-            // @ts-ignore
-            parent_id: cat.parent_id || "",
-            // @ts-ignore
+            parent_id: cat.parent_id !== null && cat.parent_id !== undefined ? String(cat.parent_id) : "",
             meta_title: cat.meta_title || "",
-            // @ts-ignore
             meta_description: cat.meta_description || ""
         });
         setIsModalOpen(true);
@@ -104,7 +101,10 @@ export default function CategoriesPage() {
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    parent_id: formData.parent_id ? parseInt(String(formData.parent_id)) : null
+                })
             });
 
             if (res.ok) {
@@ -113,8 +113,8 @@ export default function CategoriesPage() {
             } else {
                 alert("Failed to save category");
             }
-        } catch (error) {
-            alert("Error saving category");
+        } catch {
+            alert('Failed to save category');
         }
     };
 
@@ -126,7 +126,7 @@ export default function CategoriesPage() {
             if (res.ok) {
                 fetchCategories();
             }
-        } catch (error) {
+        } catch {
             alert("Failed to delete");
         }
     };
@@ -304,10 +304,8 @@ export default function CategoriesPage() {
                                     <label className="block text-sm font-medium mb-1">Parent Category</label>
                                     <select
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                        // @ts-ignore
                                         value={formData.parent_id}
-                                        // @ts-ignore
-                                        onChange={e => setFormData({ ...formData, parent_id: e.target.value ? parseInt(e.target.value) : "" })}
+                                        onChange={e => setFormData({ ...formData, parent_id: e.target.value })}
                                     >
                                         <option value="">None (Top Level)</option>
                                         {categories
@@ -379,7 +377,7 @@ export default function CategoriesPage() {
                                                             const data = await res.json();
                                                             setFormData(prev => ({ ...prev, image_url: data.path }));
                                                         }
-                                                    } catch (err) { alert('Upload failed'); }
+                                                    } catch { alert('Upload failed'); }
                                                     finally { setUploading(false); }
                                                 }}
                                             />
@@ -395,9 +393,7 @@ export default function CategoriesPage() {
                                         <input
                                             type="text"
                                             className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-900 dark:border-zinc-600 text-sm"
-                                            // @ts-ignore
                                             value={formData.meta_title}
-                                            // @ts-ignore
                                             onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
                                         />
                                     </div>
@@ -405,9 +401,7 @@ export default function CategoriesPage() {
                                         <label className="block text-xs font-medium mb-1 text-gray-500">Meta Description</label>
                                         <textarea
                                             className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-900 dark:border-zinc-600 text-sm h-16"
-                                            // @ts-ignore
                                             value={formData.meta_description}
-                                            // @ts-ignore
                                             onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
                                         />
                                     </div>

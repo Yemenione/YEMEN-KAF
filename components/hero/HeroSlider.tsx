@@ -37,7 +37,7 @@ export default function HeroSlider() {
             if (Array.isArray(parsed) && parsed.length > 0) {
                 return parsed[0];
             }
-        } catch (e) {
+        } catch {
             // Fallback for non-JSON strings
             if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;

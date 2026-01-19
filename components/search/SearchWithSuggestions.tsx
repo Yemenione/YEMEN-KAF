@@ -11,7 +11,7 @@ export default function SearchWithSuggestions() {
     const { t } = useLanguage();
     const router = useRouter();
     const [query, setQuery] = useState("");
-    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [suggestions, setSuggestions] = useState<{ id: number; name: string; slug: string; price: string | number; images?: string; image_url?: string }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [showInput, setShowInput] = useState(false);
@@ -103,7 +103,8 @@ export default function SearchWithSuggestions() {
                                     } else if (item.image_url) {
                                         displayImage = item.image_url;
                                     }
-                                } catch (e) {
+                                    if (item.images) displayImage = item.images;
+                                } catch {
                                     if (item.images) displayImage = item.images;
                                 }
 

@@ -1,45 +1,67 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Search, ShoppingCart, User, Plus, Minus, Trash2, CreditCard, CheckCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Search, ShoppingCart, User, Plus, Minus, Trash2, CheckCircle } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+
+interface Product {
+    id: number;
+    name: string;
+    price: string;
+    images: string | null;
+}
+
+interface Customer {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string | null;
+}
 
 export default function CreateOrderPage() {
     const router = useRouter();
 
     // State
-    const [step, setStep] = useState(1); // 1: Select Customer & Products, 2: Review & Pay
-    const [customers, setCustomers] = useState<any[]>([]);
-    const [products, setProducts] = useState<any[]>([]);
-    const [cart, setCart] = useState<any[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [cart, setCart] = useState<(Product & { quantity: number })[]>([]);
+    const [customers, setCustomers] = useState<Customer[]>([]);
 
     const [searchCustomer, setSearchCustomer] = useState('');
     const [searchProduct, setSearchProduct] = useState('');
 
-    const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-    const [loading, setLoading] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [creating, setCreating] = useState(false);
+
+    const fetchProducts = useCallback(async () => {
+        try {
+            const res = await fetch(`/api/products?limit=100&search=${searchProduct}`);
+            const data = await res.json();
+            setProducts(data.products || []);
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+        }
+    }, [searchProduct]);
+
+    const fetchCustomers = useCallback(async () => {
+        try {
+            const res = await fetch(`/api/customers?search=${searchCustomer}`);
+            const data = await res.json();
+            setCustomers(data || []);
+        } catch (error) {
+            console.error("Failed to fetch customers:", error);
+        }
+    }, [searchCustomer]);
 
     // Initial Fetch
     useEffect(() => {
         fetchProducts();
         fetchCustomers();
-    }, []);
-
-    const fetchProducts = async () => {
-        const res = await fetch(`/api/products?limit=100&search=${searchProduct}`);
-        const data = await res.json();
-        setProducts(data.products || []);
-    };
-
-    const fetchCustomers = async () => {
-        const res = await fetch(`/api/customers?search=${searchCustomer}`); // Assuming customers API supports search
-        const data = await res.json();
-        setCustomers(data || []); // Assuming direct array or {customers: []} - check API later but this is generic
-    };
+    }, [fetchProducts, fetchCustomers]);
 
     // Handlers
-    const addToCart = (product: any) => {
+    const addToCart = (product: Product) => {
         const existing = cart.find(item => item.id === product.id);
         if (existing) {
             setCart(cart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
@@ -133,7 +155,15 @@ export default function CreateOrderPage() {
                         <div key={product.id} className="bg-white dark:bg-zinc-900 p-3 rounded-lg border shadow-sm flex flex-col hover:border-[var(--coffee-brown)] transition-colors cursor-pointer" onClick={() => addToCart(product)}>
                             <div className="aspect-square bg-gray-100 rounded-md mb-2 overflow-hidden relative">
                                 {product.images ? (
-                                    <img src={JSON.parse(product.images)[0]} className="w-full h-full object-cover" />
+                                    <div className="relative w-full h-full">
+                                        <Image
+                                            src={JSON.parse(product.images)[0]}
+                                            alt={product.name}
+                                            fill
+                                            className="object-cover"
+                                            sizes="(max-width: 768px) 50vw, 25vw"
+                                        />
+                                    </div>
                                 ) : <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>}
                             </div>
                             <h4 className="font-medium text-sm line-clamp-2 mb-1">{product.name}</h4>

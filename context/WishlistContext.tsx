@@ -21,7 +21,6 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     const { isAuthenticated } = useAuth();
     const { showToast } = useToast();
     const [wishlistIds, setWishlistIds] = useState<number[]>([]);
-    const [loading, setLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
 
     const openWishlist = () => setIsOpen(true);
@@ -53,8 +52,10 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
                 const data = await res.json();
                 // Assuming the API returns the full product objects in 'wishlist' array
                 // We just map to IDs
-                const ids = (data.wishlist as any[]).map((item: any) => item.id);
-                setWishlistIds(ids);
+                if (Array.isArray(data.wishlist)) {
+                    const ids = data.wishlist.map((item: { id: number }) => item.id);
+                    setWishlistIds(ids);
+                }
             }
         } catch (error) {
             console.error("Failed to fetch wishlist ids", error);
@@ -119,7 +120,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
             wishlistIds,
             isInWishlist,
             toggleWishlist,
-            loading,
+
+            loading: false, // Defaulting to false since state was removed
             isOpen,
             openWishlist,
             closeWishlist

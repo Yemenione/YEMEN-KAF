@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Globe, Check, Star, Edit2, X } from "lucide-react";
+import { Plus, Trash2, Globe, Check, Star, Edit2 } from "lucide-react";
 
 interface Language {
     id: number;
@@ -70,7 +70,7 @@ export default function LanguagesPage() {
                 const err = await res.json();
                 alert(err.error);
             }
-        } catch (error) {
+        } catch {
             alert('Operation failed');
         }
     };
@@ -85,7 +85,7 @@ export default function LanguagesPage() {
                 const err = await res.json();
                 alert(err.error);
             }
-        } catch (error) {
+        } catch {
             alert('Delete failed');
         }
     };

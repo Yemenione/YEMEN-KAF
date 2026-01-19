@@ -24,27 +24,27 @@ export default function AdminProductsPage() {
     const [page, setPage] = useState(0);
     const limit = 20;
 
-    const fetchProducts = async () => {
-        setLoading(true);
-        try {
-            const query = new URLSearchParams({
-                limit: limit.toString(),
-                offset: (page * limit).toString(),
-                sort: 'newest'
-            });
-            if (searchTerm) query.append('search', searchTerm);
-
-            const res = await fetch(`/api/products?${query.toString()}`);
-            const data = await res.json();
-            setProducts(data.products || []);
-        } catch (error) {
-            console.error("Failed to fetch products", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            try {
+                const query = new URLSearchParams({
+                    limit: limit.toString(),
+                    offset: (page * limit).toString(),
+                    sort: 'newest'
+                });
+                if (searchTerm) query.append('search', searchTerm);
+
+                const res = await fetch(`/api/products?${query.toString()}`);
+                const data = await res.json();
+                setProducts(data.products || []);
+            } catch {
+                console.error("Failed to fetch products");
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchProducts();
     }, [page, searchTerm]);
 
@@ -58,7 +58,7 @@ export default function AdminProductsPage() {
             } else {
                 alert("Failed to delete product");
             }
-        } catch (error) {
+        } catch {
             alert("Error deleting product");
         }
     };

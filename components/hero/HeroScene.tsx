@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Float, PerspectiveCamera, ContactShadows, Sparkles } from "@react-three/drei";
-import { useRef, useMemo } from "react";
+import { useRef, useState, useEffect } from "react";
 import * as THREE from "three";
 
 function HoneyJar() {
@@ -59,9 +59,10 @@ function HoneyJar() {
     );
 }
 
-function FloatingBean({ position, speed }: { position: [number, number, number], speed: number }) {
+function FloatingBean({ position, speed, initialRotation }: { position: [number, number, number], speed: number, initialRotation: [number, number, number] }) {
     const ref = useRef<THREE.Mesh>(null);
-    const randomRot = useMemo(() => [Math.random(), Math.random(), Math.random()], []);
+    // Use initialRotation passed from parent instead of generating it during render
+    const randomRot = initialRotation;
 
     useFrame((state) => {
         if (ref.current) {
@@ -82,22 +83,28 @@ function FloatingBean({ position, speed }: { position: [number, number, number],
 
 function CoffeeRain() {
     const count = 30;
-    const positions = useMemo(() => {
-        const pos = [];
-        for (let i = 0; i < count; i++) {
-            pos.push([
-                (Math.random() - 0.5) * 10, // x
-                (Math.random() - 0.5) * 10, // y
-                (Math.random() - 0.5) * 5   // z
-            ] as [number, number, number]);
-        }
-        return pos;
+    const [particles, setParticles] = useState<{ position: [number, number, number], speed: number, rotation: [number, number, number] }[]>([]);
+
+    useEffect(() => {
+        const newParticles = Array.from({ length: count }).map(() => ({
+            position: [
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 10,
+                (Math.random() - 0.5) * 5
+            ] as [number, number, number],
+            speed: 0.5 + Math.random(),
+            rotation: [Math.random(), Math.random(), Math.random()] as [number, number, number]
+        }));
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setParticles(newParticles);
     }, []);
+
+    if (particles.length === 0) return null;
 
     return (
         <group>
-            {positions.map((pos, i) => (
-                <FloatingBean key={i} position={pos} speed={0.5 + Math.random()} />
+            {particles.map((p: { position: [number, number, number], speed: number, rotation: [number, number, number] }, i: number) => (
+                <FloatingBean key={i} position={p.position} speed={p.speed} initialRotation={p.rotation} />
             ))}
         </group>
     );

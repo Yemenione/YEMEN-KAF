@@ -44,7 +44,7 @@ export default function CMSPagesList() {
             } else {
                 alert('Failed to delete page');
             }
-        } catch (error) {
+        } catch {
             alert('Error deleting page');
         }
     };

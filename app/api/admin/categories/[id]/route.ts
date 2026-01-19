@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { RowDataPacket } from 'mysql2';
 
 export async function GET(
-    req: Request,
+    _req: Request,
     props: { params: Promise<{ id: string }> }
 ) {
     const params = await props.params;
     try {
-        const [rows]: any = await pool.execute(
+        const [rows] = await pool.execute<RowDataPacket[]>(
             'SELECT * FROM categories WHERE id = ?',
             [params.id]
         );
@@ -17,7 +18,7 @@ export async function GET(
         }
 
         return NextResponse.json(rows[0]);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch category' }, { status: 500 });
     }
 }
@@ -34,8 +35,8 @@ export async function PUT(
         const { name, slug, description, image_url, is_active, display_order } = body;
 
         // Build generic update query
-        let updates: string[] = [];
-        let values: any[] = [];
+        const updates: string[] = [];
+        const values: (string | number | boolean)[] = [];
 
         if (updates.length === 0 && !body.parent_id && !body.meta_title) {
             // Basic check, logic below handles specific fields
@@ -66,9 +67,10 @@ export async function PUT(
 
         return NextResponse.json({ success: true, message: 'Category updated' });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Category update error:', error);
-        if (error.code === 'ER_DUP_ENTRY') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((error as any).code === 'ER_DUP_ENTRY') {
             return NextResponse.json({ error: 'Slug already exists' }, { status: 409 });
         }
         return NextResponse.json({ error: 'Failed to update category' }, { status: 500 });
@@ -76,7 +78,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-    req: Request,
+    _req: Request,
     props: { params: Promise<{ id: string }> }
 ) {
     const params = await props.params;
@@ -88,8 +90,8 @@ export async function DELETE(
         await pool.execute('DELETE FROM categories WHERE id = ?', [params.id]);
 
         return NextResponse.json({ success: true, message: 'Category deleted' });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Delete Category Error:", error);
-        return NextResponse.json({ error: 'Failed to delete category', details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to delete category', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
     }
 }

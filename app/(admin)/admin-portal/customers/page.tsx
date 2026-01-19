@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, ChevronLeft, ChevronRight, User } from "lucide-react";
+import Link from 'next/link';
+import { User, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 interface Customer {
     id: number;
@@ -22,26 +23,26 @@ export default function AdminCustomersPage() {
     const [page, setPage] = useState(0);
     const limit = 20;
 
-    const fetchCustomers = async () => {
-        setLoading(true);
-        try {
-            const query = new URLSearchParams({
-                limit: limit.toString(),
-                offset: (page * limit).toString()
-            });
-            if (searchTerm) query.append('search', searchTerm);
-
-            const res = await fetch(`/api/customers?${query.toString()}`);
-            const data = await res.json();
-            setCustomers(data.customers || []);
-        } catch (error) {
-            console.error("Failed to fetch customers", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchCustomers = async () => {
+            setLoading(true);
+            try {
+                const query = new URLSearchParams({
+                    limit: limit.toString(),
+                    offset: (page * limit).toString()
+                });
+                if (searchTerm) query.append('search', searchTerm);
+
+                const res = await fetch(`/api/customers?${query.toString()}`);
+                const data = await res.json();
+                setCustomers(data.customers || []);
+            } catch (error) {
+                console.error("Failed to fetch customers", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchCustomers();
     }, [page, searchTerm]);
 
@@ -49,12 +50,12 @@ export default function AdminCustomersPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">VIP Clients</h2>
-                <a
-                    href="/admin-portal/customers/groups"
-                    className="px-4 py-2 text-sm font-medium text-[var(--coffee-brown)] bg-orange-50 hover:bg-orange-100 rounded-md transition-colors"
+                <Link
+                    href="/admin-portal/customers/groups/"
+                    className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
                 >
                     Manage Groups
-                </a>
+                </Link>
             </div>
 
             <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm overflow-hidden">

@@ -2,8 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { User, Save, ArrowLeft, Mail, Phone, Calendar, Package } from 'lucide-react';
+import { User, Save, ArrowLeft, Calendar, Package } from 'lucide-react';
 import Link from 'next/link';
+
+interface CustomerOrder {
+    id: number;
+    orderNumber: string;
+    totalAmount: number;
+    status: string;
+    createdAt: string;
+}
 
 interface Customer {
     id: number;
@@ -13,7 +21,7 @@ interface Customer {
     phone: string | null;
     createdAt: string;
     customerGroupId: number | null;
-    orders: any[];
+    orders: CustomerOrder[];
 }
 
 interface CustomerGroup {

@@ -3,13 +3,13 @@
 import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { ShoppingBag, Star, Filter, Grid, List, Heart, Eye } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ShoppingBag, Star, Filter, Grid, List, Eye } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import WishlistButton from "@/components/shop/WishlistButton";
 import ProductSkeleton from "@/components/shop/ProductSkeleton";
 import CategoryRail from "@/components/shop/CategoryRail";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 interface Product {
     id: number;
@@ -39,7 +39,6 @@ function ShopContent() {
     const { t } = useLanguage();
     const { addToCart } = useCart();
     const searchParams = useSearchParams();
-    const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategory, setSelectedCategory] = useState("all");
@@ -63,7 +62,7 @@ function ShopContent() {
             if (Array.isArray(parsed) && parsed.length > 0) {
                 return parsed[0];
             }
-        } catch (e) {
+        } catch {
             // Fallback for non-JSON strings
             if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
@@ -72,38 +71,7 @@ function ShopContent() {
         return '/images/honey-jar.jpg';
     };
 
-    // Read URL query params on mount or change
-    useEffect(() => {
-        const cat = searchParams.get('category');
-        if (cat) setSelectedCategory(cat);
-        else setSelectedCategory('all');
-    }, [searchParams]);
-
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
-    // Debounce price filter
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchProducts();
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [selectedCategory, sortBy, minPrice, maxPrice]); // Re-fetch on any filter change
-
-    const fetchCategories = async () => {
-        try {
-            const res = await fetch('/api/categories');
-            if (res.ok) {
-                const data = await res.json();
-                setCategories(data.categories || []);
-            }
-        } catch (err) {
-            console.error('Failed to fetch categories', err);
-        }
-    };
-
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
             // Construct params from state + existing search params (search query)
@@ -130,7 +98,38 @@ function ShopContent() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [searchParams, selectedCategory, sortBy, minPrice, maxPrice]);
+
+    // Read URL query params on mount or change
+    useEffect(() => {
+        const cat = searchParams.get('category');
+        if (cat) setSelectedCategory(cat);
+        else setSelectedCategory('all');
+    }, [searchParams]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch('/api/categories');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCategories(data.categories || []);
+                }
+            } catch (err) {
+                console.error('Failed to fetch categories', err);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+    // Debounce price filter
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchProducts();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [fetchProducts]); // Re-fetch on any filter change
 
     // Derived state for display - no longer client-side sorting!
     const displayProducts = products;
@@ -242,7 +241,7 @@ function ShopContent() {
                     <div className="text-center py-20 bg-white rounded-lg flex flex-col items-center justify-center">
                         <ShoppingBag size={48} className="text-gray-300 mb-4" />
                         <h3 className="text-lg font-bold text-gray-900 mb-2">{t('shop.noProducts') || 'No products found'}</h3>
-                        <p className="text-gray-500 max-w-md mx-auto mb-6">We couldn't find any products matching your filters. Try adjusting your search or category.</p>
+                        <p className="text-gray-500 max-w-md mx-auto mb-6">We couldn&apos;t find any products matching your filters. Try adjusting your search or category.</p>
                         <button
                             onClick={() => {
                                 setSelectedCategory('all');

@@ -1,11 +1,5 @@
-
-const mysql = require('mysql2/promise');
-const dotenv = require('dotenv');
-const fs = require('fs');
-const path = require('path');
-
-// Load env vars from .env file since .env.local was not found in listing
-dotenv.config({ path: '.env' });
+import mysql from 'mysql2/promise';
+import 'dotenv/config';
 
 async function fixDatabase() {
     console.log('Starting database schema fix...');

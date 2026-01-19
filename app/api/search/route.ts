@@ -1,5 +1,15 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { RowDataPacket } from 'mysql2';
+
+interface ProductSearchRow extends RowDataPacket {
+    id: number;
+    name: string;
+    slug: string;
+    price: string;
+    images: string | string[] | null;
+    category_name: string;
+}
 
 export async function GET(req: Request) {
     try {
@@ -11,7 +21,7 @@ export async function GET(req: Request) {
         }
 
         // Search products by name
-        const [products]: any = await pool.execute(
+        const [products] = await pool.execute<ProductSearchRow[]>(
             `SELECT 
                 p.id,
                 p.name,
@@ -28,12 +38,12 @@ export async function GET(req: Request) {
         );
 
         // Parse images for each product
-        const results = products.map((p: any) => ({
+        const results = products.map((p) => ({
             id: p.id,
             name: p.name,
             slug: p.slug,
             price: parseFloat(p.price),
-            image: p.images ? (typeof p.images === 'string' ? JSON.parse(p.images)[0] : p.images[0]) : null,
+            image: p.images ? (typeof p.images === 'string' ? JSON.parse(p.images)[0] : (Array.isArray(p.images) ? p.images[0] : null)) : null,
             category: p.category_name
         }));
 

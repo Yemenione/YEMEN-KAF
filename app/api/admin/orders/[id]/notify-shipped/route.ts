@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
 import { verifyAdmin } from '@/lib/admin-auth';
 import { Resend } from 'resend';
+import { RowDataPacket } from 'mysql2';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -24,7 +25,7 @@ export async function POST(
         const orderId = parseInt(id);
 
         // Fetch order details
-        const [orderRows]: any = await pool.execute(
+        const [orderRows] = await pool.execute<RowDataPacket[]>(
             `SELECT o.*, c.email, c.first_name, c.last_name 
              FROM orders o 
              LEFT JOIN customers c ON o.customer_id = c.id 
@@ -47,7 +48,7 @@ export async function POST(
         }
 
         // Fetch order items for email
-        const [items]: any = await pool.execute(
+        const [items] = await pool.execute<RowDataPacket[]>(
             `SELECT product_title, quantity, price 
              FROM order_items 
              WHERE order_id = ?`,
@@ -73,8 +74,8 @@ export async function POST(
         });
 
         // Build items list for email
-        const itemsList = items.map((item: any) =>
-            `• ${item.product_title} (x${item.quantity}) - €${parseFloat(item.price).toFixed(2)}`
+        const itemsList = items.map((item) =>
+            `• ${item.product_title} (x${item.quantity}) - €${parseFloat(item.price as string).toFixed(2)}`
         ).join('\n');
 
         // Tracking URL
@@ -156,11 +157,11 @@ export async function POST(
             message: 'Tracking email sent successfully'
         });
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Email notification error:', error);
         return NextResponse.json({
             error: 'Failed to send email',
-            details: error.message
+            details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 });
     }
 }

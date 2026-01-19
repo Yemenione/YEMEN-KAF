@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import CookieConsent from "react-cookie-consent";
+import Link from "next/link";
 
 export default function CookieConsentBanner() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
@@ -53,28 +55,17 @@ export default function CookieConsentBanner() {
             expires={365}
             onAccept={() => {
                 console.log("Cookies accepted");
-                // Enable analytics or other tracking here
             }}
             onDecline={() => {
                 console.log("Cookies declined");
-                // Disable analytics or other tracking here
             }}
         >
-            <span style={{ fontSize: "14px", lineHeight: "1.6" }}>
-                We use cookies to enhance your browsing experience and analyze site traffic.
-                By clicking "Accept", you consent to our use of cookies.
-                Read our{" "}
-                <a
-                    href="/privacy"
-                    style={{
-                        color: "var(--honey-gold)",
-                        textDecoration: "underline"
-                    }}
-                >
-                    Privacy Policy
-                </a>{" "}
-                for more information.
-            </span>
+            <div style={{ fontSize: "14px", lineHeight: "1.6" }}>
+                <p className="text-gray-200 text-sm mb-4">
+                    We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.
+                    For more information, please see our <Link href="/privacy" className="underline text-[var(--honey-gold)]">Privacy Policy</Link>.
+                </p>
+            </div>
         </CookieConsent>
     );
 }

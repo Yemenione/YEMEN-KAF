@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
 
+import { RowDataPacket } from 'mysql2';
+
 export async function GET() {
     try {
-        const [categories]: any = await pool.execute(
+        const [categories] = await pool.execute<RowDataPacket[]>(
             `SELECT id, name, slug, description, image_url
             FROM categories
             WHERE is_active = 1

@@ -29,7 +29,7 @@ export default function Newsletter() {
                 setStatus('error');
                 setMessage(t('newsletter.error'));
             }
-        } catch (error) {
+        } catch {
             setStatus('error');
             setMessage(t('newsletter.error'));
         }

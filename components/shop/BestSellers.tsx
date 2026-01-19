@@ -27,7 +27,7 @@ export default function BestSellers() {
             if (Array.isArray(parsed) && parsed.length > 0) {
                 return parsed[0];
             }
-        } catch (e) {
+        } catch {
             if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }

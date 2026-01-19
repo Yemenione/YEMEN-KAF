@@ -26,11 +26,12 @@ export async function GET() {
             message: 'Successfully connected to database!',
             config_seen: config
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const err = error as { message?: string; code?: string };
         return NextResponse.json({
             status: 'error',
-            message: error.message,
-            code: error.code,
+            message: err.message || 'Unknown error',
+            code: err.code || 'UNKNOWN',
             config_seen: config,
             env_vars_loaded: {
                 DB_HOST: !!process.env.DB_HOST,

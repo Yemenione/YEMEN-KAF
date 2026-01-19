@@ -4,7 +4,17 @@ import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcrypt';
 
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
+
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
+
+interface UserRow extends RowDataPacket {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    role?: string;
+}
 
 export async function POST(req: Request) {
     try {
@@ -15,7 +25,7 @@ export async function POST(req: Request) {
         }
 
         // Check if user exists
-        const [rows]: any = await pool.execute(
+        const [rows] = await pool.execute<UserRow[]>(
             'SELECT * FROM customers WHERE email = ? LIMIT 1',
             [email]
         );
@@ -28,7 +38,7 @@ export async function POST(req: Request) {
             const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
             const passwordHash = await bcrypt.hash(randomPassword, 10);
 
-            const [result]: any = await pool.execute(
+            const [result] = await pool.execute<ResultSetHeader>(
                 'INSERT INTO customers (first_name, last_name, email, password_hash) VALUES (?, ?, ?, ?)',
                 [firstName || 'Admin', lastName || 'User', email, passwordHash]
             );
@@ -38,7 +48,7 @@ export async function POST(req: Request) {
                 email,
                 first_name: firstName || 'Admin',
                 last_name: lastName || 'User'
-            };
+            } as UserRow; // Cast locally created object to UserRow for consistency
         }
 
         // Create token

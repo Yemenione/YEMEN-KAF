@@ -50,10 +50,10 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(media);
 
-    } catch (error: any) {
+    } catch (error) {
         console.error('Upload error:', error);
         return NextResponse.json(
-            { error: 'Upload failed', details: error.message },
+            { error: 'Upload failed', details: error instanceof Error ? error.message : "Unknown error" },
             { status: 500 }
         );
     }

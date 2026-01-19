@@ -22,26 +22,26 @@ export default function AdminOrdersPage() {
     const [page, setPage] = useState(0);
     const limit = 20;
 
-    const fetchOrders = async () => {
-        setLoading(true);
-        try {
-            const query = new URLSearchParams({
-                limit: limit.toString(),
-                offset: (page * limit).toString()
-            });
-            if (searchTerm) query.append('search', searchTerm);
-
-            const res = await fetch(`/api/orders?${query.toString()}`);
-            const data = await res.json();
-            setOrders(data.orders || []);
-        } catch (error) {
-            console.error("Failed to fetch orders", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchOrders = async () => {
+            setLoading(true);
+            try {
+                const query = new URLSearchParams({
+                    limit: limit.toString(),
+                    offset: (page * limit).toString()
+                });
+                if (searchTerm) query.append('search', searchTerm);
+
+                const res = await fetch(`/api/orders?${query.toString()}`);
+                const data = await res.json();
+                setOrders(data.orders || []);
+            } catch (error) {
+                console.error("Failed to fetch orders", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchOrders();
     }, [page, searchTerm]);
 

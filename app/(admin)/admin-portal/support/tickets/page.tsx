@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { MessageSquare, Clock, CheckCircle, AlertCircle, Plus } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 interface Ticket {
@@ -26,22 +26,22 @@ export default function SupportTicketsPage() {
     const [filter, setFilter] = useState('All');
 
     useEffect(() => {
+        const fetchTickets = async () => {
+            setLoading(true);
+            try {
+                const query = filter !== 'All' ? `?status=${filter}` : '';
+                const res = await fetch(`/api/admin/tickets${query}`);
+                const data = await res.json();
+                setTickets(data);
+            } catch {
+                console.error('Failed to fetch tickets');
+            } finally {
+                setLoading(false);
+            }
+        };
+
         fetchTickets();
     }, [filter]);
-
-    const fetchTickets = async () => {
-        setLoading(true);
-        try {
-            const query = filter !== 'All' ? `?status=${filter}` : '';
-            const res = await fetch(`/api/admin/tickets${query}`);
-            const data = await res.json();
-            setTickets(data);
-        } catch (error) {
-            console.error('Failed to fetch tickets:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
@@ -84,8 +84,8 @@ export default function SupportTicketsPage() {
                         key={status}
                         onClick={() => setFilter(status)}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${filter === status
-                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
-                                : 'bg-white dark:bg-zinc-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700'
+                            ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'
+                            : 'bg-white dark:bg-zinc-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700'
                             }`}
                     >
                         {status}

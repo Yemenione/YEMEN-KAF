@@ -27,8 +27,9 @@ export async function GET(
         }
 
         return NextResponse.json(rma);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        // const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
 }
 
@@ -52,7 +53,7 @@ export async function PUT(
         });
 
         return NextResponse.json(rma);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Update failed" }, { status: 500 });
     }
 }

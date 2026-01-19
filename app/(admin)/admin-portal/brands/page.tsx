@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Search, Edit, Trash2, X, Save, Image as ImageIcon } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Edit2, Trash2, X, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 
 interface Brand {
@@ -16,9 +16,9 @@ interface Brand {
 
 export default function BrandsPage() {
     const [brands, setBrands] = useState<Brand[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const [formData, setFormData] = useState({
         name: "",
         slug: "",
@@ -27,17 +27,17 @@ export default function BrandsPage() {
         isActive: true
     });
 
-    useEffect(() => {
-        fetchBrands();
-    }, []);
-
-    const fetchBrands = async () => {
+    const fetchBrands = useCallback(async () => {
         try {
             const res = await fetch('/api/admin/brands');
             if (res.ok) setBrands(await res.json());
         } catch (error) { console.error(error); }
-        finally { setLoading(false); }
-    };
+    }, []);
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        fetchBrands();
+    }, [fetchBrands]);
 
     const handleEdit = (brand: Brand) => {
         setEditingBrand(brand);
@@ -72,7 +72,7 @@ export default function BrandsPage() {
                 setIsModalOpen(false);
                 fetchBrands();
             }
-        } catch (err) { alert('Failed to save brand'); }
+        } catch { alert('Failed to save brand'); }
     };
 
     const handleDelete = async (id: number) => {
@@ -80,7 +80,7 @@ export default function BrandsPage() {
         try {
             const res = await fetch(`/api/admin/brands/${id}`, { method: 'DELETE' });
             if (res.ok) fetchBrands();
-        } catch (err) { alert('Delete failed'); }
+        } catch { alert('Delete failed'); }
     };
 
     return (
@@ -111,7 +111,7 @@ export default function BrandsPage() {
                                 <ImageIcon className="text-gray-300 w-12 h-12" />
                             )}
                             <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                <button onClick={() => handleEdit(brand)} className="bg-white text-blue-600 p-1.5 rounded shadow hover:bg-gray-50"><Edit size={16} /></button>
+                                <button onClick={() => handleEdit(brand)} className="bg-white text-blue-600 p-1.5 rounded shadow hover:bg-gray-50"><Edit2 size={16} /></button>
                                 <button onClick={() => handleDelete(brand.id)} className="bg-white text-red-600 p-1.5 rounded shadow hover:bg-gray-50"><Trash2 size={16} /></button>
                             </div>
                         </div>

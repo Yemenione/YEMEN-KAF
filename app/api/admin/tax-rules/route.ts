@@ -13,7 +13,7 @@ export async function GET() {
         });
 
         return NextResponse.json(taxRules);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch tax rules' }, { status: 500 });
     }
 }
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json(taxRule);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: 'Failed to create tax rule' }, { status: 500 });
     }
 }

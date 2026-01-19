@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Menu, X, Search, User, ChevronDown, Globe, Heart } from "lucide-react";
+import { ShoppingBag, Menu, X, User, ChevronDown, Globe, Heart } from "lucide-react";
 import clsx from "clsx";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -57,11 +57,32 @@ function LanguageSelector() {
     );
 }
 
+const NavLink = ({ href, children, isScrolled, isRTL }: { href: string; children: React.ReactNode; isScrolled: boolean; isRTL: boolean }) => (
+    <Link href={href} className={clsx(
+        "group relative text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-medium transition-colors py-2",
+        isScrolled ? "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)]" : "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] md:text-black md:hover:text-[var(--honey-gold)]"
+    )}>
+        {children}
+        <span className={clsx(
+            "absolute bottom-2 h-[2px] bg-[var(--honey-gold)] transition-all duration-300 opacity-0 group-hover:opacity-100",
+            isRTL ? "end-0 w-0 group-hover:w-full" : "start-0 w-0 group-hover:w-full"
+        )}></span>
+    </Link>
+);
+
+interface MegaMenuProduct {
+    id: number;
+    name: string;
+    slug: string;
+    price: number | string;
+    images?: string;
+}
+
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
-    const [megaMenuItems, setMegaMenuItems] = useState<any[]>([]);
+    const [megaMenuItems, setMegaMenuItems] = useState<MegaMenuProduct[]>([]);
 
     const { openCart, items } = useCart();
     const { user, logout } = useAuth();
@@ -78,8 +99,8 @@ export default function Navbar() {
                     const data = await res.json();
                     setMegaMenuItems(data.products || []);
                 }
-            } catch (error) {
-                console.error("Failed to fetch mega menu products:", error);
+            } catch {
+                console.error("Failed to fetch mega menu products");
             }
         };
         fetchMegaMenuProducts();
@@ -95,18 +116,8 @@ export default function Navbar() {
 
     const logoSrc = settings.logo_url || "/images/logo.png";
 
-    const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
-        <Link href={href} className={clsx(
-            "group relative text-[10px] md:text-[11px] uppercase tracking-[0.2em] font-medium transition-colors py-2",
-            isScrolled ? "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)]" : "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] md:text-black md:hover:text-[var(--honey-gold)]"
-        )}>
-            {children}
-            <span className={clsx(
-                "absolute bottom-2 h-[2px] bg-[var(--honey-gold)] transition-all duration-300 opacity-0 group-hover:opacity-100",
-                isRTL ? "end-0 w-0 group-hover:w-full" : "start-0 w-0 group-hover:w-full"
-            )}></span>
-        </Link>
-    );
+    // NavLink definition moved outside
+
 
     return (
         <>
@@ -144,7 +155,7 @@ export default function Navbar() {
 
                                 {/* DESKTOP NAV LINKS (Moved next to Logo) */}
                                 <div className="hidden md:flex items-center gap-6 lg:gap-8">
-                                    <NavLink href="/">{t("nav.home") || "Home"}</NavLink>
+                                    <NavLink href="/" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.home") || "Home"}</NavLink>
 
                                     <div
                                         className="group relative h-full flex items-center"
@@ -163,9 +174,9 @@ export default function Navbar() {
                                         </Link>
                                     </div>
 
-                                    <NavLink href="/our-story">{t("nav.ourStory")}</NavLink>
-                                    <NavLink href="/the-farms">{t("nav.farms")}</NavLink>
-                                    <NavLink href="/contact">Contact</NavLink>
+                                    <NavLink href="/our-story" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.ourStory")}</NavLink>
+                                    <NavLink href="/the-farms" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.farms")}</NavLink>
+                                    <NavLink href="/contact" isScrolled={isScrolled} isRTL={isRTL}>Contact</NavLink>
                                 </div>
                             </div>
 
@@ -259,7 +270,7 @@ export default function Navbar() {
                                                 if (Array.isArray(parsed) && parsed.length > 0) displayImage = parsed[0];
                                             }
                                         }
-                                    } catch (e) {
+                                    } catch {
                                         if (item.images) displayImage = item.images;
                                     }
 

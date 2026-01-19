@@ -2,10 +2,8 @@
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { useLanguage } from "@/context/LanguageContext";
 
 export default function PrivacyPage() {
-    const { t } = useLanguage();
 
     return (
         <main className="min-h-screen bg-white">

@@ -24,7 +24,6 @@ import {
     CreditCard,
     ShieldCheck,
     ScrollText,
-    Globe,
     User,
     Newspaper,
     Key

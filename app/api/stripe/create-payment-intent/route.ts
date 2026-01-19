@@ -6,6 +6,7 @@ import { getSecretConfig } from '@/lib/config';
 async function getStripeClient() {
     const secretKey = await getSecretConfig('stripe_secret_key');
     return new Stripe(secretKey, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         apiVersion: '2024-12-18.acacia' as any,
     });
 }
@@ -31,10 +32,12 @@ export async function POST(req: Request) {
         return NextResponse.json({
             clientSecret: paymentIntent.client_secret,
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error('Stripe error:', error);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const msg = (error as any).message || 'Internal Server Error';
         return NextResponse.json(
-            { error: error.message || 'Internal Server Error' },
+            { error: msg },
             { status: 500 }
         );
     }

@@ -26,7 +26,17 @@ export async function getAllCarriers() {
     }
 }
 
-export async function updateCarrier(id: number, data: any) {
+interface CarrierInput {
+    name: string;
+    slug: string;
+    logo?: string;
+    deliveryTime?: string;
+    price: number;
+    isActive: boolean;
+    trackingUrl?: string;
+}
+
+export async function updateCarrier(id: number, data: Partial<CarrierInput>) {
     try {
         const carrier = await prisma.carrier.update({
             where: { id },
@@ -41,7 +51,7 @@ export async function updateCarrier(id: number, data: any) {
     }
 }
 
-export async function createCarrier(data: any) {
+export async function createCarrier(data: CarrierInput) {
     try {
         const carrier = await prisma.carrier.create({
             data

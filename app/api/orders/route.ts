@@ -3,8 +3,41 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import pool from '@/lib/mysql';
 import { sendOrderConfirmationEmail } from '@/lib/email';
+import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
+
+interface ProductRow extends RowDataPacket {
+    id: number;
+    price: string;
+    stock_quantity: number;
+    name: string;
+    slug: string;
+}
+
+interface CartItemRow extends RowDataPacket {
+    product_id: number;
+    quantity: number;
+    price: string;
+    product_title?: string;
+}
+
+interface CouponRow extends RowDataPacket {
+    id: number;
+    code: string;
+    is_active: number;
+    starts_at: Date;
+    ends_at: Date;
+    total_available: number;
+    min_amount: string;
+    reduction_amount: string;
+    reduction_percent: string;
+}
+
+interface OrderRow extends RowDataPacket {
+    id: number;
+    total: number;
+}
 
 export async function POST(req: Request) {
     try {
@@ -17,7 +50,7 @@ export async function POST(req: Request) {
             try {
                 const { payload } = await jwtVerify(token, JWT_SECRET);
                 userId = payload.userId as number;
-            } catch (err) {
+            } catch {
                 // Invalid token, treat as guest
                 console.warn('Invalid token during checkout, proceeding as guest');
             }
@@ -35,14 +68,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Shipping address required' }, { status: 400 });
         }
 
-        let orderItems = [];
+        let orderItems: { product_id: number; quantity: number; price: number; product_title: string }[] = [];
         let totalAmount = 0;
 
         if (items && items.length > 0) {
             // Build order items with verified prices
             console.log('Verifying items:', items);
             for (const item of items) {
-                const [rows]: any = await pool.execute(
+                const [rows] = await pool.execute<ProductRow[]>(
                     'SELECT * FROM products WHERE id = ?',
                     [item.id]
                 );
@@ -53,7 +86,8 @@ export async function POST(req: Request) {
                     orderItems.push({
                         product_id: item.id,
                         quantity: item.quantity,
-                        price: price
+                        price: price,
+                        product_title: product.name // Added for email
                     });
                     totalAmount += price * item.quantity;
                 } else {
@@ -66,8 +100,8 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Guest checkout requires items in request' }, { status: 400 });
             }
 
-            const [dbCartItems]: any = await pool.execute(
-                `SELECT ci.*, p.price 
+            const [dbCartItems] = await pool.execute<CartItemRow[]>(
+                `SELECT ci.*, p.price, p.name as product_title 
                 FROM cart_items ci
                 JOIN products p ON ci.product_id = p.id
                 WHERE ci.customer_id = ?`,
@@ -78,13 +112,14 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Cart is empty' }, { status: 400 });
             }
 
-            orderItems = dbCartItems.map((item: any) => ({
+            orderItems = dbCartItems.map((item) => ({
                 product_id: item.product_id,
                 quantity: item.quantity,
-                price: parseFloat(item.price)
+                price: parseFloat(item.price),
+                product_title: item.product_title || 'Product'
             }));
 
-            totalAmount = orderItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+            totalAmount = orderItems.reduce((sum: number, item) => sum + (item.price * item.quantity), 0);
         }
 
         if (orderItems.length === 0) {
@@ -93,12 +128,11 @@ export async function POST(req: Request) {
 
         // --- COUPON VALIDATION START ---
         let discountAmount = 0;
-        let appliedCouponId = null;
 
         if (couponCode) {
             try {
                 // Check if coupon exists and is active
-                const [coupons]: any = await pool.execute(
+                const [coupons] = await pool.execute<CouponRow[]>(
                     'SELECT * FROM cart_rules WHERE code = ? AND is_active = 1',
                     [couponCode]
                 );
@@ -113,7 +147,7 @@ export async function POST(req: Request) {
                     if (startsAt && startsAt > now) isValid = false;
                     if (endsAt && endsAt < now) isValid = false;
                     if (coupon.total_available <= 0) isValid = false;
-                    if (totalAmount < parseFloat(coupon.min_amount || 0)) isValid = false;
+                    if (totalAmount < parseFloat(coupon.min_amount || '0')) isValid = false;
 
                     if (isValid) {
                         if (parseFloat(coupon.reduction_amount) > 0) {
@@ -124,8 +158,6 @@ export async function POST(req: Request) {
 
                         // Cap discount
                         if (discountAmount > totalAmount) discountAmount = totalAmount;
-
-                        appliedCouponId = coupon.id;
 
                         // Decrement usage (simple approach, ideally transaction safe)
                         await pool.execute('UPDATE cart_rules SET total_available = total_available - 1 WHERE id = ?', [coupon.id]);
@@ -149,7 +181,7 @@ export async function POST(req: Request) {
         const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
         // Create order
-        const [orderResult]: any = await pool.execute(
+        const [orderResult] = await pool.execute<ResultSetHeader>(
             `INSERT INTO orders (customer_id, order_number, total_amount, status, shipping_address, payment_method, shipping_method, shipping_cost, discount_total, created_at) 
             VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, NOW())`,
             [userId, orderNumber, totalAmount, JSON.stringify(shippingAddress), paymentMethod || 'cash_on_delivery', shippingMethod || 'standard', shippingCost, discountAmount]
@@ -188,10 +220,10 @@ export async function POST(req: Request) {
                 orderNumber,
                 customerName: `${shippingData.firstName || ''} ${shippingData.lastName || ''}`,
                 customerEmail: shippingData.email || '',
-                items: orderItems.map((item: any) => ({
+                items: orderItems.map((item) => ({
                     title: item.product_title || 'Product',
                     quantity: item.quantity,
-                    price: parseFloat(item.price) * item.quantity
+                    price: item.price * item.quantity
                 })),
                 subtotal: totalAmount - shippingCost,
                 shipping: shippingCost,
@@ -215,19 +247,15 @@ export async function POST(req: Request) {
 
     } catch (error) {
         console.error('Order creation error:', error);
-        console.error('Error details:', {
-            message: (error as Error).message,
-            stack: (error as Error).stack,
-            name: (error as any).name,
-            code: (error as any).code,
-            errno: (error as any).errno,
-            sql: (error as any).sql,
-            sqlMessage: (error as any).sqlMessage
-        });
+
+        const sqlError = (error && typeof error === 'object' && 'sqlMessage' in error)
+            ? (error as { sqlMessage: string }).sqlMessage
+            : 'No SQL error message';
+
         return NextResponse.json({
             error: 'Failed to create order',
-            details: (error as Error).message,
-            sqlError: (error as any).sqlMessage || 'No SQL error message'
+            details: error instanceof Error ? error.message : 'Unknown error',
+            sqlError
         }, { status: 500 });
     }
 }
@@ -250,7 +278,7 @@ export async function GET(req: Request) {
             WHERE 1=1
         `;
 
-        const params: any[] = [];
+        const params: (string | number)[] = [];
 
         if (status && status !== 'all') {
             query += ` AND o.status = ?`;
@@ -265,10 +293,10 @@ export async function GET(req: Request) {
         query += ` ORDER BY o.created_at DESC LIMIT ? OFFSET ?`;
         params.push(limit, offset);
 
-        const [orders]: any = await pool.execute(query, params);
+        const [orders] = await pool.execute<OrderRow[]>(query, params);
 
         // Get total count for pagination
-        const [countResult]: any = await pool.execute('SELECT COUNT(*) as total FROM orders');
+        const [countResult] = await pool.execute<RowDataPacket[]>('SELECT COUNT(*) as total FROM orders');
         const total = countResult[0].total;
 
         return NextResponse.json({ orders, total });

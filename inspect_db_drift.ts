@@ -7,11 +7,15 @@ async function inspectTables() {
     const connection = await mysql.createConnection(process.env.DATABASE_URL!);
     try {
         console.log("--- ORDERS TABLE ---");
-        const [orderCols]: any = await connection.execute('SHOW COLUMNS FROM orders');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [orderCols] = await connection.execute<any[]>('SHOW COLUMNS FROM orders');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         console.table(orderCols.map((c: any) => ({ Field: c.Field, Type: c.Type })));
 
         console.log("\n--- PRODUCTS TABLE ---");
-        const [productCols]: any = await connection.execute('SHOW COLUMNS FROM products');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [productCols] = await connection.execute<any[]>('SHOW COLUMNS FROM products');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         console.table(productCols.map((c: any) => ({ Field: c.Field, Type: c.Type })));
 
         process.exit(0);

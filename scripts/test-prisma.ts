@@ -1,8 +1,10 @@
-const { PrismaClient } = require('@prisma/client');
-require('dotenv').config();
+import { PrismaClient } from '@prisma/client';
+import 'dotenv/config';
 
 // Manually set if needed (since I renamed it)
-process.env.DATABASE_URL = process.env.MYSQL_DATABASE_URL;
+if (!process.env.DATABASE_URL && process.env.MYSQL_DATABASE_URL) {
+    process.env.DATABASE_URL = process.env.MYSQL_DATABASE_URL;
+}
 
 const prisma = new PrismaClient({
     log: ['query', 'info', 'warn', 'error'],

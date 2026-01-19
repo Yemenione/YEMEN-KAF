@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Plus, Heart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -14,7 +14,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ id, title, price, image, category }: ProductCardProps) {
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated } = useAuth();
     const router = useRouter();
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [loading, setLoading] = useState(false);

@@ -21,7 +21,7 @@ export default function ProfilePage() {
     const [isUploading, setIsUploading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
-    const [firebaseConfig, setFirebaseConfig] = useState<any>(null);
+    const [firebaseConfig, setFirebaseConfig] = useState<object | null>(null);
 
     useEffect(() => {
         getFirebaseConfig().then(setFirebaseConfig);
@@ -44,9 +44,10 @@ export default function ProfilePage() {
                 setPhone(data.user.phone || "");
                 setAvatar(data.user.avatar || "");
             }
-        } catch (err) {
-            console.error('Failed to fetch profile', err);
+        } catch {
+            console.error('Failed to fetch profile');
         }
+        // ... (rest of code)
     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +91,7 @@ export default function ProfilePage() {
                 const data = await res.json();
                 setError(data.error || "Failed to save");
             }
-        } catch (err) {
+        } catch {
             setError("Unexpected error");
         } finally {
             setIsLoading(false);

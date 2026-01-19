@@ -18,7 +18,7 @@ export async function POST(req: Request) {
         }
 
         // Send email to admin
-        const { data, error } = await resend.emails.send({
+        const { error } = await resend.emails.send({
             from: 'Yemeni Market Contact <contact@yemeni-market.com>',
             to: ['support@yemeni-market.com'], // Your support email
             replyTo: email,

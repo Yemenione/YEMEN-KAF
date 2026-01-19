@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { useLanguage } from "@/context/LanguageContext";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
     const { login, loginWithGoogle } = useAuth();
@@ -23,7 +24,7 @@ export default function LoginPage() {
         const result = await login(email, password);
 
         if (result.success) {
-            // @ts-ignore
+            // @ts-expect-error: user property might be missing on result type
             if (result.user?.isAdmin || result.user?.role === 'SUPER_ADMIN' || result.user?.role === 'ADMIN') {
                 router.push('/admin-portal');
             } else {
@@ -68,7 +69,7 @@ export default function LoginPage() {
                             }}
                             className="w-full py-4 border border-black/10 text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
                         >
-                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+                            <Image src="https://www.google.com/favicon.ico" alt="Google" width={16} height={16} className="w-4 h-4" />
                             {t('auth.continueWithGoogle') || "Continue with Google"}
                         </button>
 
@@ -115,6 +116,7 @@ export default function LoginPage() {
                     </button>
                 </form>
 
+                <div className="absolute inset-0 bg-black/60 z-10" />
                 {/* Footer */}
                 <div className="text-sm text-black/60">
                     <p>{t('auth.noAccount')} <Link href="/register" className="text-black font-bold border-b border-black/20 hover:border-black transition-colors">{t('auth.createOne')}</Link></p>

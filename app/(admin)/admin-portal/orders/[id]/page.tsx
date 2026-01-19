@@ -1,24 +1,62 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Truck, CreditCard, Package, Calendar, Download, FileText, CheckCircle, Clock } from "lucide-react";
+import { ArrowLeft, Truck, Package, Download, FileText, CheckCircle } from "lucide-react";
+import NextImage from "next/image";
 import { useSettings } from "@/context/SettingsContext";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+interface OrderHistory {
+    id: number;
+    status: string;
+    created_at: string;
+    created_by: string;
+}
+
+interface OrderItem {
+    id: number;
+    product_name: string;
+    product_images: string;
+    sku: string;
+    quantity: number;
+    price: number;
+    total_price: number;
+    weight?: number;
+}
+
+interface OrderDetail {
+    id: number;
+    order_number: string;
+    status: string;
+    created_at: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    shipping_address: string;
+    shipping_method: string;
+    shipping_cost: number;
+    subtotal: number;
+    total_amount: number;
+    tracking_number: string;
+    customer_id: number;
+    items: OrderItem[];
+    history: OrderHistory[];
+    carrier_data?: {
+        labelUrl?: string;
+    };
+}
+
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const { settings } = useSettings();
-    const [order, setOrder] = useState<any>(null);
+    const [order, setOrder] = useState<OrderDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
 
-    useEffect(() => {
-        fetchOrder();
-    }, [id]);
-
-    const fetchOrder = async () => {
+    const fetchOrder = useCallback(async () => {
         try {
             const res = await fetch(`/api/orders/${id}`);
             const data = await res.json();
@@ -28,7 +66,11 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        fetchOrder();
+    }, [fetchOrder]);
 
     const updateStatus = async (newStatus: string) => {
         if (!confirm(`Change order status to ${newStatus}?`)) return;
@@ -42,7 +84,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             if (res.ok) {
                 fetchOrder(); // Reload to get updated history
             }
-        } catch (error) {
+        } catch {
             alert("Failed to update status");
         } finally {
             setUpdating(false);
@@ -50,6 +92,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     };
 
     const generatePDF = (type: 'invoice' | 'packing_slip') => {
+        if (!order) return;
         const doc = new jsPDF();
 
         // Brand Color: Coffee Brown #4A3B32
@@ -73,7 +116,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             startY: 45,
             head: [['Bill To', 'Ship To', 'Details']],
             body: [[
-                `${order.first_name} ${order.last_name}\n${order.email}\n${order.phone || ''}`,
+                `${order.first_name} ${order.last_name}\n${order.email || ''}\n${order.phone || ''}`,
                 `${JSON.parse(order.shipping_address).address}\n${JSON.parse(order.shipping_address).city}, ${JSON.parse(order.shipping_address).zip}`,
                 `Order #: ${order.order_number}\nDate: ${new Date(order.created_at).toLocaleDateString()}\nStatus: ${order.status}`
             ]],
@@ -87,9 +130,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             ? ["Item", "Quantity", "Unit Price", "Total"]
             : ["Item", "Quantity", "SKU", "Weight"]; // Packing slip differs
 
-        const tableRows: any[] = [];
+        const tableRows: (string | number)[][] = [];
 
-        order.items.forEach((item: any) => {
+        order.items.forEach((item: OrderItem) => {
             const row = type === 'invoice'
                 ? [
                     item.product_name,
@@ -106,17 +149,19 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             tableRows.push(row);
         });
 
+        (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable || { finalY: 45 };
+
         autoTable(doc, {
-            startY: (doc as any).lastAutoTable.finalY + 10,
+            startY: ((doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY || 45) + 10,
             head: [tableColumn],
             body: tableRows,
-            headStyles: { fillColor: primaryColor as any },
+            headStyles: { fillColor: primaryColor as [number, number, number] },
             styles: { fontSize: 10 }
         });
 
         // Totals (Invoice Only)
         if (type === 'invoice') {
-            const finalY = (doc as any).lastAutoTable.finalY + 10;
+            const finalY = ((doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY || 150) + 10;
             doc.text(`Subtotal: ${Number(order.subtotal || order.total_amount - order.shipping_cost).toFixed(2)}€`, 140, finalY);
             doc.text(`Shipping: ${Number(order.shipping_cost).toFixed(2)}€`, 140, finalY + 5);
             doc.setFontSize(12);
@@ -189,7 +234,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         <div className="border-t border-gray-100 dark:border-zinc-800 py-6">
                             <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-gray-500">Timeline</h3>
                             <div className="relative pl-4 border-l-2 border-gray-100 dark:border-zinc-800 space-y-6">
-                                {order.history?.map((h: any, i: number) => (
+                                {order.history?.map((h: OrderHistory) => (
                                     <div key={h.id} className="relative">
                                         <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-[var(--honey-gold)] border-2 border-white dark:border-zinc-900"></div>
                                         <div>
@@ -214,7 +259,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
                         <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-gray-500">Items ({order.items?.length || 0})</h3>
                         <div className="space-y-4">
-                            {order.items?.map((item: any) => (
+                            {order.items?.map((item: OrderItem) => (
                                 <div key={item.id} className="flex gap-4 items-center p-2 hover:bg-gray-50 dark:hover:bg-zinc-800/50 rounded-lg transition-colors">
                                     <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden relative border flex items-center justify-center">
                                         {item.product_images ? (
@@ -231,7 +276,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
                                                     if (!src || (!src.startsWith('http') && !src.startsWith('/'))) return <Package className="text-gray-400 w-6 h-6 m-auto" />;
 
-                                                    return <img src={src} alt={item.product_name} className="w-full h-full object-cover" />;
+                                                    return <NextImage src={src} alt={item.product_name} fill className="object-cover" sizes="48px" />;
                                                 })()}
                                             </div>
                                         ) : <Package className="text-gray-400 w-6 h-6" />}
@@ -327,7 +372,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                                     headers: { 'Content-Type': 'application/json' },
                                                     body: JSON.stringify({ tracking_number: val })
                                                 });
-                                            } catch (err) { alert("Failed to update tracking"); }
+                                            } catch { alert("Failed to update tracking"); }
                                         }}
                                     />
                                 </div>
@@ -364,7 +409,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             } else {
                                                 alert(`Error: ${data.error || 'Failed to generate label'}`);
                                             }
-                                        } catch (error) {
+                                        } catch {
                                             alert('Label generation failed. Please try again.');
                                         } finally {
                                             btn.disabled = false;

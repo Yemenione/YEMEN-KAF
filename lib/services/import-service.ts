@@ -1,5 +1,4 @@
 
-import { PrismaClient } from '@prisma/client';
 import { prisma } from '@/lib/prisma'; // Assuming global prisma instance
 
 export interface ImportResult {
@@ -74,9 +73,10 @@ export async function importProductsFromCSV(csvContent: string): Promise<ImportR
             }
             successCount++;
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             failCount++;
-            errors.push(`Row ${i + 1}: ${e.message}`);
+            const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+            errors.push(`Row ${i + 1}: ${errorMessage}`);
         }
     }
 

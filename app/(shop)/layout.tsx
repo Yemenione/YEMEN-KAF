@@ -6,7 +6,6 @@ import { AuthProvider } from "@/context/AuthContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { ToastProvider } from "@/context/ToastContext";
 import CookieBanner from "@/components/layout/CookieBanner";
-import Link from "next/link";
 import CartDrawer from "@/components/cart/CartDrawer";
 import WishlistDrawer from "@/components/wishlist/WishlistDrawer";
 import Footer from "@/components/layout/Footer";

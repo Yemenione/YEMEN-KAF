@@ -17,6 +17,7 @@ export async function GET() {
         const userId = payload.userId as number;
 
         // Fetch user addresses
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const [addresses]: any = await pool.execute(
             'SELECT * FROM addresses WHERE customer_id = ? ORDER BY is_default DESC, created_at DESC',
             [userId]
@@ -41,29 +42,32 @@ export async function POST(req: Request) {
         const { payload } = await jwtVerify(token, JWT_SECRET);
         const userId = payload.userId as number;
 
-        const { street, city, state, postalCode, country, isDefault } = await req.json();
+        const data = await req.json();
+        const { addressLine1, addressLine2, city, state, postalCode, country, isDefault } = data;
 
-        if (!street || !city || !country) {
-            return NextResponse.json({ error: 'Street, city, and country are required' }, { status: 400 });
+        if (!addressLine1 || !city || !country) {
+            return NextResponse.json({ error: 'Address Line 1, city, and country are required' }, { status: 400 });
         }
 
-        // If this is default, unset other defaults
-        if (isDefault) {
+        // If set as default, unset other defaults
+        if (data.isDefault) {
             await pool.execute(
                 'UPDATE addresses SET is_default = 0 WHERE customer_id = ?',
                 [userId]
             );
         }
 
-        // Create new address
+        // Insert new address
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const [result]: any = await pool.execute(
-            'INSERT INTO addresses (customer_id, street_address, city, state, postal_code, country, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [userId, street, city, state || null, postalCode || null, country, isDefault ? 1 : 0]
+            `INSERT INTO addresses (customer_id, address_line1, address_line2, city, state, postal_code, country, is_default)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [userId, data.addressLine1, data.addressLine2, data.city, data.state, data.postalCode, data.country, data.isDefault ? 1 : 0]
         );
 
         return NextResponse.json({
             success: true,
-            address: { id: result.insertId, street, city, state, postalCode, country, isDefault }
+            address: { id: result.insertId, addressLine1, addressLine2, city, state, postalCode, country, isDefault }
         });
 
     } catch (error) {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Globe, Code, FileText, Search, Eye } from "lucide-react";
+import { ArrowLeft, Save, Globe, Code, FileText, Search } from "lucide-react";
 
 interface PageData {
     id?: number;
@@ -31,24 +31,26 @@ export default function CMSPageEditor({ params }: { params: Promise<{ id: string
     });
 
     useEffect(() => {
+        const fetchPage = async () => {
+            try {
+                const res = await fetch(`/api/admin/cms/pages/${id}`);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                setFormData(data);
+            } catch (error) {
+                console.error(error); // Log error to console
+                alert('Failed to load page');
+                router.push('/admin-portal/cms/pages');
+            } finally {
+                setLoading(false);
+            }
+        };
+
         if (!isNew) {
             fetchPage();
         }
-    }, []);
+    }, [id, isNew, router]);
 
-    const fetchPage = async () => {
-        try {
-            const res = await fetch(`/api/admin/cms/pages/${id}`);
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
-            setFormData(data);
-        } catch (error) {
-            alert('Failed to load page');
-            router.push('/admin-portal/cms/pages');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,7 +71,7 @@ export default function CMSPageEditor({ params }: { params: Promise<{ id: string
                 const err = await res.json();
                 alert(err.error);
             }
-        } catch (error) {
+        } catch {
             alert('Operation failed');
         } finally {
             setSaving(false);

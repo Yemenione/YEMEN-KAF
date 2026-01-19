@@ -1,6 +1,6 @@
 "use client";
 
-import type { Metadata } from "next";
+
 import { Inter } from "next/font/google";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { AuthProvider } from "@/context/AuthContext";

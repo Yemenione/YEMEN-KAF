@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import clsx from "clsx";
 
 interface Product {
     id: number;
@@ -32,7 +31,7 @@ export default function SpecialOffers() {
             if (Array.isArray(parsed) && parsed.length > 0) {
                 return parsed[0];
             }
-        } catch (e) {
+        } catch {
             // Fallback for non-JSON strings
             if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;

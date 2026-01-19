@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function GET(
     req: NextRequest,
@@ -43,6 +44,18 @@ export async function GET(
     }
 }
 
+interface VariantBody {
+    id?: number;
+    name: string;
+    sku: string;
+    price: number;
+    compareAtPrice?: number | null;
+    stock: number;
+    isActive: boolean;
+    images?: string;
+    attributes?: { valueId: number }[];
+}
+
 export async function POST(
     req: NextRequest,
     props: { params: Promise<{ id: string }> }
@@ -57,20 +70,20 @@ export async function POST(
         await prisma.$transaction(async (tx) => {
             // 1. Get existing IDs
             const existingParamIds = variants
-                .filter((v: any) => v.id)
-                .map((v: any) => v.id);
+                .filter((v: VariantBody) => v.id)
+                .map((v: VariantBody) => v.id);
 
             // 2. Archive (Soft Delete) variants not in the list
             await tx.productVariant.updateMany({
                 where: {
                     productId,
-                    id: { notIn: existingParamIds }
+                    id: { notIn: existingParamIds as number[] }
                 },
                 data: { isActive: false }
             });
 
             // 3. Upsert variants
-            for (const v of variants) {
+            for (const v of (variants as VariantBody[])) {
                 const variantData = {
                     name: v.name,
                     sku: v.sku,
@@ -95,8 +108,8 @@ export async function POST(
 
                     if (v.attributes && v.attributes.length > 0) {
                         await tx.productVariantValue.createMany({
-                            data: v.attributes.map((attr: any) => ({
-                                variantId: v.id,
+                            data: v.attributes.map((attr: { valueId: number }) => ({
+                                variantId: v.id!,
                                 attributeValueId: attr.valueId
                             }))
                         });
@@ -114,7 +127,7 @@ export async function POST(
                     // Link Attributes
                     if (v.attributes && v.attributes.length > 0) {
                         await tx.productVariantValue.createMany({
-                            data: v.attributes.map((attr: any) => ({
+                            data: v.attributes.map((attr: { valueId: number }) => ({
                                 variantId: newVariant.id,
                                 attributeValueId: attr.valueId
                             }))
@@ -126,9 +139,13 @@ export async function POST(
 
         return NextResponse.json({ success: true, message: 'Variants updated' });
 
-    } catch (error: any) {
+
+
+        // ... (existing code)
+
+    } catch (error) {
         console.error("Save variants error:", error);
-        if (error.code === 'P2002') {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
             return NextResponse.json({ error: 'Duplicate SKU detected' }, { status: 400 });
         }
         return NextResponse.json({ error: 'Failed to save variants' }, { status: 500 });

@@ -7,7 +7,7 @@ async function main() {
     console.log('🌱 Seeding Attributes...');
 
     // 1. Color
-    const color = await prisma.attribute.upsert({
+    await prisma.attribute.upsert({
         where: { id: 1 }, // Assuming ID 1, or we can query by name if needed but name isn't unique constraint in schema, so let's use create usually. But here checks if exists.
         // Better logic: check by name first
         update: {},

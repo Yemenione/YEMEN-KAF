@@ -1,8 +1,13 @@
-const mysql = require('mysql2/promise');
-require('dotenv').config();
+import mysql from 'mysql2/promise';
+import 'dotenv/config';
 
 async function main() {
     console.log('Verifying categories in DB...');
+
+    if (!process.env.DB_HOST || !process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.DB_NAME) {
+        throw new Error('Missing database environment variables');
+    }
+
     const connection = await mysql.createConnection({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,

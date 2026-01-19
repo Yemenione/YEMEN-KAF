@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } else {
                 setUser(null);
             }
-        } catch (error) {
+        } catch {
             setUser(null);
         } finally {
             setIsLoading(false);
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const data = await res.json();
                 return { success: false, error: data.error || 'Login failed' };
             }
-        } catch (error) {
+        } catch {
             return { success: false, error: 'An unexpected error occurred' };
         }
     };
@@ -101,9 +101,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } else {
                 return { success: false, error: 'Failed to authenticate with backend' };
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Google Sign In Error", error);
-            return { success: false, error: error.message || 'Google Sign In failed' };
+            const errorMessage = error instanceof Error ? error.message : 'Google Sign In failed';
+            return { success: false, error: errorMessage };
         }
     };
 
@@ -123,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 const result = await res.json();
                 return { success: false, error: result.error || 'Registration failed' };
             }
-        } catch (error) {
+        } catch {
             return { success: false, error: 'An unexpected error occurred' };
         }
     };

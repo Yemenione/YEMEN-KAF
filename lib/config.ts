@@ -1,4 +1,5 @@
 import pool from './mysql';
+import { RowDataPacket } from 'mysql2';
 
 /**
  * Fetches a configuration value from the database (StoreConfig table).
@@ -7,7 +8,7 @@ import pool from './mysql';
 export async function getStoreConfig(key: string): Promise<string | undefined> {
     try {
         // Use direct MySQL pool to bypass prisma client generation issues on Windows
-        const [rows]: any = await pool.execute(
+        const [rows] = await pool.execute<RowDataPacket[]>(
             'SELECT value FROM store_config WHERE `key` = ? LIMIT 1',
             [key]
         );

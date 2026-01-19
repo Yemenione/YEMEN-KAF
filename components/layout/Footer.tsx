@@ -29,7 +29,7 @@ export default function Footer() {
             } else {
                 showToast("Subscription failed.", "error");
             }
-        } catch (error) {
+        } catch {
             showToast("An error occurred.", "error");
         } finally {
             setLoading(false);
@@ -93,7 +93,7 @@ export default function Footer() {
                     <h3 className="text-lg font-bold uppercase tracking-widest mb-6 text-[var(--coffee-brown)] text-xs">{t('footer.quickLinks')}</h3>
                     <ul className="space-y-4 text-sm text-[var(--coffee-brown)]/70">
                         {settings.menu_footer_links ? (
-                            JSON.parse(settings.menu_footer_links).map((item: any, idx: number) => (
+                            JSON.parse(settings.menu_footer_links).map((item: { href: string; label: string }, idx: number) => (
                                 <li key={idx}><Link href={item.href} className="hover:text-[var(--honey-gold)] transition-colors">{item.label}</Link></li>
                             ))
                         ) : (
