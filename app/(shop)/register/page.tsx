@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function RegisterPage() {
-    const { register, loginWithGoogle } = useAuth();
+    const { register } = useAuth();
     const { t } = useLanguage();
     const router = useRouter();
     const [name, setName] = useState("");
@@ -49,32 +49,7 @@ export default function RegisterPage() {
                             {error}
                         </div>
                     )}
-
                     <div className="space-y-4">
-                        <button
-                            type="button"
-                            onClick={async () => {
-                                setIsLoading(true);
-                                const result = await loginWithGoogle();
-                                if (result.success) {
-                                    router.push('/account');
-                                } else {
-                                    setError(result.error || 'Google Sign In Failed');
-                                    setIsLoading(false);
-                                }
-                            }}
-                            className="w-full py-4 border border-black/10 text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
-                        >
-                            <Image src="https://www.google.com/favicon.ico" alt="Google" width={16} height={16} className="w-4 h-4" />
-                            {t('auth.continueWithGoogle') || "Continue with Google"}
-                        </button>
-
-                        <div className="relative flex items-center py-2">
-                            <div className="flex-grow border-t border-gray-200"></div>
-                            <span className="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-widest">Or</span>
-                            <div className="flex-grow border-t border-gray-200"></div>
-                        </div>
-
                         <div className="space-y-2">
                             <label className="text-xs uppercase tracking-wider text-black/60">{t('auth.fullName')}</label>
                             <input
