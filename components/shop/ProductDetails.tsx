@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft, ChevronDown } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
@@ -58,6 +58,24 @@ interface Carrier {
     name: string;
     logo: string | null;
     deliveryTime: string | null;
+}
+
+function Accordion({ title, children, defaultOpen = false }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+    return (
+        <div className="border-b border-gray-100 last:border-0">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full py-6 flex items-center justify-between group transition-all"
+            >
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 group-hover:text-black transition-colors">{title}</span>
+                <ChevronDown size={18} className={`text-gray-300 group-hover:text-black transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[1000px] pb-8 opacity-100' : 'max-h-0 opacity-0'}`}>
+                {children}
+            </div>
+        </div>
+    );
 }
 
 export default function ProductDetails({ product, carriers = [] }: { product: Product, carriers?: Carrier[] }) {
@@ -292,7 +310,6 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                     <span className="text-xl text-gray-300 line-through decoration-gray-300/50 font-light">{currentCompareAtPrice.toFixed(2)}€</span>
                                 )}
                             </div>
-                            <div className="prose prose-stone prose-sm text-gray-600 leading-relaxed mb-8 max-w-none" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
                         </div>
 
                         {/* Variants and Add to Cart Section */}
@@ -372,6 +389,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                     +
                                 </button>
                             </div>
+                            {/* Desktop only Add to Cart button */}
                             <button
                                 disabled={!canAddToCart}
                                 onClick={() => addToCart({
@@ -383,78 +401,80 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                     variantName: selectedVariant?.name,
                                     taxRate: product.taxRate || 0
                                 }, quantity)}
-                                className={`flex-1 py-5 rounded-full uppercase tracking-[0.2em] font-bold text-sm shadow-xl flex items-center justify-center gap-3 transition-all duration-500 ${canAddToCart
+                                className={`hidden lg:flex flex-1 py-5 rounded-full uppercase tracking-[0.2em] font-bold text-sm shadow-xl items-center justify-center gap-3 transition-all duration-500 ${canAddToCart
                                     ? 'bg-black text-white hover:bg-gray-900 hover:scale-[1.02] active:scale-[0.98]'
                                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
                             >
                                 <ShoppingBag className="w-4 h-4" /> {canAddToCart ? (t('product.addToBag') || 'Ajouter au Panier') : (t('product.outOfStock') || 'RUPTURE DE STOCK')}
                             </button>
-                            <button className="p-5 border border-gray-100 rounded-full hover:border-black transition-all bg-white shadow-sm group">
+                            <button className="hidden lg:block p-5 border border-gray-100 rounded-full hover:border-black transition-all bg-white shadow-sm group">
                                 <Heart className="w-5 h-5 text-gray-300 group-hover:text-red-500 transition-colors" />
                             </button>
                         </div>
 
-                        {/* Logistics & Security Section */}
-                        <div className="mt-8 space-y-10 border-t border-gray-100 pt-12">
-                            {/* French Logistics - DYNAMIC */}
+                        {/* Accordion Sections: Description, Logistics, Security */}
+                        <div className="border-t border-gray-100">
+                            <Accordion title={t('product.description') || "Description"} defaultOpen={true}>
+                                <div className="prose prose-stone prose-sm text-gray-600 leading-relaxed max-w-none" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
+                            </Accordion>
+
                             {carriers.length > 0 && (
-                                <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                    <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-8 border-l-2 border-black pl-4">{t('product.certifiedShipping')}</h4>
-                                    <div className="flex flex-wrap items-center gap-10">
-                                        {carriers.map((carrier) => (
-                                            <div key={carrier.id} className="flex flex-col items-center gap-3 group">
-                                                <div className="h-10 w-28 relative grayscale group-hover:grayscale-0 opacity-60 group-hover:opacity-100 transition-all duration-500">
-                                                    {carrier.logo ? (
-                                                        <Image src={carrier.logo} alt={carrier.name} fill className="object-contain" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-300 uppercase tracking-tighter">
-                                                            {carrier.name}
-                                                        </div>
-                                                    )}
+                                <Accordion title={t('product.certifiedShipping') || "Expédition Certifiée"}>
+                                    <div className="space-y-6">
+                                        <div className="flex flex-wrap items-center gap-10">
+                                            {carriers.map((carrier) => (
+                                                <div key={carrier.id} className="flex flex-col items-center gap-3 group">
+                                                    <div className="h-8 w-24 relative grayscale opacity-60 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-500">
+                                                        {carrier.logo ? (
+                                                            <Image src={carrier.logo} alt={carrier.name} fill className="object-contain" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-gray-300 uppercase tracking-tighter">
+                                                                {carrier.name}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-[8px] text-gray-400 font-bold uppercase tracking-widest">{carrier.deliveryTime || "48h-72h"}</span>
                                                 </div>
-                                                <span className="text-[9px] text-gray-400 font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">{carrier.deliveryTime || "48h-72h"}</span>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-gray-400 font-medium italic uppercase tracking-widest flex items-center gap-2">
+                                            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                            {t('product.secureDelivery')}
+                                        </p>
                                     </div>
-                                    <p className="mt-6 text-[10px] text-gray-400 font-medium italic opacity-60 uppercase tracking-widest flex items-center gap-2">
-                                        <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                        {t('product.secureDelivery')}
-                                    </p>
-                                </div>
+                                </Accordion>
                             )}
 
-                            {/* Trust Badges */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="flex items-center gap-5 p-6 rounded-2xl bg-white border border-gray-50 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="p-3 bg-gray-50 rounded-xl">
-                                        <Shield size={20} className="text-black" />
+                            <Accordion title={t('product.security') || "Garanties & Sécurité"}>
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="flex items-center gap-5 p-4 rounded-2xl bg-gray-50/50 border border-gray-50">
+                                        <div className="p-2.5 bg-white rounded-xl shadow-sm">
+                                            <Shield size={18} className="text-black" />
+                                        </div>
+                                        <div>
+                                            <h5 className="text-[10px] font-bold text-black uppercase tracking-[0.15em]">{t('product.authenticity')}</h5>
+                                            <p className="text-[9px] text-gray-400 font-medium mt-0.5">{t('product.authenticityDesc')}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h5 className="text-[10px] font-bold text-black uppercase tracking-[0.15em]">{t('product.authenticity')}</h5>
-                                        <p className="text-[10px] text-gray-400 font-medium mt-1">{t('product.authenticityDesc')}</p>
+                                    <div className="flex items-center gap-5 p-4 rounded-2xl bg-gray-50/50 border border-gray-50">
+                                        <div className="p-2.5 bg-white rounded-xl shadow-sm">
+                                            <Check size={18} className="text-black" />
+                                        </div>
+                                        <div>
+                                            <h5 className="text-[10px] font-bold text-black uppercase tracking-[0.15em]">{t('product.qualityControl')}</h5>
+                                            <p className="text-[9px] text-gray-400 font-medium mt-0.5">{t('product.qualityControlDesc')}</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-5 p-6 rounded-2xl bg-white border border-gray-50 shadow-sm hover:shadow-md transition-shadow">
-                                    <div className="p-3 bg-gray-50 rounded-xl">
-                                        <Check size={20} className="text-black" />
-                                    </div>
-                                    <div>
-                                        <h5 className="text-[10px] font-bold text-black uppercase tracking-[0.15em]">{t('product.qualityControl')}</h5>
-                                        <p className="text-[10px] text-gray-400 font-medium mt-1">{t('product.qualityControlDesc')}</p>
+                                <div className="mt-8 pt-8 border-t border-gray-50 text-center">
+                                    <h4 className="text-[8px] uppercase tracking-[0.3em] font-bold text-gray-300 mb-6">{t('product.securePayment')}</h4>
+                                    <div className="flex justify-center items-center gap-6 grayscale opacity-30">
+                                        <div className="h-3 w-8 relative"><Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" fill className="object-contain" /></div>
+                                        <div className="h-5 w-8 relative"><Image src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" /></div>
+                                        <div className="h-4 w-10 relative"><Image src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" fill className="object-contain" /></div>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Secure Payment */}
-                            <div className="pt-6 text-center">
-                                <h4 className="text-[9px] uppercase tracking-[0.3em] font-bold text-gray-300 mb-6">{t('product.securePayment')}</h4>
-                                <div className="flex justify-center items-center gap-8 grayscale opacity-30 hover:opacity-100 hover:grayscale-0 transition-all duration-700">
-                                    <div className="h-4 w-10 relative"><Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" fill className="object-contain" /></div>
-                                    <div className="h-6 w-10 relative"><Image src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" /></div>
-                                    <div className="h-5 w-12 relative"><Image src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" alt="Stripe" fill className="object-contain" /></div>
-                                    <div className="text-[9px] font-black border-2 border-gray-200 px-2 rounded-md text-gray-300 uppercase leading-none py-1">CB</div>
-                                </div>
-                            </div>
+                            </Accordion>
                         </div>
 
                         {/* Back to Shop */}
