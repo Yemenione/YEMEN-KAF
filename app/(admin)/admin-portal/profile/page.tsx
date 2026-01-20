@@ -1,11 +1,9 @@
 import { getAdminProfile } from "@/app/actions/profile";
-import { getFirebaseConfig } from "@/app/actions/settings";
 import ProfileForm from "./ProfileForm";
 import { redirect } from "next/navigation";
 
 export default async function AdminProfilePage() {
     const admin = await getAdminProfile();
-    const firebaseConfig = await getFirebaseConfig();
 
     if (!admin) {
         redirect('/admin-portal/login');
@@ -18,7 +16,7 @@ export default async function AdminProfilePage() {
                 <p className="text-gray-500">Manage your personal information and account settings.</p>
             </div>
 
-            <ProfileForm admin={admin} firebaseConfig={firebaseConfig} />
+            <ProfileForm admin={admin} />
         </div>
     );
 }
