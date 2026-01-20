@@ -4,9 +4,6 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Camera, Loader2, User } from "lucide-react";
-import { getFirebaseConfig } from "@/app/actions/settings";
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -21,11 +18,6 @@ export default function ProfilePage() {
     const [isUploading, setIsUploading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
-    const [firebaseConfig, setFirebaseConfig] = useState<object | null>(null);
-
-    useEffect(() => {
-        getFirebaseConfig().then(setFirebaseConfig);
-    }, []);
 
     useEffect(() => {
         if (user) {
@@ -52,23 +44,9 @@ export default function ProfilePage() {
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file || !firebaseConfig) return;
+        if (!file) return;
 
-        setIsUploading(true);
-        try {
-            const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-            const storage = getStorage(app);
-            const storageRef = ref(storage, `avatars/customer/${user?.id || 'unknown'}_${Date.now()}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(snapshot.ref);
-            setAvatar(url);
-            toast.success(t('profile.imageUpdated') || "Photo de profil mise à jour");
-        } catch (error) {
-            console.error(error);
-            toast.error("Erreur de téléchargement");
-        } finally {
-            setIsUploading(false);
-        }
+        toast.info(t('profile.uploadDisabled') || "L'upload d'image est temporairement désactivé.");
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -109,11 +87,7 @@ export default function ProfilePage() {
                         ) : (
                             <User size={64} className="text-gray-300" />
                         )}
-                        {isUploading && (
-                            <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-10 transition-opacity">
-                                <Loader2 className="animate-spin text-black" size={32} />
-                            </div>
-                        )}
+                        {/* Uploading indicator removed as part of Firebase removal */}
                     </div>
 
                     <label className="absolute bottom-0 right-0 p-2 bg-black text-white rounded-full cursor-pointer hover:scale-110 transition-transform shadow-lg group-hover:bg-[#5a4635]">

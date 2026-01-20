@@ -5,9 +5,6 @@ import { useRouter } from "next/navigation";
 import { Save, ArrowLeft, Upload, Loader2, Image as ImageIcon, Globe, EyeOff, X, Settings } from "lucide-react";
 import Link from "next/link";
 import { createBlogPost, updateBlogPost } from "@/app/actions/blog";
-import { getFirebaseConfig } from "@/app/actions/settings";
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -27,9 +24,6 @@ interface BlogFormProps {
 export default function BlogForm({ post }: BlogFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [firebaseConfig, setFirebaseConfig] = useState<any>(null);
 
     const [formData, setFormData] = useState({
         title: post?.title || "",
@@ -41,29 +35,12 @@ export default function BlogForm({ post }: BlogFormProps) {
         status: post?.status || "DRAFT",
     });
 
-    useEffect(() => {
-        getFirebaseConfig().then(setFirebaseConfig);
-    }, []);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file || !firebaseConfig) return;
+        if (!file) return;
 
-        setIsUploading(true);
-        try {
-            const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-            const storage = getStorage(app);
-            const storageRef = ref(storage, `blog/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(snapshot.ref);
-            setFormData({ ...formData, image: url });
-            toast.success("Image téléchargée");
-        } catch (error) {
-            console.error(error);
-            toast.error("Erreur téléchargement");
-        } finally {
-            setIsUploading(false);
-        }
+        toast.info("Le téléchargement d&apos;images est temporairement désactivé (migration en cours).");
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -241,11 +218,7 @@ export default function BlogForm({ post }: BlogFormProps) {
                                     <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                                 </label>
                             )}
-                            {isUploading && (
-                                <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/80 flex items-center justify-center z-20">
-                                    <Loader2 className="animate-spin text-[var(--coffee-brown)]" />
-                                </div>
-                            )}
+                            {/* Upload overlay removed as part of Firebase removal */}
                         </div>
                     </div>
 

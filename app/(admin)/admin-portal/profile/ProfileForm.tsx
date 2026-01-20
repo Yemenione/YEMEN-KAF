@@ -3,8 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Camera, Loader2 } from "lucide-react";
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { updateAdminAvatar } from "@/app/actions/profile";
 
 interface Admin {
@@ -15,21 +13,8 @@ interface Admin {
     avatar?: string | null;
 }
 
-interface FirebaseConfig {
-    apiKey: string;
-    authDomain?: string;
-    projectId?: string;
-    storageBucket?: string;
-    messagingSenderId?: string;
-    appId?: string;
-}
 
-interface ProfileFormProps {
-    admin: Admin;
-    firebaseConfig: FirebaseConfig | Record<string, string> | null;
-}
-
-export default function ProfileForm({ admin, firebaseConfig }: ProfileFormProps) {
+export default function ProfileForm({ admin }: { admin: Admin }) {
     const [uploading, setUploading] = useState(false);
     const [avatarUrl, setAvatarUrl] = useState(admin?.avatar || '/images/placeholder-user.jpg');
     const [message, setMessage] = useState("");
@@ -38,41 +23,7 @@ export default function ProfileForm({ admin, firebaseConfig }: ProfileFormProps)
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Check if config exists
-        if (!firebaseConfig || !firebaseConfig.apiKey) {
-            setMessage("Error: Firebase is not configured in Settings.");
-            return;
-        }
-
-        setUploading(true);
-        setMessage("");
-
-        try {
-            // Initialize Firebase App if not already
-            const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-            const storage = getStorage(app);
-
-            // Upload
-            const storageRef = ref(storage, `avatars/admin/${admin.id}/${file.name}-${Date.now()}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-
-            // Update Database
-            const result = await updateAdminAvatar(downloadURL);
-
-            if (result.success) {
-                setAvatarUrl(downloadURL);
-                setMessage("Avatar updated successfully!");
-            } else {
-                setMessage("Failed to update database.");
-            }
-
-        } catch (error) {
-            console.error(error);
-            setMessage("Upload failed: " + (error instanceof Error ? error.message : "Unknown error"));
-        } finally {
-            setUploading(false);
-        }
+        setMessage("L'upload d'avatar est temporairement désactivé (migration Firebase).");
     };
 
     return (
