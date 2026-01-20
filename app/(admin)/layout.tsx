@@ -15,6 +15,7 @@ const inter = Inter({
 
 // ... imports
 import { UIProvider } from "@/context/UIContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 export default function AdminRootLayout({
     children,
@@ -27,12 +28,14 @@ export default function AdminRootLayout({
                 <LanguageProvider>
                     <AuthProvider>
                         <SettingsProvider>
-                            <UIProvider>
-                                <AdminSidebar />
-                                <main className="flex-1 p-8 h-screen overflow-y-auto w-full">
-                                    {children}
-                                </main>
-                            </UIProvider>
+                            <ToastProvider>
+                                <UIProvider>
+                                    <AdminSidebar />
+                                    <main className="flex-1 p-8 h-screen overflow-y-auto w-full">
+                                        {children}
+                                    </main>
+                                </UIProvider>
+                            </ToastProvider>
                         </SettingsProvider>
                     </AuthProvider>
                 </LanguageProvider>

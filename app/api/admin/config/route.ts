@@ -54,7 +54,9 @@ export async function POST(req: NextRequest) {
                 'homepage_hero_products', 'homepage_featured_categories',
                 'homepage_flash_sale_product_ids', 'homepage_flash_sale_end_date',
                 'homepage_flash_sale_ends_soon_text', 'homepage_promo_grid',
-                'homepage_special_offers_ids', 'homepage_best_sellers_ids'
+                'homepage_special_offers_ids', 'homepage_best_sellers_ids',
+                'ramadan_mode_enabled', 'ramadan_title', 'ramadan_subtitle', 'ramadan_product_ids',
+                'menu_footer_links'
             ].includes(key);
 
             return prisma.storeConfig.upsert({

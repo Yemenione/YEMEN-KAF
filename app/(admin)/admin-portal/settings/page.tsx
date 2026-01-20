@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, Store, Mail, Phone, Facebook, Instagram, Image as ImageIcon, CreditCard, ShieldCheck } from 'lucide-react';
+import { Save, Store, Mail, Phone, Facebook, Instagram, Image as ImageIcon, CreditCard, ShieldCheck, Calendar, List } from 'lucide-react';
 import Image from 'next/image';
 
 interface ConfigMap {
@@ -63,6 +63,8 @@ export default function SettingsPage() {
         { id: 'theme', label: 'Theme & Logo', icon: ImageIcon },
         { id: 'payment', label: 'Payments', icon: CreditCard },
         { id: 'email', label: 'Email (Resend)', icon: ShieldCheck },
+        { id: 'seasonal', label: 'Seasonal / Ramadan', icon: Calendar },
+        { id: 'menus', label: 'Menus & Navigation', icon: List },
     ];
 
     return (
@@ -307,6 +309,90 @@ export default function SettingsPage() {
                                     className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
                                     placeholder="re_..."
                                 />
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'seasonal' && (
+                        <div className="space-y-6 animate-in fade-in duration-300">
+                            <div className="flex items-center justify-between border-b pb-4">
+                                <div>
+                                    <h3 className="text-lg font-medium">Ramadan Special Section</h3>
+                                    <p className="text-sm text-gray-500">Enable and configure the Ramadan offers section on the homepage.</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable Section</span>
+                                    <button
+                                        onClick={() => handleChange('ramadan_mode_enabled', settings['ramadan_mode_enabled'] === 'true' ? 'false' : 'true')}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings['ramadan_mode_enabled'] === 'true' ? 'bg-[var(--coffee-brown)]' : 'bg-gray-200'}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings['ramadan_mode_enabled'] === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Section Title</label>
+                                    <input
+                                        type="text"
+                                        value={settings['ramadan_title'] || ''}
+                                        onChange={(e) => handleChange('ramadan_title', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="Ramadan Kareem Specials"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subtitle</label>
+                                    <textarea
+                                        rows={2}
+                                        value={settings['ramadan_subtitle'] || ''}
+                                        onChange={(e) => handleChange('ramadan_subtitle', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="Discover our curated selection..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product IDs (JSON Array)</label>
+                                    <input
+                                        type="text"
+                                        value={settings['ramadan_product_ids'] || '[]'}
+                                        onChange={(e) => handleChange('ramadan_product_ids', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md font-mono text-sm dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="[1, 2, 3]"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Enter product IDs as a JSON array, e.g. <span className="font-mono">[12, 15, 22]</span>.
+                                        You can find IDs in the Products list.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'menus' && (
+                        <div className="space-y-6 animate-in fade-in duration-300">
+                            <div className="flex items-center justify-between border-b pb-4">
+                                <div>
+                                    <h3 className="text-lg font-medium">Footer Menu Links</h3>
+                                    <p className="text-sm text-gray-500">Manage the "Quick Links" section in the footer.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Links JSON (Label, Href)
+                                </label>
+                                <textarea
+                                    rows={10}
+                                    value={settings['menu_footer_links'] || '[]'}
+                                    onChange={(e) => handleChange('menu_footer_links', e.target.value)}
+                                    className="w-full px-4 py-2 border rounded-md font-mono text-sm dark:bg-zinc-800 dark:border-zinc-700"
+                                    placeholder='[{"label": "My Blog", "href": "/blog"}, {"label": "Shop", "href": "/shop"}]'
+                                />
+                                <p className="text-xs text-gray-500">
+                                    Format: <code className="bg-gray-100 px-1 rounded">[{`{"label": "Name", "href": "/url"}`}]</code>
+                                </p>
                             </div>
                         </div>
                     )}

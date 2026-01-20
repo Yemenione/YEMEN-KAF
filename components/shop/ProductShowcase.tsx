@@ -82,7 +82,7 @@ export default function ProductShowcase() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 md:gap-x-8 md:gap-y-16">
                     {products.length > 0 ? (
                         products.map((product) => (
                             <Link key={product.id} href={`/shop/${product.slug}`} className="block">

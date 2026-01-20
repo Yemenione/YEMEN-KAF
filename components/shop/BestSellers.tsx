@@ -126,7 +126,7 @@ export default function BestSellers() {
                                         €{Number(product.price).toFixed(2)}
                                     </span>
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                                        {Math.floor(Math.random() * 50) + 10} SOLD THIS WEEK
+                                        42 SOLD THIS WEEK
                                     </span>
                                 </div>
                             </div>

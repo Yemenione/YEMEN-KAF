@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, FileText, Globe, EyeOff, Calendar, Newspaper } from "lucide-react";
+import { Plus, Edit2, Trash2, FileText, Globe, EyeOff, Calendar, Newspaper, Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
@@ -78,6 +78,15 @@ export default function CMSPagesList() {
                         )}
                     >
                         <Newspaper size={16} /> Articles du Blog
+                    </Link>
+                    <Link
+                        href="/admin-portal/cms/menus"
+                        className={clsx(
+                            "px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+                            pathname === "/admin-portal/cms/menus" ? "bg-white dark:bg-zinc-700 text-[var(--coffee-brown)] dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+                        )}
+                    >
+                        <Menu size={16} /> Menus & Navigation
                     </Link>
                 </div>
             </div>

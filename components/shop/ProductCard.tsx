@@ -96,12 +96,12 @@ export default function ProductCard({ id, title, price, image, category }: Produ
             {/* Content (Outside the image for cleanliness) */}
             <div className="flex justify-between items-start px-2">
                 <div>
-                    <h3 className="text-xl font-serif text-black mb-1 group-hover:underline decoration-1 underline-offset-4">
+                    <h3 className="text-base md:text-xl font-serif text-black mb-1 group-hover:underline decoration-1 underline-offset-4 line-clamp-2">
                         {title}
                     </h3>
-                    <p className="text-xs text-gray-400 uppercase tracking-wider">Premium Selection</p>
+                    <p className="hidden md:block text-xs text-gray-400 uppercase tracking-wider">Premium Selection</p>
                 </div>
-                <span className="text-sm font-medium text-black">{price}</span>
+                <span className="text-sm md:text-base font-medium text-black whitespace-nowrap">{price}</span>
             </div>
         </div>
     );

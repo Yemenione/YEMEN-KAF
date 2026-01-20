@@ -91,6 +91,11 @@ export const translations = {
                 honey: { title: "Royal Sidr Collection", sub: "Rare & Potent" },
                 coffee: { title: "Haraz Mocha Special", sub: "Estate Grown" },
                 gifts: { title: "Luxury Gift Sets", sub: "Perfect for Ramadan" }
+            },
+            ramadan: {
+                title: "Ramadan Kareem Specials",
+                subtitle: "Discover our curated selection for the holy month. Traditional flavors and premium quality.",
+                premium: "Premium Selection"
             }
         },
         // Shop
@@ -677,6 +682,11 @@ export const translations = {
                 honey: { title: "Collection Sidr Royale", sub: "Rare & Puissant" },
                 coffee: { title: "Spécial Mocha Haraz", sub: "Culture en Domaine" },
                 gifts: { title: "Coffrets Cadeaux Luxe", sub: "Parfait pour le Ramadan" }
+            },
+            ramadan: {
+                title: "Spécial Ramadan Kareem",
+                subtitle: "Découvrez notre sélection pour le mois sacré. Saveurs traditionnelles et qualité premium.",
+                premium: "Sélection Premium"
             }
         },
         // Shop
@@ -1263,6 +1273,11 @@ export const translations = {
                 honey: { title: "مجموعة السدر الملكي", sub: "نادر وفعال" },
                 coffee: { title: "موكا حراز الخاصة", sub: "محصول مزارعنا" },
                 gifts: { title: "أطقم هدايا فاخرة", sub: "مثالية لشهر رمضان" }
+            },
+            ramadan: {
+                title: "عروض رمضان كريم",
+                subtitle: "اكتشف تشكيلتنا المختارة للشهر الفضيل. نكهات تقليدية وجودة عالية.",
+                premium: "تشكيلة فاخرة"
             }
         },
         // Shop

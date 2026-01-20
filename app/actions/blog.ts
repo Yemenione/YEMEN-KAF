@@ -27,6 +27,18 @@ export async function getAllBlogPosts() {
     }
 }
 
+export async function getPublishedBlogPosts() {
+    try {
+        return await prisma.blogPost.findMany({
+            where: { status: 'PUBLISHED' },
+            orderBy: { publishedAt: 'desc' }
+        });
+    } catch (error) {
+        console.error("Error fetching published blog posts:", error);
+        return [];
+    }
+}
+
 interface BlogPostInput {
     title: string;
     content: string;

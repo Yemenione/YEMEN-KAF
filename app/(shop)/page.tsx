@@ -1,4 +1,5 @@
 import { getFeaturedReviews } from "@/app/actions/reviews";
+import { getFeaturedCategories } from "@/app/actions/categories";
 import { getBlogPosts } from "@/app/actions/blog";
 import HomeClient from "./HomeClient";
 
@@ -6,9 +7,10 @@ import HomeClient from "./HomeClient";
 export const revalidate = 3600; // 1 hour
 
 export default async function Home() {
-  const [reviews, posts] = await Promise.all([
+  const [reviews, posts, categories] = await Promise.all([
     getFeaturedReviews(6),
-    getBlogPosts(3)
+    getBlogPosts(3),
+    getFeaturedCategories()
   ]);
 
   const formattedReviews = reviews.map(r => ({
@@ -29,5 +31,5 @@ export default async function Home() {
     category: p.category || "General"
   }));
 
-  return <HomeClient reviews={formattedReviews} posts={formattedPosts} />;
+  return <HomeClient reviews={formattedReviews} posts={formattedPosts} categories={categories} />;
 }

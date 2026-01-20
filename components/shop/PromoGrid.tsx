@@ -4,12 +4,27 @@ import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import { useSettings } from "@/context/SettingsContext";
 
-export default function PromoGrid() {
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    description?: string;
+    imageUrl?: string; // Note: DB schema has imageUrl, check casing
+}
+
+interface PromoGridProps {
+    categories?: any[]; // Using any to avoid strict type mismatch for now, ideally strictly typed
+}
+
+export default function PromoGrid({ categories }: PromoGridProps) {
     const { t } = useLanguage();
-    const { settings } = useSettings();
 
+    // Map categories to promo cards
+    // We want 3 specific cards. If we have categories, we use them.
+    // We'll style them cyclically with the existing color palettes.
+
+    // Fallback data if no categories provided (or while loading/server error)
     const defaultPromos = [
         {
             title: t('home.promo.honey.title') || "Royal Sidr Collection",
@@ -35,20 +50,18 @@ export default function PromoGrid() {
     ];
 
     let promos = defaultPromos;
-    if (settings.homepage_promo_grid) {
-        try {
-            const parsed = JSON.parse(settings.homepage_promo_grid);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                // Ensure tiles have images and links
-                promos = parsed.map((p, idx) => ({
-                    ...p,
-                    subtitle: p.sub || p.subtitle, // handle variations in key names
-                    color: idx === 0 ? "bg-amber-50" : idx === 1 ? "bg-stone-100" : "bg-gray-50"
-                }));
-            }
-        } catch (e) {
-            console.error("Failed to parse promo grid config", e);
-        }
+
+    if (categories && categories.length >= 3) {
+        // We have enough categories to replace the defaults
+        // We'll pick the first 3, or specific ones if we had logic for it.
+        // For now, simple mapping of first 3.
+        promos = categories.slice(0, 3).map((cat, idx) => ({
+            title: cat.name,
+            subtitle: t('home.categories.explore') || "Discover",
+            image: cat.imageUrl || cat.image_url || "/images/placeholder.jpg", // Handle casing from DB vs API
+            link: `/shop?category=${cat.slug}`,
+            color: idx === 0 ? "bg-amber-50" : idx === 1 ? "bg-stone-100" : "bg-gray-50"
+        }));
     }
 
     return (
@@ -74,11 +87,11 @@ export default function PromoGrid() {
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--coffee-brown)]/60">
                                 {promo.subtitle}
                             </span>
-                            <h3 className="text-2xl md:text-3xl font-serif text-[var(--coffee-brown)] leading-tight">
+                            <h3 className="text-2xl md:text-3xl font-serif text-[var(--coffee-brown)] leading-tight line-clamp-2">
                                 {promo.title}
                             </h3>
                             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[var(--honey-gold)] pt-2">
-                                {t('home.hero.cta') || "Shop Now"} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                {t('home.hero.cta') || "Voir la collection"} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                             </div>
                         </div>
                     </Link>

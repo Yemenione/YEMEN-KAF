@@ -92,19 +92,27 @@ export default function Footer() {
                 <div>
                     <h3 className="text-lg font-bold uppercase tracking-widest mb-6 text-[var(--coffee-brown)] text-xs">{t('footer.quickLinks')}</h3>
                     <ul className="space-y-4 text-sm text-[var(--coffee-brown)]/70">
-                        {settings.menu_footer_links ? (
-                            JSON.parse(settings.menu_footer_links).map((item: { href: string; label: string }, idx: number) => (
-                                <li key={idx}><Link href={item.href} className="hover:text-[var(--honey-gold)] transition-colors">{item.label}</Link></li>
-                            ))
-                        ) : (
-                            <>
-                                <li><Link href="/shop" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.shopAll')}</Link></li>
-                                <li><Link href="/our-story" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.ourStory')}</Link></li>
-                                <li><Link href="/the-farms" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.theFarms')}</Link></li>
-                                <li><Link href="/contact" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.contact')}</Link></li>
-                                <li><Link href="/track-order" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.trackOrder')}</Link></li>
-                            </>
-                        )}
+                        {(() => {
+                            if (!settings.menu_footer_links) return (
+                                <>
+                                    <li><Link href="/shop" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.shopAll')}</Link></li>
+                                    <li><Link href="/our-story" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.ourStory')}</Link></li>
+                                    <li><Link href="/the-farms" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.theFarms')}</Link></li>
+                                    <li><Link href="/contact" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.contact')}</Link></li>
+                                    <li><Link href="/track-order" className="hover:text-[var(--honey-gold)] transition-colors">{t('footer.trackOrder')}</Link></li>
+                                </>
+                            );
+
+                            try {
+                                const LINKS = JSON.parse(settings.menu_footer_links);
+                                if (!Array.isArray(LINKS)) return null;
+                                return LINKS.map((item: { href: string; label: string }, idx: number) => (
+                                    <li key={idx}><Link href={item.href} className="hover:text-[var(--honey-gold)] transition-colors">{item.label}</Link></li>
+                                ));
+                            } catch {
+                                return null;
+                            }
+                        })()}
                     </ul>
                 </div>
 

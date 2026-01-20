@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Home, Save, Loader2, X, LayoutTemplate, Zap, Star } from 'lucide-react';
+import { Home, Save, Loader2, X, LayoutTemplate, Zap, Star, Upload, Search, Plus, Check } from 'lucide-react';
 
 interface Product {
     id: number;
@@ -120,6 +120,38 @@ export default function HomepageManager() {
         const newGrid = [...promoGrid];
         newGrid[idx] = { ...newGrid[idx], [field]: value };
         setPromoGrid(newGrid);
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+        if (!e.target.files?.[0]) return;
+
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'promos');
+
+        // Optional: show some loading indicator for this specific tile
+        const btn = e.target.closest('label');
+        if (btn) btn.style.opacity = '0.5';
+
+        try {
+            const res = await fetch('/api/admin/media/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (data.path) {
+                updatePromo(idx, 'image', data.path);
+            } else {
+                alert('Upload failed: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Upload failed', error);
+            alert('Upload failed');
+        } finally {
+            if (btn) btn.style.opacity = '1';
+        }
     };
 
     if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin" /></div>;
@@ -246,7 +278,27 @@ export default function HomepageManager() {
                                 <input placeholder="Title" value={promo.title} onChange={(e) => updatePromo(idx, 'title', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
                                 <input placeholder="Subtitle" value={promo.sub} onChange={(e) => updatePromo(idx, 'sub', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
                                 <input placeholder="Link (e.g. /shop?cat=1)" value={promo.link} onChange={(e) => updatePromo(idx, 'link', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
-                                <input placeholder="Image URL" value={promo.image} onChange={(e) => updatePromo(idx, 'image', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
+
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-400 uppercase">Image Source</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            placeholder="Image URL or Upload"
+                                            value={promo.image}
+                                            onChange={(e) => updatePromo(idx, 'image', e.target.value)}
+                                            className="flex-1 p-2 text-sm border rounded-md"
+                                        />
+                                        <label className="cursor-pointer p-2 bg-white border border-gray-300 hover:bg-gray-50 rounded-md transition-colors shadow-sm" title="Upload Image">
+                                            <Upload className="w-4 h-4 text-gray-600" />
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={(e) => handleFileUpload(e, idx)}
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
                                 {promo.image && (
                                     <div className="h-20 w-full relative rounded-md overflow-hidden">
                                         <img src={promo.image} alt="Preview" className="object-cover h-full w-full" />
@@ -282,35 +334,95 @@ function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = fa
     isCategory?: boolean;
     max?: number;
 }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState("");
+
+    const available = all.filter(i => !items.includes(i.id));
+    const filtered = available.filter(i => i.name.toLowerCase().includes(search.toLowerCase()));
+
     return (
         <div className="space-y-4">
+            {/* Selected Items List */}
             <div className="space-y-2 min-h-[50px]">
                 {items.map(id => {
                     const item = all.find(i => i.id === id);
                     return (
-                        <div key={id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl hover:bg-gray-100 transition-colors">
-                            <span className="text-sm font-medium">{item?.name || `${isCategory ? 'Category' : 'Product'} #${id}`}</span>
-                            <button onClick={() => onRemove(id)} className="p-1 hover:text-red-500 rounded-lg hover:bg-red-50 transition-all">
+                        <div key={id} className="group flex items-center justify-between p-3 bg-white border border-gray-100 dark:bg-zinc-800/50 dark:border-zinc-700 rounded-xl hover:shadow-sm transition-all">
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500">
+                                    {isCategory ? 'C' : 'P'}
+                                </div>
+                                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                    {item?.name || `${isCategory ? 'Category' : 'Product'} #${id}`}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => onRemove(id)}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                            >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
                     );
                 })}
-                {items.length === 0 && <p className="text-sm text-gray-400 italic text-center py-4">Nothing selected.</p>}
+                {items.length === 0 && (
+                    <div className="text-center py-6 border-2 border-dashed border-gray-100 rounded-xl">
+                        <p className="text-sm text-gray-400 italic">No items selected.</p>
+                    </div>
+                )}
             </div>
 
+            {/* Add New Item Dropdown */}
             {(max === undefined || items.length < max) && (
-                <div className="pt-2">
-                    <select
-                        onChange={(e) => onAdd(Number(e.target.value))}
-                        value=""
-                        className="w-full p-3 border rounded-xl dark:bg-zinc-800 dark:border-zinc-700 text-sm focus:ring-2 ring-[var(--honey-gold)] outline-none appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_10px_center] bg-no-repeat"
-                    >
-                        <option value="" disabled>{placeholder}</option>
-                        {all.filter(i => !items.includes(i.id)).map(i => (
-                            <option key={i.id} value={i.id}>{i.name}</option>
-                        ))}
-                    </select>
+                <div className="relative">
+                    {!isOpen ? (
+                        <button
+                            onClick={() => setIsOpen(true)}
+                            className="w-full p-3 text-left border border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-50 rounded-xl transition-all flex justify-between items-center group"
+                        >
+                            <span className="text-gray-400 text-sm group-hover:text-gray-600">{placeholder}</span>
+                            <Plus className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                        </button>
+                    ) : (
+                        <div className="absolute top-0 left-0 w-full z-50 border rounded-xl p-3 bg-white dark:bg-zinc-800 shadow-2xl animate-in fade-in zoom-in-95 duration-200 ring-1 ring-black/5">
+                            <div className="flex items-center gap-2 border-b border-gray-100 dark:border-zinc-700 pb-2 mb-2 px-1">
+                                <Search className="w-4 h-4 text-gray-400" />
+                                <input
+                                    autoFocus
+                                    placeholder={available.length > 0 ? "Search..." : "No items available"}
+                                    disabled={available.length === 0}
+                                    className="flex-1 outline-none text-sm bg-transparent dark:text-white placeholder:text-gray-300"
+                                    value={search}
+                                    onChange={e => setSearch(e.target.value)}
+                                />
+                                <button onClick={() => { setIsOpen(false); setSearch(""); }} className="hover:bg-gray-100 rounded-full p-1"><X className="w-4 h-4 text-gray-500" /></button>
+                            </div>
+
+                            <div className="max-h-[200px] overflow-y-auto space-y-1 custom-scrollbar">
+                                {filtered.length > 0 ? (
+                                    filtered.map(item => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => { onAdd(item.id); setIsOpen(false); setSearch(""); }}
+                                            className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-zinc-700 rounded-lg text-sm flex items-center justify-between group"
+                                        >
+                                            <span className="text-gray-700 dark:text-gray-200">{item.name}</span>
+                                            <Plus className="w-3 h-3 opacity-0 group-hover:opacity-100 text-gray-400" />
+                                        </button>
+                                    ))
+                                ) : (
+                                    <p className="text-xs text-gray-400 p-2 text-center">
+                                        {available.length === 0 ? "All items selected" : "No results found"}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Backdrop to close when clicking outside */}
+                    {isOpen && (
+                        <div className="fixed inset-0 z-40" onClick={() => { setIsOpen(false); setSearch(""); }} />
+                    )}
                 </div>
             )}
         </div>

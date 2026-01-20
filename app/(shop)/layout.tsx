@@ -11,6 +11,8 @@ import WishlistDrawer from "@/components/wishlist/WishlistDrawer";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import NewsletterPopup from "@/components/NewsletterPopup";
+import ScrollToTop from "@/components/ScrollToTop";
 import { SettingsProvider } from "@/context/SettingsContext";
 import "../globals.css";
 
@@ -29,7 +31,7 @@ export default function ShopLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)] pb-32 lg:pb-0 safe-area-pb`}>
+      <body suppressHydrationWarning className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)] pb-32 lg:pb-0 safe-area-pb`}>
         <SettingsProvider>
           <LanguageProvider>
             <ToastProvider>
@@ -42,7 +44,9 @@ export default function ShopLayout({
                     <CartDrawer />
                     <WishlistDrawer />
                     <MobileBottomNav />
+                    <ScrollToTop />
                     <CookieBanner />
+                    <NewsletterPopup />
                   </WishlistProvider>
                 </CartProvider>
               </AuthProvider>

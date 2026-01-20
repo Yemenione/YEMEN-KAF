@@ -12,6 +12,7 @@ import Newsletter from "@/components/shop/Newsletter";
 import FlashSale from "@/components/shop/FlashSale";
 import RecentlyViewed from "@/components/shop/RecentlyViewed";
 import PromoGrid from "@/components/shop/PromoGrid";
+import RamadanSection from "@/components/shop/RamadanSection";
 import { Truck, ShieldCheck, Star } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -36,9 +37,10 @@ interface Article {
 interface HomeClientProps {
     reviews: Review[];
     posts: Article[];
+    categories: any[]; // Using any[] temporarily for speed, ideally import Category type
 }
 
-export default function HomeClient({ reviews, posts }: HomeClientProps) {
+export default function HomeClient({ reviews, posts, categories }: HomeClientProps) {
     const { t } = useLanguage();
 
     return (
@@ -50,7 +52,10 @@ export default function HomeClient({ reviews, posts }: HomeClientProps) {
             <HeroSlider />
 
             {/* Promo Grid - Amazon Style v3 */}
-            <PromoGrid />
+            <PromoGrid categories={categories} />
+
+            {/* Ramadan Special Section */}
+            <RamadanSection />
 
             {/* Categories Grid */}
             <CategoriesSection />

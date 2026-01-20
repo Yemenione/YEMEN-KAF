@@ -296,7 +296,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             <div className="max-w-7xl mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                     {/* Product Images */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
                         <div className="hidden lg:block relative aspect-square bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
                             <Image src={mainImage} alt={product.name} fill className="object-cover" priority sizes="(min-width: 1024px) 50vw, 100vw" />
                             {discountPercentage && (
