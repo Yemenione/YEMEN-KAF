@@ -5,7 +5,7 @@ import { jwtVerify } from 'jose';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const path = request.nextUrl.pathname;
 
     // 1. Protection for Admin Routes
