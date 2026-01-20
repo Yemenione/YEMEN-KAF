@@ -11,7 +11,7 @@ export default function SearchWithSuggestions() {
     const { t } = useLanguage();
     const router = useRouter();
     const [query, setQuery] = useState("");
-    const [suggestions, setSuggestions] = useState<{ id: number; name: string; slug: string; price: string | number; images?: string; image_url?: string }[]>([]);
+    const [suggestions, setSuggestions] = useState<{ id: number; name: string; slug: string; price: string | number; images?: string | string[]; image_url?: string }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [showInput, setShowInput] = useState(false);
@@ -94,19 +94,25 @@ export default function SearchWithSuggestions() {
                                 let displayImage = '/images/honey-jar.jpg';
                                 try {
                                     if (item.images) {
-                                        if (item.images.startsWith('http') || item.images.startsWith('/')) {
-                                            displayImage = item.images;
-                                        } else {
-                                            const parsed = JSON.parse(item.images);
-                                            if (Array.isArray(parsed) && parsed.length > 0) displayImage = parsed[0];
+                                        if (Array.isArray(item.images)) {
+                                            displayImage = item.images.length > 0 ? item.images[0] : '/images/honey-jar.jpg';
+                                        } else if (typeof item.images === 'string') {
+                                            if (item.images.startsWith('http') || item.images.startsWith('/')) {
+                                                displayImage = item.images;
+                                            } else {
+                                                const parsed = JSON.parse(item.images);
+                                                if (Array.isArray(parsed) && parsed.length > 0) displayImage = parsed[0];
+                                            }
                                         }
                                     } else if (item.image_url) {
                                         displayImage = item.image_url;
                                     }
-                                    if (item.images) displayImage = item.images;
                                 } catch {
-                                    if (item.images) displayImage = item.images;
+                                    if (typeof item.images === 'string' && item.images.length > 0) displayImage = item.images;
                                 }
+
+                                // Final safety check
+                                if (!displayImage || displayImage === "") displayImage = '/images/honey-jar.jpg';
 
                                 return (
                                     <li key={item.id} className="border-b border-gray-50 last:border-0">

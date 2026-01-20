@@ -75,7 +75,7 @@ interface MegaMenuProduct {
     name: string;
     slug: string;
     price: number | string;
-    images?: string;
+    images?: string | string[]; // Can be JSON string or array of URLs
 }
 
 export default function Navbar() {
@@ -89,22 +89,32 @@ export default function Navbar() {
     const { wishlistCount, openWishlist } = useWishlist();
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
     const { settings } = useSettings();
-    const { t, isRTL } = useLanguage();
+    const { t, isRTL, locale } = useLanguage();
+
+    const [categories, setCategories] = useState<any[]>([]);
 
     useEffect(() => {
-        const fetchMegaMenuProducts = async () => {
+        const fetchData = async () => {
             try {
-                const res = await fetch('/api/products?limit=3');
-                if (res.ok) {
-                    const data = await res.json();
+                // Fetch Products
+                const resProducts = await fetch(`/api/products?limit=3&lang=${locale}`);
+                if (resProducts.ok) {
+                    const data = await resProducts.json();
                     setMegaMenuItems(data.products || []);
                 }
+
+                // Fetch Categories
+                const resCats = await fetch(`/api/categories?lang=${locale}`);
+                if (resCats.ok) {
+                    const data = await resCats.json();
+                    setCategories(data.categories || []);
+                }
             } catch {
-                console.error("Failed to fetch mega menu products");
+                console.error("Failed to fetch nav data");
             }
         };
-        fetchMegaMenuProducts();
-    }, []);
+        fetchData();
+    }, [locale]);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -251,9 +261,13 @@ export default function Navbar() {
                                 <div className="w-10 h-0.5 bg-[var(--honey-gold)]"></div>
                                 <ul className="space-y-3.5 text-sm">
                                     <li><Link href="/shop" className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">{t("nav.shopAll") || "Shop All"}</Link></li>
-                                    <li><Link href="/shop?category=honey" className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">{t('footer.honey')}</Link></li>
-                                    <li><Link href="/shop?category=coffee" className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">{t('footer.coffee')}</Link></li>
-                                    <li><Link href="/shop?category=gifts" className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">{t('footer.gifts')}</Link></li>
+                                    {categories.map((cat) => (
+                                        <li key={cat.id}>
+                                            <Link href={`/shop?category=${cat.id}`} className="block text-gray-500 hover:text-[var(--coffee-brown)] hover:translate-x-1 rtl:hover:-translate-x-1 transition-all duration-300">
+                                                {cat.name}
+                                            </Link>
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
 
@@ -263,16 +277,23 @@ export default function Navbar() {
                                     let displayImage = '/images/honey-jar.jpg';
                                     try {
                                         if (item.images) {
-                                            if (item.images.startsWith('http') || item.images.startsWith('/')) {
-                                                displayImage = item.images;
-                                            } else {
-                                                const parsed = JSON.parse(item.images);
-                                                if (Array.isArray(parsed) && parsed.length > 0) displayImage = parsed[0];
+                                            if (Array.isArray(item.images)) {
+                                                displayImage = item.images.length > 0 ? item.images[0] : '/images/honey-jar.jpg';
+                                            } else if (typeof item.images === 'string') {
+                                                if (item.images.startsWith('http') || item.images.startsWith('/')) {
+                                                    displayImage = item.images;
+                                                } else {
+                                                    const parsed = JSON.parse(item.images);
+                                                    if (Array.isArray(parsed) && parsed.length > 0) displayImage = parsed[0];
+                                                }
                                             }
                                         }
                                     } catch {
-                                        if (item.images) displayImage = item.images;
+                                        if (typeof item.images === 'string' && item.images.length > 0) displayImage = item.images;
                                     }
+
+                                    // Final safety check to avoid passing empty string to Next Image
+                                    if (!displayImage) displayImage = '/images/honey-jar.jpg';
 
                                     return (
                                         <Link key={item.id} href={`/shop/${item.slug}`} className="group col-span-1 block text-center" onClick={() => setIsMegaMenuOpen(false)}>

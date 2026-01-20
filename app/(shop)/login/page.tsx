@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function LoginPage() {
-    const { login, loginWithGoogle } = useAuth();
+    const { login } = useAuth();
     const { t } = useLanguage();
     const router = useRouter();
     const [email, setEmail] = useState("");
@@ -55,30 +54,6 @@ export default function LoginPage() {
                     )}
 
                     <div className="space-y-4">
-                        <button
-                            type="button"
-                            onClick={async () => {
-                                setIsLoading(true);
-                                const result = await loginWithGoogle();
-                                if (result.success) {
-                                    router.push('/account');
-                                } else {
-                                    setError(result.error || 'Google Sign In Failed');
-                                    setIsLoading(false);
-                                }
-                            }}
-                            className="w-full py-4 border border-black/10 text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
-                        >
-                            <Image src="https://www.google.com/favicon.ico" alt="Google" width={16} height={16} className="w-4 h-4" />
-                            {t('auth.continueWithGoogle') || "Continue with Google"}
-                        </button>
-
-                        <div className="relative flex items-center py-2">
-                            <div className="flex-grow border-t border-gray-200"></div>
-                            <span className="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-widest">Or</span>
-                            <div className="flex-grow border-t border-gray-200"></div>
-                        </div>
-
                         <div className="space-y-2">
                             <label className="text-xs uppercase tracking-wider text-black/60">{t('auth.email')}</label>
                             <input
@@ -116,8 +91,6 @@ export default function LoginPage() {
                     </button>
                 </form>
 
-                <div className="absolute inset-0 bg-black/60 z-10" />
-                {/* Footer */}
                 <div className="text-sm text-black/60">
                     <p>{t('auth.noAccount')} <Link href="/register" className="text-black font-bold border-b border-black/20 hover:border-black transition-colors">{t('auth.createOne')}</Link></p>
                 </div>

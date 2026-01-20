@@ -9,7 +9,7 @@ interface Product {
     name: string;
     description: string;
     price: string | number;
-    images?: string; // JSON string
+    images?: string | string[]; // Can be JSON string or array of URLs
     slug: string;
 }
 
@@ -17,13 +17,18 @@ export default function SpecialOffers() {
     const [offers, setOffers] = useState<Product[]>([]);
     const { t } = useLanguage();
 
-    // Helper to extract main image from JSON
+    // Helper to extract main image from JSON or Array
     const getMainImage = (product: Product): string => {
         try {
             if (!product.images) return '/images/honey-jar.jpg';
 
+            // If it's already an array, return the first item
+            if (Array.isArray(product.images)) {
+                return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
+            }
+
             // Check if it's already a clean URL (legacy/csv import support)
-            if (product.images.startsWith('http') || product.images.startsWith('/')) {
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
 
@@ -33,7 +38,7 @@ export default function SpecialOffers() {
             }
         } catch {
             // Fallback for non-JSON strings
-            if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
         }

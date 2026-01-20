@@ -1,18 +1,32 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/mysql';
+import { prisma } from '@/lib/prisma';
 
-import { RowDataPacket } from 'mysql2';
-
-export async function GET() {
+export async function GET(req: Request) {
     try {
-        const [categories] = await pool.execute<RowDataPacket[]>(
-            `SELECT id, name, slug, description, image_url
-            FROM categories
-            WHERE is_active = 1
-            ORDER BY display_order ASC, name ASC`
-        );
+        const { searchParams } = new URL(req.url);
 
-        return NextResponse.json({ categories });
+        // Fetch from Prisma
+        const categories = await prisma.category.findMany({
+            where: {
+                isActive: true
+            },
+            orderBy: {
+                displayOrder: 'asc'
+            },
+            take: 100 // Limit results
+        });
+
+        // Normalize data structure for frontend
+        const normalizedCategories = categories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            description: c.description,
+            image_url: c.imageUrl,
+            count: 0 // Count might be added later with aggregations if needed
+        }));
+
+        return NextResponse.json({ categories: normalizedCategories });
 
     } catch (error) {
         console.error('Categories fetch error:', error);

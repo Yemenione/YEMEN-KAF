@@ -9,7 +9,7 @@ interface Product {
     name: string;
     description: string;
     price: string | number;
-    images?: string;
+    images?: string | string[]; // Can be JSON string or array of URLs
     slug: string;
 }
 
@@ -17,18 +17,28 @@ export default function BestSellers() {
     const [products, setProducts] = useState<Product[]>([]);
     const { t } = useLanguage();
 
+    // Helper to extract main image from JSON or Array
     const getMainImage = (product: Product): string => {
         try {
             if (!product.images) return '/images/honey-jar.jpg';
-            if (product.images.startsWith('http') || product.images.startsWith('/')) {
+
+            // If it's already an array, return the first item
+            if (Array.isArray(product.images)) {
+                return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
+            }
+
+            // Check if it's already a clean URL (legacy/csv import support)
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
-            const parsed = JSON.parse(product.images);
+
+            const parsed = JSON.parse(product.images as string);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 return parsed[0];
             }
         } catch {
-            if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
+            // Fallback for non-JSON strings
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
         }

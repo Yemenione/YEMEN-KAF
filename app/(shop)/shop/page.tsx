@@ -36,7 +36,7 @@ import { Suspense } from "react";
 // ... (interfaces remain)
 
 function ShopContent() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const { addToCart } = useCart();
     const searchParams = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
@@ -74,31 +74,45 @@ function ShopContent() {
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
-            // Construct params from state + existing search params (search query)
             const currentParams = new URLSearchParams(searchParams.toString());
 
+            const params: Record<string, string | number> = {
+                per_page: 20,
+                // locale needs to be accessed from hook
+                lang: locale || 'en'
+            };
+
             if (selectedCategory !== 'all') {
-                currentParams.set('category', selectedCategory);
-            } else {
-                currentParams.delete('category');
+                params.category = selectedCategory; // Woo uses ID or slug depending on setup, usually ID
             }
 
-            // Add sort and filter params
-            currentParams.set('sort', sortBy);
-            if (minPrice) currentParams.set('minPrice', minPrice);
-            if (maxPrice) currentParams.set('maxPrice', maxPrice);
+            // Maps sort options
+            if (sortBy === 'price_asc') {
+                params.orderby = 'price';
+                params.order = 'asc';
+            } else if (sortBy === 'price_desc') {
+                params.orderby = 'price';
+                params.order = 'desc';
+            } else {
+                params.orderby = 'date';
+                params.order = 'desc';
+            }
 
-            const res = await fetch(`/api/products?${currentParams.toString()}`);
+            if (minPrice) params.min_price = minPrice;
+            if (maxPrice) params.max_price = maxPrice;
+
+            // Call internal API which wraps Woo Client
+            const res = await fetch(`/api/products?${new URLSearchParams(params as Record<string, string>).toString()}`);
             if (res.ok) {
                 const data = await res.json();
-                setProducts(data.products);
+                setProducts(data.products || []);
             }
         } catch (err) {
             console.error('Failed to fetch products', err);
         } finally {
             setIsLoading(false);
         }
-    }, [searchParams, selectedCategory, sortBy, minPrice, maxPrice]);
+    }, [searchParams, selectedCategory, sortBy, minPrice, maxPrice, locale, t]);
 
     // Read URL query params on mount or change
     useEffect(() => {

@@ -22,7 +22,6 @@ import {
     Menu,
     Truck,
     CreditCard,
-    ShieldCheck,
     ScrollText,
     User,
     Newspaper,
@@ -81,7 +80,6 @@ export default function AdminSidebar() {
                 { name: t('admin.sidebar.items.shipping') || 'Expédition', href: '/admin-portal/settings/shipping', icon: Truck },
                 { name: t('admin.sidebar.items.payments') || 'Paiements', href: '/admin-portal/settings/payments', icon: CreditCard },
                 { name: 'Configuration Stripe', href: '/admin-portal/settings/stripe', icon: Key },
-                { name: 'Configuration Firebase', href: '/admin-portal/settings/firebase', icon: ShieldCheck },
                 { name: t('admin.sidebar.items.team') || 'Équipe', href: '/admin-portal/settings/admins', icon: Users },
                 { name: t('admin.sidebar.items.systemLogs') || 'Logs Système', href: '/admin-portal/settings/logs', icon: ScrollText },
             ]

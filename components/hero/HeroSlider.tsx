@@ -13,33 +13,38 @@ interface Product {
     name: string;
     description: string;
     slug: string;
-    images?: string; // JSON string
-    image_url: string; // Keep for legacy if needed, or remove if fully deprecated
+    images?: string | string[]; // Can be JSON string or array of URLs
+    image_url: string;
 }
 
 export default function HeroSlider() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [slides, setSlides] = useState<Product[]>([]);
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const { settings } = useSettings();
 
-    // Helper to extract main image from JSON
+    // Helper to extract main image from JSON or Array
     const getMainImage = (product: Product): string => {
         try {
             if (!product.images) return product.image_url || '/images/honey-jar.jpg';
 
+            // If it's already an array, return the first item
+            if (Array.isArray(product.images)) {
+                return product.images.length > 0 ? product.images[0] : (product.image_url || '/images/honey-jar.jpg');
+            }
+
             // Check if it's already a clean URL (legacy/csv import support)
-            if (product.images.startsWith('http') || product.images.startsWith('/')) {
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
 
-            const parsed = JSON.parse(product.images);
+            const parsed = JSON.parse(product.images as string);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 return parsed[0];
             }
         } catch {
             // Fallback for non-JSON strings
-            if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
         }
@@ -59,7 +64,8 @@ export default function HeroSlider() {
                 }
 
                 // Fetch featured/newest products for the slider
-                const res = await fetch(url);
+                const separator = url.includes('?') ? '&' : '?';
+                const res = await fetch(`${url}${separator}lang=${locale || 'en'}`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data.products && data.products.length > 0) {

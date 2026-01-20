@@ -22,7 +22,7 @@ interface Product {
     compare_at_price?: number | null;
     cost_price?: number;
     stock_quantity: number;
-    images: string; // JSON string in DB
+    images: string | string[]; // Can be JSON string or array of URLs
     category_id: number;
     brand_id: number;
     tax_rule_id: number;
@@ -119,11 +119,17 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             let images: string[] = [];
             try {
                 if (initialData.images) {
-                    const parsed = JSON.parse(initialData.images);
-                    images = Array.isArray(parsed) ? parsed : [initialData.images];
+                    if (Array.isArray(initialData.images)) {
+                        images = initialData.images;
+                    } else {
+                        const parsed = JSON.parse(initialData.images as string);
+                        images = Array.isArray(parsed) ? parsed : [initialData.images as string];
+                    }
                 }
             } catch {
-                if (initialData.images) images = [initialData.images];
+                if (initialData.images && typeof initialData.images === 'string') {
+                    images = [initialData.images];
+                }
             }
 
             setFormData({

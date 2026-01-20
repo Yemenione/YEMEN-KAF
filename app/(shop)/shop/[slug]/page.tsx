@@ -7,16 +7,11 @@ import { prisma } from '@/lib/prisma';
 
 async function getProduct(slug: string) {
     try {
-        const product = await prisma.product.findFirst({
-            where: {
-                slug: slug,
-                isActive: true
-            },
+        const product = await prisma.product.findUnique({
+            where: { slug, isActive: true },
             include: {
                 category: true,
-                taxRule: true,
                 variants: {
-                    where: { isActive: true },
                     include: {
                         attributeValues: {
                             include: {
@@ -34,16 +29,18 @@ async function getProduct(slug: string) {
 
         if (!product) return null;
 
+        // Map Prisma product to the shape expected by components
         return {
             id: product.id,
             name: product.name,
             slug: product.slug,
-            sku: product.sku,
+            sku: product.sku || '',
             price: Number(product.price),
             compare_at_price: product.compareAtPrice ? Number(product.compareAtPrice) : null,
             compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
-            stock_quantity: product.stockQuantity,
+            stock_quantity: product.stockQuantity || 0,
             images: product.images,
+            image_url: Array.isArray(product.images) ? product.images[0] : (typeof product.images === 'string' && product.images.startsWith('[') ? JSON.parse(product.images)[0] : product.images),
             category_name: product.category?.name || 'Uncategorized',
             description: product.description || '',
             weight: product.weight ? Number(product.weight) : 0.5,
@@ -52,10 +49,10 @@ async function getProduct(slug: string) {
             depth: product.depth ? Number(product.depth) : null,
             costPrice: product.costPrice ? Number(product.costPrice) : null,
             ecotax: product.ecotax ? Number(product.ecotax) : null,
-            origin_country: product.originCountry || "Yemen",
-            taxRate: product.taxRule?.rate ? Number(product.taxRule.rate) : 0,
+            origin_country: "Yemen",
+            taxRate: 0,
             category_slug: product.category?.slug,
-            categoryId: product.categoryId,
+            categoryId: product.category?.id,
             variants: product.variants.map(v => ({
                 id: v.id,
                 name: v.name,
@@ -63,16 +60,17 @@ async function getProduct(slug: string) {
                 price: Number(v.price),
                 compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : null,
                 stock: v.stock,
-                weight: v.weight ? Number(v.weight) : null,
                 images: v.images,
                 attributes: v.attributeValues.map(av => ({
-                    name: av.attributeValue.attribute.name,
-                    value: av.attributeValue.name
+                    id: av.id,
+                    attributeId: av.attributeValue.attributeId,
+                    value: av.attributeValue.name,
+                    name: av.attributeValue.attribute.name
                 }))
             }))
         };
     } catch (error) {
-        console.error("Error fetching product:", error);
+        console.error("Error fetching product from Prisma:", error);
         return null;
     }
 }

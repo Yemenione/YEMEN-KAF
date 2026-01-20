@@ -8,7 +8,7 @@ import { ArrowRight } from "lucide-react";
 export default function OurStoryPage() {
     const { t } = useLanguage();
 
-    // Helper to get array from translations
+    // Helper to get array from translations (Fallback)
     interface StoryStep { title: string; desc: string; }
     const steps = (t('story.steps') as unknown) as StoryStep[];
 

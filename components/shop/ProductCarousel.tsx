@@ -11,7 +11,7 @@ interface Product {
     price: number;
     compare_at_price?: number | null;
     slug: string;
-    images?: string | null;
+    images?: string | string[] | null; // Can be JSON string or array of URLs
     category_name?: string;
 }
 
@@ -36,12 +36,22 @@ export default function ProductCarousel({ title, products }: ProductCarouselProp
     const getMainImage = (product: Product): string => {
         try {
             if (!product.images) return '/images/honey-jar.jpg';
-            if (product.images.startsWith('http') || product.images.startsWith('/')) return product.images;
-            const parsed = JSON.parse(product.images);
+
+            // If it's already an array, return the first item
+            if (Array.isArray(product.images)) {
+                return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
+            }
+
+            // Check if it's already a clean URL (legacy/csv import support)
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
+                return product.images;
+            }
+
+            const parsed = JSON.parse(product.images as string);
             if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
-            return product.images;
+            return typeof product.images === 'string' ? product.images : '/images/honey-jar.jpg';
         } catch {
-            return product.images || '/images/honey-jar.jpg';
+            return (typeof product.images === 'string' ? product.images : '') || '/images/honey-jar.jpg';
         }
     };
 

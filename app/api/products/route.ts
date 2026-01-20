@@ -1,98 +1,73 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/mysql';
-import { verifyAdmin } from '@/lib/admin-auth';
 import { prisma } from '@/lib/prisma';
-import { RowDataPacket } from 'mysql2';
 import { Prisma } from '@prisma/client';
-
-interface ProductRow extends RowDataPacket {
-    id: number;
-    name: string;
-    description: string;
-    price: string;
-    category_name: string;
-    category_slug: string;
-    stock_quantity: number;
-    created_at: Date;
-    is_active: number;
-}
+import { verifyAdmin } from '@/lib/admin-auth';
 
 export async function GET(req: Request) {
     try {
-        const { searchParams } = new URL(req.url); // Restored logic starts here
-        const category = searchParams.get('category');
-        const limit = parseInt(searchParams.get('limit') || '50');
-        const offset = parseInt(searchParams.get('offset') || '0');
-        const sort = searchParams.get('sort') || 'newest';
-        const minPrice = searchParams.get('minPrice');
-        const maxPrice = searchParams.get('maxPrice');
+        const { searchParams } = new URL(req.url);
 
-        let query = `
-            SELECT 
-                p.*,
-                c.name as category_name,
-                c.slug as category_slug
-            FROM products p
-            LEFT JOIN categories c ON p.category_id = c.id
-            WHERE p.is_active = 1
-        `;
+        const limit = parseInt(searchParams.get('limit') || '20');
+        const page = parseInt(searchParams.get('page') || '1');
+        const search = searchParams.get('search') || undefined;
+        const categoryId = searchParams.get('category');
+        const sort = searchParams.get('sort');
+        const minPrice = searchParams.get('min_price');
+        const maxPrice = searchParams.get('max_price');
 
-        const params: (string | number)[] = [];
+        // Build Prisma query
+        const where: Prisma.ProductWhereInput = {
+            isActive: true,
+            ...(search && {
+                OR: [
+                    { name: { contains: search } },
+                    { description: { contains: search } }
+                ]
+            }),
+            ...(categoryId && { categoryId: parseInt(categoryId) }),
+            ...(minPrice && { price: { gte: parseFloat(minPrice) } }),
+            ...(maxPrice && { price: { lte: parseFloat(maxPrice) } })
+        };
 
-        if (category && category !== 'all') {
-            query += ` AND c.slug = ?`;
-            params.push(category);
-        }
+        let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+        if (sort === 'price_asc') orderBy = { price: 'asc' };
+        else if (sort === 'price_desc') orderBy = { price: 'desc' };
 
-        const search = searchParams.get('search');
-        if (search) {
-            query += ` AND (p.name LIKE ? OR p.description LIKE ?)`;
-            params.push(`%${search}%`, `%${search}%`);
-        }
+        const products = await prisma.product.findMany({
+            where,
+            orderBy,
+            skip: (page - 1) * limit,
+            take: limit,
+            include: {
+                category: true
+            }
+        });
 
-        // Price Filtering
-        if (minPrice) {
-            query += ` AND p.price >= ?`;
-            params.push(minPrice);
-        }
-        if (maxPrice) {
-            query += ` AND p.price <= ?`;
-            params.push(maxPrice);
-        }
+        // Normalize data structure for frontend
+        const normalizedProducts = products.map((p) => {
+            let imageList: string[] = [];
+            try {
+                imageList = p.images ? JSON.parse(p.images) : [];
+            } catch {
+                imageList = p.images ? [p.images] : [];
+            }
 
-        // Stock Filtering
-        const inStock = searchParams.get('inStock');
-        if (inStock === 'true') {
-            query += ` AND p.stock_quantity > 0`;
-        }
+            return {
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                price: p.price.toString(),
+                regular_price: p.compareAtPrice ? p.compareAtPrice.toString() : p.price.toString(),
+                sale_price: p.price.toString(),
+                description: p.description,
+                images: imageList,
+                category_name: p.category?.name || 'Uncategorized',
+                stock_quantity: p.stockQuantity,
+                in_stock: p.stockQuantity > 0
+            };
+        });
 
-        // Sorting
-        switch (sort) {
-            case 'price-low':
-                query += ` ORDER BY p.price ASC`;
-                break;
-            case 'price-high':
-                query += ` ORDER BY p.price DESC`;
-                break;
-            case 'name-asc':
-                query += ` ORDER BY p.name ASC`;
-                break;
-            case 'name-desc':
-                query += ` ORDER BY p.name DESC`;
-                break;
-            case 'newest':
-            default:
-                query += ` ORDER BY p.created_at DESC`;
-                break;
-        }
-
-        query += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset);
-
-        const [products] = await pool.execute<ProductRow[]>(query, params);
-
-        return NextResponse.json({ products });
-
+        return NextResponse.json({ products: normalizedProducts });
 
     } catch (error) {
         console.error('Products fetch error:', error);
@@ -147,11 +122,11 @@ export async function POST(req: Request) {
             .replace(/[-\s]+/g, '-');
 
         if (!finalSlug || finalSlug === '-') {
-            finalSlug = `product-${Date.now()}`;
+            finalSlug = `product - ${Date.now()} `;
         }
 
         // Generate SKU if not provided
-        const finalSku = sku || `YEM-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+        const finalSku = sku || `YEM - ${Math.random().toString(36).substring(2, 7).toUpperCase()} -${Date.now().toString().slice(-4)} `;
 
         // Use Prisma Transaction to create Product and potentially Variants
         // We import prisma from lib (needs to be added to imports)
@@ -191,7 +166,7 @@ export async function POST(req: Request) {
             // Handle Variants Creation
             if (variants && Array.isArray(variants) && variants.length > 0) {
                 for (const variant of variants) {
-                    const variantSku = variant.sku || `${finalSku}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;
+                    const variantSku = variant.sku || `${finalSku} -${Math.random().toString(36).substring(2, 5).toUpperCase()} `;
 
                     const newVariant = await tx.productVariant.create({
                         data: {

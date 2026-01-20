@@ -13,7 +13,7 @@ interface Product {
     category_name: string;
     stock_quantity: number;
     is_active: boolean;
-    images: string;
+    images: string | string[]; // Can be JSON string or array of URLs
 }
 
 export default function AdminProductsPage() {
@@ -104,12 +104,18 @@ export default function AdminProductsPage() {
                                         <Image
                                             src={(() => {
                                                 try {
-                                                    const parsed = JSON.parse(product.images);
+                                                    if (!product.images) return '/placeholder.png';
+                                                    if (Array.isArray(product.images)) {
+                                                        return product.images.length > 0 ? product.images[0] : '/placeholder.png';
+                                                    }
+                                                    if (typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http'))) {
+                                                        return product.images;
+                                                    }
+                                                    const parsed = JSON.parse(product.images as string);
                                                     const url = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : null;
-                                                    if (url && (url.startsWith('/') || url.startsWith('http'))) return url;
+                                                    if (url && typeof url === 'string' && (url.startsWith('/') || url.startsWith('http'))) return url;
                                                 } catch { }
-                                                const raw = product.images;
-                                                return (raw && (raw.startsWith('/') || raw.startsWith('http'))) ? raw : '/placeholder.png';
+                                                return typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http')) ? product.images : '/placeholder.png';
                                             })()}
                                             alt={product.name}
                                             fill
@@ -177,14 +183,18 @@ export default function AdminProductsPage() {
                                                     <Image
                                                         src={(() => {
                                                             try {
-                                                                const parsed = JSON.parse(product.images);
+                                                                if (!product.images) return '/placeholder.png';
+                                                                if (Array.isArray(product.images)) {
+                                                                    return product.images.length > 0 ? product.images[0] : '/placeholder.png';
+                                                                }
+                                                                if (typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http'))) {
+                                                                    return product.images;
+                                                                }
+                                                                const parsed = JSON.parse(product.images as string);
                                                                 const url = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : null;
-                                                                if (url && (url.startsWith('/') || url.startsWith('http'))) return url;
-                                                            } catch {
-                                                                // Not JSON, check raw string
-                                                            }
-                                                            const raw = product.images;
-                                                            return (raw && (raw.startsWith('/') || raw.startsWith('http'))) ? raw : '/placeholder.png';
+                                                                if (url && typeof url === 'string' && (url.startsWith('/') || url.startsWith('http'))) return url;
+                                                            } catch { }
+                                                            return typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http')) ? product.images : '/placeholder.png';
                                                         })()}
                                                         alt={product.name}
                                                         fill

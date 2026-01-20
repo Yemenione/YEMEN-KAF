@@ -21,7 +21,7 @@ interface ProductVariant {
     price: number | string;
     compareAtPrice?: number | string | null;
     stock: number;
-    images: string | null;
+    images: string | string[] | null;
     attributes: VariantAttribute[];
 }
 
@@ -32,7 +32,7 @@ interface Product {
     price: number;
     compare_at_price?: number | null;
     description: string | null;
-    images: string | null;
+    images: string | string[] | null;
     taxRate?: number;
     category_name?: string;
     variants: ProductVariant[];
@@ -130,13 +130,17 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
     const getImages = () => {
         if (!product.images) return ['/images/honey-jar.jpg'];
         try {
-            if (product.images.startsWith('http') || product.images.startsWith('/')) {
+            if (Array.isArray(product.images)) {
+                return product.images.length > 0 ? product.images : ['/images/honey-jar.jpg'];
+            }
+
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return [product.images];
             }
-            const parsed = JSON.parse(product.images);
+            const parsed = JSON.parse(product.images as string);
             if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         } catch {
-            if (product.images.length > 0) return [product.images];
+            if (typeof product.images === 'string' && product.images.length > 0) return [product.images];
         }
         return ['/images/honey-jar.jpg'];
     };
@@ -168,11 +172,15 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
     const getVariantImages = (variant: ProductVariant) => {
         if (!variant || !variant.images) return null;
         try {
-            const parsed = JSON.parse(variant.images);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-            return [variant.images];
+            if (Array.isArray(variant.images)) return variant.images;
+            if (typeof variant.images === 'string') {
+                const parsed = JSON.parse(variant.images);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                return [variant.images];
+            }
+            return null;
         } catch {
-            return [variant.images];
+            return typeof variant.images === 'string' ? [variant.images] : null;
         }
     };
 

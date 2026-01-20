@@ -8,6 +8,7 @@ import { MapPin } from "lucide-react";
 export default function TheFarmsPage() {
     const { t } = useLanguage();
 
+    // Original Hardcoded Layout Fallback
     return (
         <main className="min-h-screen bg-white">
             {/* Header */}
