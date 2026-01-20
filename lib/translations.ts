@@ -160,6 +160,11 @@ export const translations = {
             estimatedShippingCost: "Estimated Shipping Cost",
             basedOn: "Based on",
             returnPolicy: "Return Policy",
+            flashSale: "Flash Sale Ends In",
+            viewingNow: "people are viewing this currently",
+            onlyLeft: "Only",
+            stockScarcity: "in stock - Order soon!",
+            deliveryPromise: "Free Delivery: Get it by",
         },
         // Account
         account: {
@@ -728,6 +733,11 @@ export const translations = {
             estimatedShippingCost: "Coût d'expédition estimé",
             basedOn: "Basé sur",
             returnPolicy: "Politique de Retour",
+            flashSale: "Vente Flash Se Termine Dans",
+            viewingNow: "personnes consultent ce produit",
+            onlyLeft: "Plus que",
+            stockScarcity: "en stock - Commandez vite !",
+            deliveryPromise: "Livraison Gratuite : Recevez-le le",
         },
         // Account
         account: {
@@ -1296,6 +1306,11 @@ export const translations = {
             estimatedShippingCost: "تكلفة الشحن التقديرية",
             basedOn: "بناءً على",
             returnPolicy: "سياسة الإرجاع",
+            flashSale: "العرض ينتهي خلال",
+            viewingNow: "أشخاص يشاهدون هذا المنتج حالياً",
+            onlyLeft: "باقي فقط",
+            stockScarcity: "في المخزون - اطلب الآن!",
+            deliveryPromise: "شحن مجاني: احصل عليه بتاريخ",
         },
         // Account
         account: {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft, ChevronDown } from "lucide-react";
+import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft, ChevronDown, Clock, Flame } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
@@ -92,6 +92,40 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
     const [userRating, setUserRating] = useState(5);
     const [userComment, setUserComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+
+    // Flash Sale Timer Logic
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            const now = new Date();
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+            const diff = endOfDay.getTime() - now.getTime();
+
+            return {
+                hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+                minutes: Math.floor((diff / 1000 / 60) % 60),
+                seconds: Math.floor((diff / 1000) % 60)
+            };
+        };
+
+        const timer = setInterval(() => {
+            setTimeLeft(calculateTimeLeft());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    // Delivery Date Calculation (Current + 3 days)
+    const getDeliveryDate = () => {
+        const date = new Date();
+        date.setDate(date.getDate() + 3);
+        return date.toLocaleDateString(language === 'ar' ? 'ar-EG' : 'fr-FR', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long'
+        });
+    };
 
     // Fetch Reviews
     useEffect(() => {
@@ -304,11 +338,28 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                 <span className="text-xs font-semibold text-gray-400 tracking-wider">({totalReviews} {t('product.reviews') || 'AVIS'})</span>
                             </div>
 
-                            <div className="flex items-baseline gap-6 mb-8">
+                            {/* Flash Sale Urgency (Shein Style) */}
+                            <div className="flex items-center gap-3 mb-6 bg-red-50 p-3 rounded-xl border border-red-100 animate-pulse">
+                                <Clock size={16} className="text-red-600" />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-red-600 uppercase tracking-tighter">{t('product.flashSale') || "OFFRE FLASH SE TERMINE DANS"}</span>
+                                    <span className="text-sm font-mono font-bold text-red-700">
+                                        {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-baseline gap-6 mb-4">
                                 <span className="text-4xl font-light text-black tracking-tight">{currentPrice.toFixed(2)}€</span>
                                 {currentCompareAtPrice && currentCompareAtPrice > currentPrice && (
                                     <span className="text-xl text-gray-300 line-through decoration-gray-300/50 font-light">{currentCompareAtPrice.toFixed(2)}€</span>
                                 )}
+                            </div>
+
+                            {/* Social Proof viewing now (Amazon Style) */}
+                            <div className="flex items-center gap-2 mb-8 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                <Flame size={12} className="text-orange-500" />
+                                <span>{Math.floor(Math.random() * 20) + 5} {t('product.viewingNow') || "PERSONNES CONSULTENT CE PRODUIT"}</span>
                             </div>
                         </div>
 
@@ -325,7 +376,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                                 const isSelected = selectedOptions[attrName] === value;
                                                 const strValue = String(value);
 
-                                                const isColorAttr = ['color', 'couleur', 'colour', 'lon', 'teinte'].includes(attrName.toLowerCase());
+                                                const isColorAttr = ['color', 'couleur', 'colour', 'lon', 'teinte', 'flavor', 'saveur', 'type'].includes(attrName.toLowerCase());
                                                 let swatchImage = null;
 
                                                 if (isColorAttr && product.variants) {
@@ -343,8 +394,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                                         key={strValue}
                                                         onClick={() => handleOptionSelect(attrName, strValue)}
                                                         className={`relative transition-all duration-300 ${swatchImage
-                                                            ? `w-14 h-14 rounded-full p-1 ${isSelected ? 'ring-2 ring-black ring-offset-4 scale-110' : 'ring-1 ring-gray-100 hover:ring-gray-300'}`
-                                                            : `px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest ${isSelected ? 'border-black bg-black text-white shadow-xl' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-400 hover:text-black'}`
+                                                            ? `w-14 h-14 rounded-full p-1 ${isSelected ? 'ring-2 ring-black ring-offset-4 scale-110' : 'ring-1 ring-gray-100 hover:ring-gray-300 hover:scale-105'}`
+                                                            : `px-6 py-3 rounded-full border text-xs font-bold uppercase tracking-widest ${isSelected ? 'border-black bg-black text-white shadow-xl scale-105' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-400 hover:text-black hover:bg-gray-50'}`
                                                             }`}
                                                         title={strValue}
                                                     >
@@ -369,6 +420,20 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                 ))}
                             </div>
                         )}
+
+                        {/* Scarcity Alert & Delivery Promise */}
+                        <div className="mb-8 space-y-3">
+                            {currentStock > 0 && currentStock < 10 && (
+                                <p className="text-[11px] font-bold text-red-600 flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-red-600 rounded-full animate-ping"></span>
+                                    {t('product.onlyLeft') || "Plus que"} {currentStock} {t('product.stockScarcity') || "en stock - Commandez vite !"}
+                                </p>
+                            )}
+                            <p className="text-[11px] text-gray-600 font-medium flex items-center gap-2">
+                                <Check size={14} className="text-green-500" />
+                                {t('product.deliveryPromise') || "Livraison Gratuite : Recevez-le chez vous le"} <span className="text-black font-bold uppercase">{getDeliveryDate()}</span>
+                            </p>
+                        </div>
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-12">
                             <div className="flex-shrink-0 flex items-center border border-gray-100 rounded-full bg-white shadow-sm overflow-hidden">

@@ -8,8 +8,6 @@ import SpecialOffers from "@/components/shop/SpecialOffers";
 import BestSellers from "@/components/shop/BestSellers";
 import NewArrivals from "@/components/shop/NewArrivals";
 import Testimonials from "@/components/shop/Testimonials";
-import OurStoryBrief from "@/components/shop/OurStoryBrief";
-import BlogSection from "@/components/shop/BlogSection";
 import Newsletter from "@/components/shop/Newsletter";
 import { Truck, ShieldCheck, Star } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -98,12 +96,6 @@ export default function HomeClient({ reviews, posts }: HomeClientProps) {
 
             {/* Testimonials - NEW */}
             <Testimonials reviews={reviews} />
-
-            {/* Our Story Brief - NEW */}
-            <OurStoryBrief />
-
-            {/* Blog Section - NEW */}
-            <BlogSection articles={posts} />
 
             {/* Newsletter - NEW */}
             <Newsletter />
