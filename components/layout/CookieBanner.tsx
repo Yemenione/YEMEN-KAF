@@ -24,28 +24,32 @@ export default function CookieBanner() {
     if (!isVisible) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 p-6 animate-slide-up">
-            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div className="flex-1 pr-8">
-                    <h3 className="text-lg font-serif text-black mb-2">We value your privacy</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Nous utilisons des cookies pour am&eacute;liorer votre exp&eacute;rience. En continuant, vous acceptez notre utilisation des cookies. By clicking &quot;Accept All&quot;, you consent to our use of cookies.
-                        <Link href="/privacy" className="underline ml-1 text-black hover:text-gray-600">Read our Privacy Policy</Link>.
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl bg-white border border-gray-100 shadow-2xl z-[10000] p-6 rounded-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex-1">
+                    <h3 className="text-lg font-serif text-black mb-2 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-[var(--honey-gold)] rounded-full animate-pulse"></span>
+                        Privacy Policy
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                        We use cookies to improve your experience and show you relevant content.
+                        By continuing, you accept our use of cookies.
+                        <Link href="/privacy" className="underline ml-1 text-black hover:text-[var(--honey-gold)] transition-colors">Read Policy</Link>.
                     </p>
                 </div>
-                <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="flex items-center gap-4 w-full md:w-auto mt-2 md:mt-0">
                     <button
                         onClick={acceptCookies}
-                        className="flex-1 md:flex-none px-6 py-3 bg-black text-white text-sm font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors rounded-lg whitespace-nowrap"
+                        className="flex-1 md:flex-none px-8 py-3 bg-black text-white text-xs font-bold uppercase tracking-[0.2em] hover:bg-[var(--coffee-brown)] transition-all rounded-full whitespace-nowrap shadow-lg active:scale-95"
                     >
                         Accept All
                     </button>
                     <button
                         onClick={() => setIsVisible(false)}
-                        className="p-2 text-gray-400 hover:text-black transition-colors"
+                        className="p-2 text-gray-400 hover:text-black transition-colors bg-gray-50 rounded-full"
                         aria-label="Close"
                     >
-                        <X size={24} />
+                        <X size={20} />
                     </button>
                 </div>
             </div>

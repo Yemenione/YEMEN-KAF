@@ -574,7 +574,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             </div>
 
             {/* Sticky Mobile Add to Bag - LUXURY VERSION */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-6 lg:hidden z-40 safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.05)] rounded-t-[2.5rem]">
+            <div className="fixed bottom-16 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-6 lg:hidden z-40 safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.05)] rounded-t-[2.5rem]">
                 <div className="flex gap-6 items-center">
                     <div className="flex flex-col">
                         <span className="text-[9px] text-gray-400 uppercase font-black tracking-[0.2em] mb-1">{t('product.totalTTC')}</span>

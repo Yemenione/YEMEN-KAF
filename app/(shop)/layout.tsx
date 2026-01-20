@@ -29,7 +29,7 @@ export default function ShopLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)] pb-16 lg:pb-0 safe-area-pb`}>
+      <body className={`${playfair.variable} ${inter.variable} antialiased bg-[var(--cream-white)] text-[var(--coffee-brown)] pb-32 lg:pb-0 safe-area-pb`}>
         <SettingsProvider>
           <LanguageProvider>
             <ToastProvider>
