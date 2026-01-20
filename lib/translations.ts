@@ -78,6 +78,19 @@ export const translations = {
                 title: "From the Heart of Yemen to Your Home",
                 description: "We bring you the finest traditional Yemeni products, from natural honey to authentic incense. Each product carries a story and rich heritage from the land of Yemen.",
                 button: "Read Our Full Story"
+            },
+            flashSale: {
+                title: "Daily Flash Offers",
+                endsSoon: "Hurry up, time is running out!",
+                sold: "SOLD"
+            },
+            recentlyViewed: {
+                title: "Recently Viewed"
+            },
+            promo: {
+                honey: { title: "Royal Sidr Collection", sub: "Rare & Potent" },
+                coffee: { title: "Haraz Mocha Special", sub: "Estate Grown" },
+                gifts: { title: "Luxury Gift Sets", sub: "Perfect for Ramadan" }
             }
         },
         // Shop
@@ -651,6 +664,19 @@ export const translations = {
                 title: "Du Cœur du Yémen à Votre Maison",
                 description: "Nous vous apportons les meilleurs produits traditionnels yéménites, du miel naturel à l'encens authentique. Chaque produit porte une histoire et un riche patrimoine de la terre du Yémen.",
                 button: "Lire Notre Histoire Complète"
+            },
+            flashSale: {
+                title: "Offres Flash du Jour",
+                endsSoon: "Dépêchez-vous, le temps presse !",
+                sold: "VENDU"
+            },
+            recentlyViewed: {
+                title: "Vu Récemment"
+            },
+            promo: {
+                honey: { title: "Collection Sidr Royale", sub: "Rare & Puissant" },
+                coffee: { title: "Spécial Mocha Haraz", sub: "Culture en Domaine" },
+                gifts: { title: "Coffrets Cadeaux Luxe", sub: "Parfait pour le Ramadan" }
             }
         },
         // Shop
@@ -1224,6 +1250,19 @@ export const translations = {
                 title: "من قلب اليمن إلى بيتك",
                 description: "نحن نجلب لكم أجود المنتجات اليمنية التقليدية، من العسل الطبيعي إلى البخور الأصيل. كل منتج يحمل قصة وتراث عريق من أرض اليمن السعيد.",
                 button: "اقرأ قصتنا الكاملة"
+            },
+            flashSale: {
+                title: "عروض الفلاش اليومية",
+                endsSoon: "أسرع، الوقت ينفد!",
+                sold: "تم البيع"
+            },
+            recentlyViewed: {
+                title: "شوهد مؤخراً"
+            },
+            promo: {
+                honey: { title: "مجموعة السدر الملكي", sub: "نادر وفعال" },
+                coffee: { title: "موكا حراز الخاصة", sub: "محصول مزارعنا" },
+                gifts: { title: "أطقم هدايا فاخرة", sub: "مثالية لشهر رمضان" }
             }
         },
         // Shop

@@ -1,0 +1,162 @@
+"use client";
+
+import { useLanguage } from "@/context/LanguageContext";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Clock, Zap, ArrowRight } from "lucide-react";
+
+interface Product {
+    id: number;
+    name: string;
+    price: string | number;
+    compare_at_price?: string | number;
+    images?: string | string[];
+    slug: string;
+}
+
+export default function FlashSale() {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+    const { t, locale } = useLanguage();
+
+    // Helper for main image (reusing logic for safety)
+    const getMainImage = (product: Product): string => {
+        try {
+            if (!product.images) return '/images/honey-jar.jpg';
+            if (Array.isArray(product.images)) return product.images[0] || '/images/honey-jar.jpg';
+            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) return product.images;
+            const parsed = JSON.parse(product.images as string);
+            return (Array.isArray(parsed) && parsed.length > 0) ? parsed[0] : '/images/honey-jar.jpg';
+        } catch {
+            return '/images/honey-jar.jpg';
+        }
+    };
+
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            const now = new Date();
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+            const diff = endOfDay.getTime() - now.getTime();
+            return {
+                hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+                minutes: Math.floor((diff / 1000 / 60) % 60),
+                seconds: Math.floor((diff / 1000) % 60)
+            };
+        };
+
+        const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        const fetchFlashSales = async () => {
+            try {
+                // Fetch products that have a compare_at_price (discounts)
+                const res = await fetch(`/api/products?limit=4&sort=discounted&lang=${locale}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setProducts(data.products || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch flash sales:", error);
+            }
+        };
+        fetchFlashSales();
+    }, [locale]);
+
+    if (products.length === 0) return null;
+
+    return (
+        <section className="py-16 bg-red-50/30 overflow-hidden relative">
+            {/* Background Accent */}
+            <div className="absolute top-0 end-0 w-64 h-64 bg-red-100/50 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+                <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-red-600 rounded-full text-white animate-pulse">
+                            <Zap size={24} fill="currentColor" />
+                        </div>
+                        <div className="space-y-1">
+                            <h2 className="text-3xl md:text-4xl font-serif text-gray-900 tracking-tight">
+                                {t('home.flashSale.title') || "Offre Flash du Jour"}
+                            </h2>
+                            <p className="text-sm text-red-600 font-bold uppercase tracking-widest animate-pulse">
+                                {t('home.flashSale.endsSoon') || "Dépêchez-vous, le temps presse !"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-red-100">
+                        <Clock size={20} className="text-red-600" />
+                        <div className="flex gap-2 text-2xl font-mono font-black text-red-700">
+                            <div className="bg-red-50 px-2 py-1 rounded-lg">{String(timeLeft.hours).padStart(2, '0')}</div>
+                            <span className="self-center">:</span>
+                            <div className="bg-red-50 px-2 py-1 rounded-lg">{String(timeLeft.minutes).padStart(2, '0')}</div>
+                            <span className="self-center">:</span>
+                            <div className="bg-red-50 px-2 py-1 rounded-lg">{String(timeLeft.seconds).padStart(2, '0')}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {products.map((product) => {
+                        const price = Number(product.price);
+                        const comparePrice = product.compare_at_price ? Number(product.compare_at_price) : null;
+                        const savings = comparePrice ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
+
+                        return (
+                            <Link
+                                key={product.id}
+                                href={`/shop/${product.slug}`}
+                                className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1"
+                            >
+                                <div className="relative aspect-square overflow-hidden bg-gray-50">
+                                    <Image
+                                        src={getMainImage(product)}
+                                        alt={product.name}
+                                        fill
+                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        sizes="(max-width: 768px) 50vw, 25vw"
+                                    />
+                                    {savings > 0 && (
+                                        <div className="absolute top-3 end-3 bg-red-600 text-white px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                                            -{savings}%
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-5 space-y-3">
+                                    <h3 className="font-serif text-lg text-gray-900 line-clamp-1 group-hover:text-red-600 transition-colors">
+                                        {product.name}
+                                    </h3>
+                                    <div className="flex items-baseline gap-3">
+                                        <span className="text-xl font-bold text-red-600">{price.toFixed(2)}€</span>
+                                        {comparePrice && (
+                                            <span className="text-sm text-gray-400 line-through">{comparePrice.toFixed(2)}€</span>
+                                        )}
+                                    </div>
+                                    <div className="pt-2">
+                                        <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                            <div className="bg-red-600 h-full w-[70%] animate-pulse" />
+                                        </div>
+                                        <p className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-tighter">
+                                            70% {t('home.flashSale.sold') || "VENDU"}
+                                        </p>
+                                    </div>
+                                </div>
+                            </Link>
+                        );
+                    })}
+                </div>
+
+                <div className="mt-12 text-center">
+                    <Link href="/shop" className="inline-flex items-center gap-2 px-8 py-3 bg-red-600 text-white rounded-full font-bold uppercase tracking-widest hover:bg-red-700 transition-all shadow-lg hover:shadow-red-200">
+                        {t('home.offers.viewAll')} <ArrowRight size={18} />
+                    </Link>
+                </div>
+            </div>
+        </section>
+    );
+}

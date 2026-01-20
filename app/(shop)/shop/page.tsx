@@ -49,23 +49,34 @@ function ShopContent() {
     const [maxPrice, setMaxPrice] = useState("");
 
     // Helper to extract main image from JSON
-    const getMainImage = (product: Product): string => {
+    const getMainImage = (product: any): string => {
         try {
-            if (!product.images) return '/images/honey-jar.jpg';
+            const images = product.images;
+            if (!images) return '/images/honey-jar.jpg';
 
-            // Check if it's already a clean URL (legacy/csv import support)
-            if (product.images.startsWith('http') || product.images.startsWith('/uploads')) {
-                return product.images;
+            // If it's already an array
+            if (Array.isArray(images)) {
+                return images[0] || '/images/honey-jar.jpg';
             }
 
-            const parsed = JSON.parse(product.images);
+            // If it's not a string, we can't do much
+            if (typeof images !== 'string') return '/images/honey-jar.jpg';
+
+            // Check if it's already a clean URL (legacy/csv import support)
+            if (images.startsWith('http') || images.startsWith('/uploads') || images.startsWith('/')) {
+                return images;
+            }
+
+            const parsed = JSON.parse(images);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 return parsed[0];
             }
+            if (typeof parsed === 'string') return parsed;
         } catch {
-            // Fallback for non-JSON strings
-            if (product.images && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
+            if (typeof product.images === 'string') {
+                if (product.images.startsWith('http') || product.images.startsWith('/')) {
+                    return product.images;
+                }
             }
         }
         return '/images/honey-jar.jpg';

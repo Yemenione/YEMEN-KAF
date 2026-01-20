@@ -319,7 +319,11 @@ export default function Navbar() {
                                 <div className="col-span-3 text-center text-gray-400 py-10 flex items-center justify-center">
                                     <p>{t('shop.loading')}</p>
                                 </div>
-                            )}
+                            )}                        </div>
+
+                        {/* MOBILE SEARCH BAR - Persistent (Amazon/Shein Style) */}
+                        <div className="md:hidden pb-4 px-6 scale-95 origin-top transition-all duration-300">
+                            <SearchWithSuggestions isFullWidth />
                         </div>
                     </div>
                 </nav>

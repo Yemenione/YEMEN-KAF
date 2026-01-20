@@ -9,6 +9,9 @@ import BestSellers from "@/components/shop/BestSellers";
 import NewArrivals from "@/components/shop/NewArrivals";
 import Testimonials from "@/components/shop/Testimonials";
 import Newsletter from "@/components/shop/Newsletter";
+import FlashSale from "@/components/shop/FlashSale";
+import RecentlyViewed from "@/components/shop/RecentlyViewed";
+import PromoGrid from "@/components/shop/PromoGrid";
 import { Truck, ShieldCheck, Star } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -46,6 +49,9 @@ export default function HomeClient({ reviews, posts }: HomeClientProps) {
             {/* 2D Cinematic Hero */}
             <HeroSlider />
 
+            {/* Promo Grid - Amazon Style v3 */}
+            <PromoGrid />
+
             {/* Categories Grid */}
             <CategoriesSection />
 
@@ -57,6 +63,9 @@ export default function HomeClient({ reviews, posts }: HomeClientProps) {
 
             {/* New Arrivals - NEW */}
             <NewArrivals />
+
+            {/* Flash Sale - Global Standard v3 */}
+            <FlashSale />
 
             {/* Trust Indicators */}
             <section className="w-full py-16 border-t border-black/5">
@@ -96,6 +105,9 @@ export default function HomeClient({ reviews, posts }: HomeClientProps) {
 
             {/* Testimonials - NEW */}
             <Testimonials reviews={reviews} />
+
+            {/* Recently Viewed - Global Standard v3 */}
+            <RecentlyViewed />
 
             {/* Newsletter - NEW */}
             <Newsletter />

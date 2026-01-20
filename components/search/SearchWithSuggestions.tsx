@@ -6,15 +6,16 @@ import Link from "next/link";
 import { Search, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
+import clsx from "clsx";
 
-export default function SearchWithSuggestions() {
+export default function SearchWithSuggestions({ isFullWidth = false }: { isFullWidth?: boolean }) {
     const { t } = useLanguage();
     const router = useRouter();
     const [query, setQuery] = useState("");
     const [suggestions, setSuggestions] = useState<{ id: number; name: string; slug: string; price: string | number; images?: string | string[]; image_url?: string }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [showInput, setShowInput] = useState(false);
+    const [showInput, setShowInput] = useState(isFullWidth);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
     // Debounce search
@@ -61,28 +62,37 @@ export default function SearchWithSuggestions() {
 
     return (
         <div ref={wrapperRef} className="relative group">
-            <div className={`flex items-center border border-black/10 rounded-full px-3 py-1 transition-all duration-300 ${showInput ? 'w-48 bg-white opacity-100' : 'w-8 border-transparent bg-transparent'}`}>
-                <button
-                    onClick={() => setShowInput(!showInput)}
-                    className="hover:text-[var(--honey-gold)] transition-colors"
-                >
-                    <Search className="w-5 h-5" />
-                </button>
-                <form onSubmit={handleSearch} className={`flex-1 ${showInput ? 'block' : 'hidden'}`}>
+            <div className={clsx(
+                "flex items-center border border-black/10 rounded-full transition-all duration-300",
+                isFullWidth ? "w-full bg-gray-50/50 px-4 py-2" : `px-3 py-1 ${showInput ? 'w-48 bg-white opacity-100' : 'w-8 border-transparent bg-transparent'}`
+            )}>
+                {!isFullWidth && (
+                    <button
+                        onClick={() => setShowInput(!showInput)}
+                        className="hover:text-[var(--honey-gold)] transition-colors"
+                    >
+                        <Search className="w-5 h-5" />
+                    </button>
+                )}
+                {isFullWidth && <Search className="w-4 h-4 text-gray-400 mr-2" />}
+                <form onSubmit={handleSearch} className={clsx("flex-1", (showInput || isFullWidth) ? 'block' : 'hidden')}>
                     <input
                         type="text"
                         placeholder={t('nav.search') || "Search..."}
-                        className="ml-2 outline-none text-sm bg-transparent w-full"
+                        className="outline-none text-sm bg-transparent w-full"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        autoFocus={showInput}
+                        autoFocus={showInput && !isFullWidth}
                     />
                 </form>
             </div>
 
             {/* Suggestions Dropdown */}
             {isOpen && query.length >= 2 && (
-                <div className="absolute top-full right-0 mt-3 w-[300px] bg-white shadow-2xl rounded-xl overflow-hidden border border-black/5 z-50 animate-fade-in">
+                <div className={clsx(
+                    "absolute top-full mt-3 bg-white shadow-2xl rounded-xl overflow-hidden border border-black/5 z-50 animate-fade-in",
+                    isFullWidth ? "start-0 end-0" : "right-0 w-[300px]"
+                )}>
                     {isLoading ? (
                         <div className="p-4 text-center text-gray-400">
                             <Loader2 className="w-6 h-6 animate-spin mx-auto" />

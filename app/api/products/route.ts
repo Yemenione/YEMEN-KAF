@@ -26,12 +26,17 @@ export async function GET(req: Request) {
             }),
             ...(categoryId && { categoryId: parseInt(categoryId) }),
             ...(minPrice && { price: { gte: parseFloat(minPrice) } }),
-            ...(maxPrice && { price: { lte: parseFloat(maxPrice) } })
+            ...(maxPrice && { price: { lte: parseFloat(maxPrice) } }),
+            ...(sort === 'discounted' && {
+                compareAtPrice: { not: null }
+            })
         };
 
-        let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: 'desc' };
+        let orderBy: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] = { createdAt: 'desc' };
         if (sort === 'price_asc') orderBy = { price: 'asc' };
         else if (sort === 'price_desc') orderBy = { price: 'desc' };
+        else if (sort === 'featured') orderBy = [{ isFeatured: 'desc' }, { createdAt: 'desc' }];
+        else if (sort === 'discounted') orderBy = { createdAt: 'desc' };
 
         const products = await prisma.product.findMany({
             where,

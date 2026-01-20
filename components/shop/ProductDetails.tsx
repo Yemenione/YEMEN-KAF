@@ -93,9 +93,11 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
     const [userComment, setUserComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+    const [viewingNow, setViewingNow] = useState<number | null>(null);
 
     // Flash Sale Timer Logic
     useEffect(() => {
+        setViewingNow(Math.floor(Math.random() * 20) + 5);
         const calculateTimeLeft = () => {
             const now = new Date();
             const endOfDay = new Date();
@@ -126,6 +128,25 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             month: 'long'
         });
     };
+
+    // Recently Viewed Tracking
+    useEffect(() => {
+        if (product && product.slug) {
+            const stored = localStorage.getItem('recentlyViewed');
+            let slugs = stored ? JSON.parse(stored) : [];
+
+            // Remove if already exists to move to front
+            slugs = slugs.filter((s: string) => s !== product.slug);
+
+            // Add to front
+            slugs.unshift(product.slug);
+
+            // Limit to 10
+            slugs = slugs.slice(0, 10);
+
+            localStorage.setItem('recentlyViewed', JSON.stringify(slugs));
+        }
+    }, [product]);
 
     // Fetch Reviews
     useEffect(() => {
@@ -357,10 +378,12 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             </div>
 
                             {/* Social Proof viewing now (Amazon Style) */}
-                            <div className="flex items-center gap-2 mb-8 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                                <Flame size={12} className="text-orange-500" />
-                                <span>{Math.floor(Math.random() * 20) + 5} {t('product.viewingNow') || "PERSONNES CONSULTENT CE PRODUIT"}</span>
-                            </div>
+                            {viewingNow !== null && (
+                                <div className="flex items-center gap-2 mb-8 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                    <Flame size={12} className="text-orange-500" />
+                                    <span>{viewingNow} {t('product.viewingNow') || "PERSONNES CONSULTENT CE PRODUIT"}</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Variants and Add to Cart Section */}

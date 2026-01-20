@@ -91,17 +91,27 @@ export default function BestSellers() {
                                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                                     sizes="(max-width: 768px) 50vw, 25vw"
                                 />
-                                <div className="absolute top-2 start-2 bg-[var(--honey-gold)] text-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full">
-                                    {t('home.bestSellers.topSale')}
+                                <div className="absolute top-2 start-2 flex flex-col gap-2">
+                                    <div className="bg-[var(--honey-gold)] text-white px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
+                                        <TrendingUp size={10} />
+                                        {t('home.bestSellers.topSale')}
+                                    </div>
+                                    <div className="bg-orange-600 text-white px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
+                                        <span>🔥</span>
+                                        TRENDING
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-4 space-y-2">
                                 <h3 className="font-serif text-lg text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-2">
                                     {product.name}
                                 </h3>
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
                                     <span className="text-xl font-bold text-[var(--coffee-brown)]">
                                         €{Number(product.price).toFixed(2)}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                                        {Math.floor(Math.random() * 50) + 10} SOLD THIS WEEK
                                     </span>
                                 </div>
                             </div>
