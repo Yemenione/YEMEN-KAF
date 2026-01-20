@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 interface Product {
     id: number;
@@ -15,7 +16,8 @@ interface Product {
 
 export default function BestSellers() {
     const [products, setProducts] = useState<Product[]>([]);
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
+    const { settings } = useSettings();
 
     // Helper to extract main image from JSON or Array
     const getMainImage = (product: Product): string => {
@@ -48,7 +50,20 @@ export default function BestSellers() {
     useEffect(() => {
         const fetchBestSellers = async () => {
             try {
-                const res = await fetch('/api/products?limit=4&sort=featured');
+                let url = `/api/products?limit=4&sort=featured&lang=${locale}`;
+
+                if (settings && settings.homepage_best_sellers_ids) {
+                    try {
+                        const ids = JSON.parse(settings.homepage_best_sellers_ids);
+                        if (Array.isArray(ids) && ids.length > 0) {
+                            url = `/api/products?ids=${ids.join(',')}&lang=${locale}`;
+                        }
+                    } catch (e) {
+                        console.error("Error parsing best sellers ids", e);
+                    }
+                }
+
+                const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
                     setProducts(data.products || []);
@@ -59,7 +74,7 @@ export default function BestSellers() {
         };
 
         fetchBestSellers();
-    }, []);
+    }, [locale, settings.homepage_best_sellers_ids]);
 
     if (products.length === 0) return null;
 

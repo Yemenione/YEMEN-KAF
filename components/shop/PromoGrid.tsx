@@ -4,11 +4,13 @@ import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 export default function PromoGrid() {
     const { t } = useLanguage();
+    const { settings } = useSettings();
 
-    const promos = [
+    const defaultPromos = [
         {
             title: t('home.promo.honey.title') || "Royal Sidr Collection",
             subtitle: t('home.promo.honey.sub') || "Rare & Potent",
@@ -31,6 +33,23 @@ export default function PromoGrid() {
             color: "bg-gray-50"
         }
     ];
+
+    let promos = defaultPromos;
+    if (settings.homepage_promo_grid) {
+        try {
+            const parsed = JSON.parse(settings.homepage_promo_grid);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                // Ensure tiles have images and links
+                promos = parsed.map((p, idx) => ({
+                    ...p,
+                    subtitle: p.sub || p.subtitle, // handle variations in key names
+                    color: idx === 0 ? "bg-amber-50" : idx === 1 ? "bg-stone-100" : "bg-gray-50"
+                }));
+            }
+        } catch (e) {
+            console.error("Failed to parse promo grid config", e);
+        }
+    }
 
     return (
         <section className="py-12 bg-white">

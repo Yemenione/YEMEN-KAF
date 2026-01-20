@@ -50,7 +50,11 @@ export async function POST(req: NextRequest) {
             const isPublic = [
                 'site_name', 'site_description', 'support_email', 'support_phone',
                 'social_facebook', 'social_instagram', 'logo_url', 'primary_color',
-                'stripe_publishable_key', 'paypal_client_id'
+                'stripe_publishable_key', 'paypal_client_id',
+                'homepage_hero_products', 'homepage_featured_categories',
+                'homepage_flash_sale_product_ids', 'homepage_flash_sale_end_date',
+                'homepage_flash_sale_ends_soon_text', 'homepage_promo_grid',
+                'homepage_special_offers_ids', 'homepage_best_sellers_ids'
             ].includes(key);
 
             return prisma.storeConfig.upsert({

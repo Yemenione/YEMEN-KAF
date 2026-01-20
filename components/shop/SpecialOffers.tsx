@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 interface Product {
     id: number;
@@ -15,7 +16,8 @@ interface Product {
 
 export default function SpecialOffers() {
     const [offers, setOffers] = useState<Product[]>([]);
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
+    const { settings } = useSettings();
 
     // Helper to extract main image from JSON or Array
     const getMainImage = (product: Product): string => {
@@ -48,8 +50,20 @@ export default function SpecialOffers() {
     useEffect(() => {
         const fetchOffers = async () => {
             try {
-                // Fetch 2 products to display as offers (offset 3 to avoid duplicates with Showcase)
-                const res = await fetch('/api/products?limit=2&offset=3');
+                let url = `/api/products?limit=2&lang=${locale}`;
+
+                if (settings && settings.homepage_special_offers_ids) {
+                    try {
+                        const ids = JSON.parse(settings.homepage_special_offers_ids);
+                        if (Array.isArray(ids) && ids.length > 0) {
+                            url = `/api/products?ids=${ids.join(',')}&lang=${locale}`;
+                        }
+                    } catch (e) {
+                        console.error("Error parsing special offers ids", e);
+                    }
+                }
+
+                const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
                     setOffers(data.products || []);
@@ -60,7 +74,7 @@ export default function SpecialOffers() {
         };
 
         fetchOffers();
-    }, []);
+    }, [locale, settings.homepage_special_offers_ids]);
 
     if (offers.length === 0) return null;
 

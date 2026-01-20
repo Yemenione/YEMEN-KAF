@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, Zap, ArrowRight } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 interface Product {
     id: number;
@@ -19,6 +20,7 @@ export default function FlashSale() {
     const [products, setProducts] = useState<Product[]>([]);
     const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
     const { t, locale } = useLanguage();
+    const { settings } = useSettings();
 
     // Helper for main image (reusing logic for safety)
     const getMainImage = (product: Product): string => {
@@ -36,9 +38,17 @@ export default function FlashSale() {
     useEffect(() => {
         const calculateTimeLeft = () => {
             const now = new Date();
-            const endOfDay = new Date();
-            endOfDay.setHours(23, 59, 59, 999);
-            const diff = endOfDay.getTime() - now.getTime();
+            let endOfPeriod = new Date();
+
+            if (settings.homepage_flash_sale_end_date) {
+                endOfPeriod = new Date(settings.homepage_flash_sale_end_date);
+            } else {
+                endOfPeriod.setHours(23, 59, 59, 999);
+            }
+
+            const diff = endOfPeriod.getTime() - now.getTime();
+            if (diff <= 0) return { hours: 0, minutes: 0, seconds: 0 };
+
             return {
                 hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
                 minutes: Math.floor((diff / 1000 / 60) % 60),
@@ -48,13 +58,21 @@ export default function FlashSale() {
 
         const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
         return () => clearInterval(timer);
-    }, []);
+    }, [settings.homepage_flash_sale_end_date]);
 
     useEffect(() => {
         const fetchFlashSales = async () => {
             try {
-                // Fetch products that have a compare_at_price (discounts)
-                const res = await fetch(`/api/products?limit=4&sort=discounted&lang=${locale}`);
+                let url = `/api/products?limit=4&sort=discounted&lang=${locale}`;
+
+                if (settings.homepage_flash_sale_product_ids) {
+                    const ids = JSON.parse(settings.homepage_flash_sale_product_ids);
+                    if (Array.isArray(ids) && ids.length > 0) {
+                        url = `/api/products?ids=${ids.join(',')}&lang=${locale}`;
+                    }
+                }
+
+                const res = await fetch(url);
                 if (res.ok) {
                     const data = await res.json();
                     setProducts(data.products || []);
@@ -64,7 +82,7 @@ export default function FlashSale() {
             }
         };
         fetchFlashSales();
-    }, [locale]);
+    }, [locale, settings.homepage_flash_sale_product_ids]);
 
     if (products.length === 0) return null;
 
@@ -84,7 +102,7 @@ export default function FlashSale() {
                                 {t('home.flashSale.title') || "Offre Flash du Jour"}
                             </h2>
                             <p className="text-sm text-red-600 font-bold uppercase tracking-widest animate-pulse">
-                                {t('home.flashSale.endsSoon') || "Dépêchez-vous, le temps presse !"}
+                                {settings.homepage_flash_sale_ends_soon_text || t('home.flashSale.endsSoon') || "Dépêchez-vous, le temps presse !"}
                             </p>
                         </div>
                     </div>
