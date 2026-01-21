@@ -8,7 +8,7 @@ interface AttributeValue {
     name: string;
     value: string; // Hex color or text
     position: number;
-    translations?: Record<string, any>;
+    translations?: Record<string, Record<string, string>>;
 }
 
 interface Attribute {
@@ -17,7 +17,7 @@ interface Attribute {
     publicName: string | null; // Frontend label
     type: string; // select, color, radio
     values: AttributeValue[];
-    translations?: Record<string, any>;
+    translations?: Record<string, Record<string, string>>;
 }
 
 export default function AttributesPage() {
@@ -31,6 +31,7 @@ export default function AttributesPage() {
         publicName: string;
         type: string;
         values: AttributeValue[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         translations?: Record<string, any>;
     }>({
         name: "",
@@ -60,7 +61,6 @@ export default function AttributesPage() {
 
     // Fetching attributes is handled by useEffect below
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         fetchAttributes();
     }, [fetchAttributes]);
 
@@ -95,7 +95,6 @@ export default function AttributesPage() {
 
     const getValue = (field: string) => {
         if (activeLang === 'en') return formData[field as keyof typeof formData] as string;
-        // @ts-expect-error: dynamic translation access
         return formData.translations?.[activeLang]?.[field] || '';
     };
 
@@ -108,7 +107,7 @@ export default function AttributesPage() {
                 translations: {
                     ...prev.translations,
                     [activeLang]: {
-                        // @ts-expect-error: dynamic translation access
+                        // 
                         ...prev.translations?.[activeLang],
                         [field]: value
                     }
@@ -120,7 +119,7 @@ export default function AttributesPage() {
     const getValueForValue = (index: number, field: keyof AttributeValue) => {
         const val = formData.values[index];
         if (activeLang === 'en') return val[field] as string;
-        // @ts-expect-error: dynamic translation access
+        // 
         return val.translations?.[activeLang]?.[field] || '';
     };
 
@@ -128,8 +127,8 @@ export default function AttributesPage() {
         setFormData(prev => {
             const newValues = [...prev.values];
             if (activeLang === 'en') {
-                // @ts-expect-error: indexing with dynamic field key
-                newValues[index][field] = val;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (newValues[index] as any)[field] = val;
             } else {
                 newValues[index] = {
                     ...newValues[index],

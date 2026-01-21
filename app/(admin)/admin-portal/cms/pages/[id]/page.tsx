@@ -11,6 +11,7 @@ interface PageData {
     title: string;
     slug: string;
     content: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     structured_content?: any;
     metaTitle: string;
     metaDescription: string;

@@ -11,6 +11,7 @@ interface Category {
     slug: string;
     description: string;
     image_url: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: Record<string, any>;
 }
 

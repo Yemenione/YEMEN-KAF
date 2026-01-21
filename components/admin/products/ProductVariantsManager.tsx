@@ -155,8 +155,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
 
     const updateVariant = (index: number, field: keyof Variant, value: unknown) => {
         const updated = [...variants];
-        // @ts-expect-error: dynamic property access on variant type
-        updated[index][field] = value;
+        (updated[index] as any)[field] = value;
         setVariants(updated);
     };
 

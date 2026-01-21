@@ -68,7 +68,9 @@ async function getProduct(slug: string) {
                     name: av.attributeValue.attribute.name
                 }))
             })),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             translations: (product as any).translations || {},
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             category_translations: (product.category as any)?.translations || {}
         };
     } catch (error) {

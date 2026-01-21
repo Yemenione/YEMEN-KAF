@@ -22,10 +22,6 @@ export default function CMSMenusPage() {
     const pathname = usePathname();
     const { showToast } = useToast();
 
-    useEffect(() => {
-        fetchSettings();
-    }, []);
-
     const fetchSettings = useCallback(async () => {
         try {
             const res = await fetch('/api/admin/config');
@@ -49,6 +45,10 @@ export default function CMSMenusPage() {
             setLoading(false);
         }
     }, [showToast]);
+
+    useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
 
     const handleAddLink = () => {
         if (!newLabel || !newHref) {

@@ -11,6 +11,23 @@ export const metadata: Metadata = {
     description: 'اكتشف مصادر منتجاتنا من وادي دوعن وجبال حراز.',
 };
 
+interface StructuredFarmsData {
+    hero: {
+        tagline: string;
+        title: string;
+        subtitle: string;
+    };
+    sections: Array<{
+        theme: string;
+        image: string;
+        title: string;
+        subtitle: string;
+        content: string;
+        features?: string[];
+    }>;
+    cta?: string;
+}
+
 async function getPageContent() {
     const page = await prisma.page.findUnique({
         where: { slug: 'the-farms' }
@@ -25,7 +42,8 @@ export default async function TheFarmsPage() {
         return notFound();
     }
 
-    const structured = page.structured_content as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const structured = (page as any).structured_content as unknown as StructuredFarmsData;
 
     if (structured) {
         return (
@@ -40,16 +58,23 @@ export default async function TheFarmsPage() {
                 </div>
 
                 {/* Regions */}
-                {structured.sections.map((section: any, idx: number) => (
-                    <section key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-0 min-h-[80vh]">
-                        {/* Image Side */}
+                {structured.sections.map((section, idx) => (
+                    <section key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-0 min-h-[80vh] overflow-hidden">
+                        {/* Image Side - Sticky Effect */}
                         <div className={`relative min-h-[50vh] ${section.theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'} ${idx % 2 === 1 ? 'md:order-2' : 'md:order-1'}`}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={section.image} alt={section.title} className="object-cover w-full h-full" />
                         </div>
 
                         {/* Content Side */}
                         <div className={`flex items-center justify-center p-12 md:p-24 ${section.theme === 'dark' ? 'bg-[var(--coffee-brown)] text-white' : 'bg-white text-[var(--coffee-brown)]'} ${idx % 2 === 1 ? 'md:order-1' : 'md:order-2'}`}>
-                            <div className="space-y-6 max-w-md">
+                            <MotionDiv
+                                initial={{ opacity: 0, x: idx % 2 === 1 ? -50 : 50 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.8 }}
+                                className="space-y-6 max-w-md"
+                            >
                                 <div className="flex items-center gap-2 text-[var(--honey-gold)]">
                                     <span className="text-xs font-bold uppercase tracking-widest">{section.subtitle}</span>
                                 </div>
@@ -58,14 +83,14 @@ export default async function TheFarmsPage() {
                                     {section.content}
                                 </p>
                                 <ul className="space-y-2 pt-4">
-                                    {section.features && section.features.map((feature: string, fIdx: number) => (
+                                    {section.features && section.features.map((feature, fIdx) => (
                                         <li key={fIdx} className="flex items-center gap-2 text-sm font-medium opacity-80">
                                             <span className="w-1.5 h-1.5 rounded-full bg-[var(--honey-gold)]" />
                                             {feature}
                                         </li>
                                     ))}
                                 </ul>
-                            </div>
+                            </MotionDiv>
                         </div>
                     </section>
                 ))}

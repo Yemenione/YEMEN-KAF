@@ -38,6 +38,7 @@ interface Product {
     height?: number;
     depth?: number;
     carriers?: { id: number }[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: Record<string, any>;
     // Removed index signature to enforce stricter typing, add optional fields if needed
     [key: string]: unknown; // Safer than any if strictly necessary, or remove entirely if possible
@@ -85,6 +86,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         hs_code: "",
         origin_country: "Yemen",
         carriers: [] as number[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         translations: {} as Record<string, any>
     });
 
@@ -275,6 +277,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     const next = { ...prev };
 
                     // Distribute translations
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     Object.entries(res.data).forEach(([langCode, values]: [string, any]) => {
                         if (langCode === 'en') {
                             // Update main fields if English is one of the targets (i.e. source was not English)

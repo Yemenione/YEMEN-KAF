@@ -23,8 +23,8 @@ export default function LoginPage() {
         const result = await login(email, password);
 
         if (result.success) {
-            // @ts-expect-error: user property might be missing on result type
-            if (result.user?.isAdmin || result.user?.role === 'SUPER_ADMIN' || result.user?.role === 'ADMIN') {
+            const user = (result as any).user;
+            if (user?.isAdmin || user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') {
                 router.push('/admin-portal');
             } else {
                 router.push('/account');

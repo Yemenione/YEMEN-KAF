@@ -1,9 +1,10 @@
 import React from 'react';
-import { Plus, Trash, Image as ImageIcon } from "lucide-react";
 
 interface StructuredPageFormProps {
     slug: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onChange: (data: any) => void;
 }
 
@@ -17,6 +18,7 @@ export default function StructuredPageForm({ slug, data, onChange }: StructuredP
         });
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleSectionChange = (index: number, field: string, value: any) => {
         const newSections = [...data.sections];
         newSections[index] = { ...newSections[index], [field]: value };
@@ -54,6 +56,7 @@ export default function StructuredPageForm({ slug, data, onChange }: StructuredP
                 {/* Sections */}
                 <div className="space-y-4">
                     <h3 className="font-bold">Content Sections</h3>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {data.sections?.map((section: any, idx: number) => (
                         <div key={idx} className="bg-gray-50 p-4 rounded-lg border space-y-4 relative">
                             <span className="absolute top-2 right-2 text-xs bg-gray-200 px-2 py-1 rounded">Section {idx + 1} ({section.type})</span>
@@ -116,6 +119,7 @@ export default function StructuredPageForm({ slug, data, onChange }: StructuredP
                 {/* Sections (Regions) */}
                 <div className="space-y-4">
                     <h3 className="font-bold">Regions</h3>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {data.sections?.map((section: any, idx: number) => (
                         <div key={idx} className="bg-gray-50 p-4 rounded-lg border space-y-4 relative">
                             <span className="absolute top-2 right-2 text-xs bg-gray-200 px-2 py-1 rounded">Region {idx + 1}</span>

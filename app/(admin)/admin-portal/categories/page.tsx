@@ -15,6 +15,7 @@ interface Category {
     parent_id?: number | null;
     meta_title?: string | null;
     meta_description?: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: Record<string, any>;
 }
 
@@ -36,6 +37,7 @@ export default function CategoriesPage() {
         parent_id: "",
         meta_title: "",
         meta_description: "",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         translations: {} as Record<string, any>
     });
 
@@ -160,6 +162,7 @@ export default function CategoriesPage() {
                     const next = { ...prev };
 
                     // Distribute translations
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     Object.entries(res.data).forEach(([langCode, values]: [string, any]) => {
                         if (langCode === 'en') {
                             // Update main fields if English is one of the targets (i.e. source was not English)

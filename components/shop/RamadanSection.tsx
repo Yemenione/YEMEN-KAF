@@ -17,9 +17,11 @@ interface Product {
     slug: string;
     category?: {
         name: string;
-        translations?: Record<string, any>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        translations?: any;
     } | null;
-    translations?: Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    translations?: any;
 }
 
 export default function RamadanSection() {

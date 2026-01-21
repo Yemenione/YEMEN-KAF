@@ -10,7 +10,9 @@ interface ProductSpecsProps {
     shelfLife?: string;
     description?: string;
     category?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     category_translations?: any;
 }
 
@@ -21,6 +23,7 @@ export default function ProductSpecs({
     description = "",
     category = "honey",
     translations,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     category_translations
 }: ProductSpecsProps) {
     const { t, getLocalizedValue } = useLanguage();

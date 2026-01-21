@@ -67,9 +67,11 @@ export async function GET(req: Request) {
                 description: p.description,
                 images: imageList,
                 category_name: p.category?.name || 'Uncategorized',
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 category_translations: (p.category as any)?.translations || {},
                 stock_quantity: p.stockQuantity,
                 in_stock: p.stockQuantity > 0,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 translations: (p as any).translations || {}
             };
         });
@@ -167,7 +169,7 @@ export async function POST(req: Request) {
                     relatedIds: related_ids || "[]",
                     hsCode: hs_code,
                     originCountry: origin_country || "Yemen",
-                    translations: translations || Prisma.JsonNull,
+                    translations: (translations || Prisma.JsonNull) as any,
                     carriers: body.carriers && Array.isArray(body.carriers) ? {
                         connect: body.carriers.map((id: number) => ({ id: parseInt(id.toString()) }))
                     } : undefined

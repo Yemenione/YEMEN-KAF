@@ -15,6 +15,29 @@ export const metadata: Metadata = {
     description: 'تعرف على قصتنا. نحن متجر يمني يوفر أجود المنتجات اليمنية في أوروبا.',
 };
 
+interface StructuredPageData {
+    hero: {
+        title: string;
+        subtitle: string;
+        image: string;
+    };
+    sections: Array<{
+        type: 'image-text' | 'grid';
+        title: string;
+        content?: string;
+        image?: string;
+        imagePosition?: 'left' | 'right';
+        items?: Array<{
+            title: string;
+            content: string;
+        }>;
+    }>;
+    conclusion: {
+        title: string;
+        content: string;
+    };
+}
+
 async function getPageContent() {
     const page = await prisma.page.findUnique({
         where: { slug: 'our-story' }
@@ -30,7 +53,8 @@ export default async function OurStoryPage() {
     }
 
 
-    const structured = page.structured_content as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const structured = (page as any).structured_content as unknown as StructuredPageData;
 
     if (structured) {
         return (
@@ -38,6 +62,7 @@ export default async function OurStoryPage() {
                 {/* Hero Section with Parallax Effect */}
                 <div className="relative h-[90vh] w-full overflow-hidden">
                     <div className="absolute inset-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={structured.hero.image}
                             alt={structured.hero.title}
@@ -74,6 +99,7 @@ export default async function OurStoryPage() {
 
                 {/* Content Sections */}
                 <div className="max-w-7xl mx-auto py-32 px-6 sm:px-12 space-y-40">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {structured.sections.map((section: any, idx: number) => (
                         <div key={idx}>
                             {section.type === 'image-text' && (
@@ -88,6 +114,7 @@ export default async function OurStoryPage() {
                                             transition={{ duration: 0.7 }}
                                         >
                                             <div className="relative aspect-[3/4] overflow-hidden rounded-sm shadow-2xl">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                                 <img
                                                     src={section.image}
                                                     alt={section.title}
@@ -137,6 +164,7 @@ export default async function OurStoryPage() {
                                     </MotionDiv>
 
                                     <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {section.items.map((item: any, i: number) => (
                                             <MotionDiv
                                                 key={i}
@@ -175,7 +203,7 @@ export default async function OurStoryPage() {
                         <div className="relative z-10 space-y-10">
                             <h2 className="text-4xl md:text-5xl font-serif text-[var(--honey-gold)]">{structured.conclusion.title}</h2>
                             <p className="text-xl md:text-2xl font-light leading-relaxed opacity-90 italic">
-                                "{structured.conclusion.content}"
+                                &quot;{structured.conclusion.content}&quot;
                             </p>
                             <div className="pt-8">
                                 <span className="font-serif text-3xl opacity-50 block mb-2">Yem Kaf</span>

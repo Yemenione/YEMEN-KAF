@@ -12,6 +12,7 @@ interface Product {
     images?: string | string[]; // Can be JSON string or array of URLs
     slug: string;
     created_at?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
 }
 

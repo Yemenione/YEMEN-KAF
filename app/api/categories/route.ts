@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         // const { searchParams } = new URL(req.url);
 
@@ -24,6 +24,7 @@ export async function GET(req: Request) {
             description: c.description,
             image_url: c.imageUrl,
             count: 0, // Count might be added later with aggregations if needed
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             translations: (c as any).translations || {}
         }));
 

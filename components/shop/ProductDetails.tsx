@@ -39,7 +39,9 @@ interface Product {
     stock?: number;
     stock_quantity?: number;
     quantity?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     category_translations?: any;
 }
 

@@ -22,7 +22,9 @@ interface Product {
     description?: string;
     stock_quantity?: number;
     compare_at_price?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     category_translations?: any;
 }
 
@@ -30,6 +32,7 @@ interface Category {
     id: number;
     name: string;
     slug: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
 }
 
@@ -126,7 +129,7 @@ function ShopContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [searchParams, selectedCategory, sortBy, minPrice, maxPrice, locale]);
+    }, [selectedCategory, sortBy, minPrice, maxPrice, locale]);
 
     // Read URL query params on mount or change
     useEffect(() => {

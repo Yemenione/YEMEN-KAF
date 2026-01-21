@@ -19,6 +19,7 @@ interface AttributeValueInput {
     name: string;
     value: string;
     position?: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: Record<string, any>;
 }
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
                 name,
                 publicName,
                 type,
-                translations: translations || {},
+                translations: (translations || {}) as any,
                 values: {
                     create: values.map((v: AttributeValueInput) => ({
                         name: v.name,

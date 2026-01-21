@@ -11,7 +11,9 @@ interface Product {
     images?: string | string[]; // Can be JSON string or array of URLs
     slug: string;
     category_name: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     category_translations?: Record<string, any>;
 }
 

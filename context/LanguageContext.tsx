@@ -9,6 +9,7 @@ interface LanguageContextType {
     setLocale: (locale: Locale) => void;
     t: (key: string) => string;
     isRTL: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getLocalizedValue: (obj: any, key: string) => string;
 }
 
@@ -70,6 +71,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     const isRTL = locale === 'ar';
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const getLocalizedValue = (obj: any, key: string): string => {
         if (!obj) return '';
         if (locale === 'en') return obj[key] || '';

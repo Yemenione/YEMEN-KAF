@@ -14,6 +14,7 @@ interface Product {
     compare_at_price?: string | number;
     images?: string | string[];
     slug: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
 }
 

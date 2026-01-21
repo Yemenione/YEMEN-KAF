@@ -12,6 +12,7 @@ interface Category {
     description?: string;
     imageUrl?: string;
     image_url?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
 }
 
