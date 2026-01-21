@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import {
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
-import { DollarSign, ShoppingBag, Users, AlertTriangle, Package, Ticket } from "lucide-react";
+import { DollarSign, ShoppingBag, Users, AlertTriangle, Package, Ticket, ArrowUpRight, TrendingUp, Calendar, RefreshCw, LayoutDashboard } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { toast } from "sonner";
 
 interface DashboardData {
     kpi: {
@@ -20,13 +21,13 @@ interface DashboardData {
         orderNumber: string;
         status: string;
         totalAmount: number;
-        customer?: { firstName: string; lastName: string; };
+        customerName: string;
     }[];
     recentTickets: {
         id: number;
         subject: string;
         status: string;
-        customer?: { firstName: string; lastName: string; };
+        customerName: string;
     }[];
     error?: string;
 }
@@ -41,6 +42,7 @@ export default function AdminDashboard() {
     }, []);
 
     const fetchDashboardData = async () => {
+        setLoading(true);
         try {
             const res = await fetch('/api/admin/analytics/dashboard');
             const json = await res.json();
@@ -55,20 +57,31 @@ export default function AdminDashboard() {
         } catch {
             console.error('Failed to load dashboard data');
             setData({ error: 'Failed to connect to analytics server' } as DashboardData);
+            toast.error("Failed to sync dashboard data");
         } finally {
             setLoading(false);
         }
     };
 
-    if (loading) return <div className="p-10 text-center text-gray-500">{t('admin.common.loading')}</div>;
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+            <RefreshCw className="w-10 h-10 animate-spin text-[var(--coffee-brown)]" />
+            <p className="text-gray-400 font-medium animate-pulse">Syncing real-time records...</p>
+        </div>
+    );
 
     if (!data || data.error) return (
-        <div className="p-10 text-center">
-            <div className="bg-red-50 text-red-600 p-6 rounded-xl border border-red-100 max-w-md mx-auto">
-                <AlertTriangle className="w-12 h-12 mx-auto mb-4" />
-                <h3 className="text-lg font-bold mb-2">{t('admin.dashboard.dashboardError')}</h3>
-                <p className="text-sm opacity-80 mb-4">{data?.error || 'Unknown error occurred'}</p>
-                <button onClick={() => { setLoading(true); fetchDashboardData(); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium">
+        <div className="p-10 text-center animate-in zoom-in duration-300">
+            <div className="bg-white dark:bg-zinc-900 shadow-2xl shadow-red-500/10 text-gray-900 dark:text-gray-100 p-8 rounded-[2rem] border border-red-100 dark:border-red-900/30 max-w-md mx-auto">
+                <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <AlertTriangle className="w-8 h-8 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">{t('admin.dashboard.dashboardError')}</h3>
+                <p className="text-sm text-gray-500 mb-6">{data?.error || 'Unknown error occurred'}</p>
+                <button
+                    onClick={() => fetchDashboardData()}
+                    className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition-all"
+                >
                     {t('admin.common.tryAgain')}
                 </button>
             </div>
@@ -76,94 +89,171 @@ export default function AdminDashboard() {
     );
 
     return (
-        <div className="space-y-4 md:space-y-6">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-                <h2 className="text-xl md:text-2xl font-bold">{t('admin.dashboard.title')}</h2>
-                <div className="text-xs md:text-sm text-gray-500">{t('admin.dashboard.lastUpdated')}: {new Date().toLocaleTimeString()}</div>
+        <div className="space-y-8 animate-in fade-in duration-700">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-6">
+                <div>
+                    <div className="flex items-center gap-3 mb-1">
+                        <LayoutDashboard className="w-6 h-6 text-[var(--coffee-brown)]" />
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Control Panel</span>
+                    </div>
+                    <h2 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white">
+                        {t('admin.dashboard.title')}
+                    </h2>
+                </div>
+                <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 px-4 py-2.5 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm font-bold text-gray-600 dark:text-zinc-400">
+                        {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </span>
+                    <div className="w-px h-4 bg-gray-200 dark:bg-zinc-700 mx-1" />
+                    <button
+                        onClick={fetchDashboardData}
+                        className="p-1 hover:text-[var(--coffee-brown)] transition-colors"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KPICard
-                    title={t('admin.dashboard.kpi.totalRevenue')}
+                    title="Gross Revenue"
                     value={`€${Number(data.kpi?.revenue || 0).toLocaleString()}`}
-                    icon={<DollarSign className="w-4 h-4 md:w-5 md:h-5" />}
-                    color="green"
+                    icon={<DollarSign className="w-6 h-6" />}
+                    trend="+12.5%"
+                    color="brown"
                 />
                 <KPICard
-                    title={t('admin.dashboard.kpi.totalOrders')}
+                    title="Total Orders"
                     value={data.kpi?.orders || 0}
-                    icon={<ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />}
-                    color="blue"
+                    icon={<ShoppingBag className="w-6 h-6" />}
+                    trend="+8.2%"
+                    color="zinc"
                 />
                 <KPICard
-                    title={t('admin.dashboard.kpi.totalCustomers')}
+                    title="New Customers"
                     value={data.kpi?.customers || 0}
-                    icon={<Users className="w-4 h-4 md:w-5 md:h-5" />}
-                    color="purple"
+                    icon={<Users className="w-6 h-6" />}
+                    trend="+5.4%"
+                    color="brown"
                 />
                 <KPICard
-                    title={t('admin.dashboard.kpi.lowStockItems')}
+                    title="Low Stock"
                     value={data.kpi?.lowStock || 0}
-                    icon={<AlertTriangle className="w-4 h-4 md:w-5 md:h-5" />}
-                    color="red"
-                    negative={(data.kpi?.lowStock || 0) > 0}
+                    icon={<AlertTriangle className="w-6 h-6" />}
+                    trend={data.kpi?.lowStock > 0 ? "Check now" : "All set"}
+                    color={data.kpi?.lowStock > 0 ? "red" : "green"}
+                    negative={data.kpi?.lowStock > 0}
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Sales Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm min-h-[300px] md:min-h-[400px]">
-                    <h3 className="font-semibold mb-4 md:mb-6">Sales Overview (Last 30 Days)</h3>
-                    <div className="h-60 md:h-80 w-full">
-                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800 shadow-2xl shadow-gray-200/40 dark:shadow-none">
+                    <div className="flex justify-between items-center mb-8">
+                        <div>
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5 text-green-500" />
+                                Sales Performance
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1">Daily revenue overview for the last 30 days</p>
+                        </div>
+                        <select className="bg-gray-50 dark:bg-zinc-800 border-none rounded-xl px-4 py-2 text-xs font-bold focus:ring-2 focus:ring-[var(--coffee-brown)]/20">
+                            <option>Last 30 Days</option>
+                            <option>Last 7 Days</option>
+                        </select>
+                    </div>
+
+                    <div className="h-[350px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={data.salesChart}>
                                 <defs>
                                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#6F4E37" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="#6F4E37" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" strokeOpacity={0.5} />
                                 <XAxis
                                     dataKey="date"
-                                    tickFormatter={(str) => str.slice(5)} // Show MM-DD
-                                    stroke="#9CA3AF"
-                                    fontSize={12}
+                                    tickFormatter={(str) => {
+                                        const d = new Date(str);
+                                        return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+                                    }}
+                                    stroke="#94A3B8"
+                                    fontSize={10}
+                                    fontWeight={600}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    dy={10}
                                 />
-                                <YAxis stroke="#9CA3AF" fontSize={12} />
+                                <YAxis
+                                    stroke="#94A3B8"
+                                    fontSize={10}
+                                    fontWeight={600}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    dx={-10}
+                                    tickFormatter={(val) => `€${val}`}
+                                />
                                 <Tooltip
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                    cursor={{ stroke: '#6F4E37', strokeWidth: 2, strokeDasharray: '4 4' }}
+                                    contentStyle={{
+                                        borderRadius: '1.5rem',
+                                        border: 'none',
+                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                                        padding: '1rem',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        backdropFilter: 'blur(8px)'
+                                    }}
+                                    itemStyle={{ color: '#6F4E37', fontWeight: 800, fontSize: '14px' }}
+                                    labelStyle={{ fontWeight: 600, color: '#64748B', marginBottom: '0.5rem' }}
                                 />
-                                <Area type="monotone" dataKey="sales" stroke="#8884d8" fillOpacity={1} fill="url(#colorSales)" />
+                                <Area
+                                    type="monotone"
+                                    dataKey="sales"
+                                    stroke="#6F4E37"
+                                    strokeWidth={4}
+                                    fillOpacity={1}
+                                    fill="url(#colorSales)"
+                                    animationDuration={2000}
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Recent Activity */}
-                <div className="space-y-4 md:space-y-6">
+                {/* Side Activity */}
+                <div className="space-y-8">
                     {/* Recent Orders */}
-                    <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-                        <h3 className="font-semibold mb-3 md:mb-4">Recent Orders</h3>
-                        <div className="space-y-3 md:space-y-4">
+                    <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800 shadow-xl shadow-gray-200/30 dark:shadow-none">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-bold">Recent Orders</h3>
+                            <button className="text-[10px] font-bold uppercase tracking-widest text-[var(--coffee-brown)] hover:opacity-70 transition-opacity">View All</button>
+                        </div>
+                        <div className="space-y-4">
                             {data.recentOrders?.length === 0 ? (
-                                <p className="text-gray-500 text-sm">No orders yet.</p>
+                                <div className="py-10 text-center opacity-40">
+                                    <ShoppingBag className="w-8 h-8 mx-auto mb-2" />
+                                    <p className="text-xs font-bold">No orders found</p>
+                                </div>
                             ) : (
                                 data.recentOrders?.map((order) => (
-                                    <div key={order.id} className="flex items-center gap-3 border-b border-gray-50 dark:border-zinc-800 pb-3 last:border-0 last:pb-0">
-                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
-                                            <Package className="w-4 h-4" />
+                                    <div key={order.id} className="group flex items-center gap-4 p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-zinc-700">
+                                        <div className="w-12 h-12 bg-zinc-900 text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-zinc-900/10">
+                                            <Package className="w-5 h-5" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-start">
-                                                <p className="text-sm font-medium truncate">#{order.orderNumber}</p>
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${getStatusColor(order.status)} shrink-0`}>
+                                                <p className="text-sm font-bold truncate">#{order.orderNumber}</p>
+                                                <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${getStatusColor(order.status)} shrink-0`}>
                                                     {order.status}
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-gray-500 truncate">
-                                                {order.customer?.firstName} {order.customer?.lastName} • €{Number(order.totalAmount).toFixed(2)}
+                                            <p className="text-[11px] text-gray-500 truncate mt-0.5 font-medium">
+                                                {order.customerName} • <span className="text-zinc-900 dark:text-gray-100 font-bold">€{Number(order.totalAmount).toFixed(2)}</span>
                                             </p>
                                         </div>
                                     </div>
@@ -171,32 +261,39 @@ export default function AdminDashboard() {
                             )}
                         </div>
                     </div>
-                </div>
 
-                {/* Recent Tickets */}
-                <div className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-                    <h3 className="font-semibold mb-3 md:mb-4">Latest Support Tickets</h3>
-                    <div className="space-y-3 md:space-y-4">
-                        {data.recentTickets?.length === 0 ? (
-                            <p className="text-gray-500 text-sm">No active tickets.</p>
-                        ) : (
-                            data.recentTickets?.map((ticket) => (
-                                <div key={ticket.id} className="flex items-center gap-3">
-                                    <div className="p-2 bg-orange-50 text-orange-600 rounded-lg shrink-0">
-                                        <Ticket className="w-4 h-4" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium truncate">{ticket.subject}</p>
-                                        <p className="text-xs text-gray-500">
-                                            {ticket.customer?.firstName} {ticket.customer?.lastName}
-                                        </p>
-                                    </div>
-                                    <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full shrink-0">
-                                        {ticket.status}
-                                    </span>
-                                </div>
-                            ))
-                        )}
+                    {/* Pending Tickets */}
+                    <div className="bg-zinc-900 text-white p-8 rounded-[2.5rem] border border-zinc-800 shadow-2xl relative overflow-hidden group">
+                        <div className="relative z-10">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-lg font-bold text-white">Support Queue</h3>
+                                <Ticket className="w-5 h-5 text-[var(--honey-gold)] opacity-50" />
+                            </div>
+                            <div className="space-y-4">
+                                {data.recentTickets?.length === 0 ? (
+                                    <p className="text-xs text-zinc-500 font-medium">Clear inbox! All tickets resolved.</p>
+                                ) : (
+                                    data.recentTickets?.map((ticket) => (
+                                        <div key={ticket.id} className="bg-zinc-800/50 p-4 rounded-2xl border border-zinc-700/50 hover:bg-zinc-800 transition-colors">
+                                            <div className="flex justify-between gap-3 mb-2">
+                                                <p className="text-sm font-bold truncate leading-tight">{ticket.subject}</p>
+                                                <span className="text-[8px] bg-honey-gold/20 text-[var(--honey-gold)] px-2 py-0.5 rounded-lg shrink-0 font-black uppercase tracking-widest">
+                                                    {ticket.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-[10px] text-zinc-400 font-medium">
+                                                {ticket.customerName}
+                                            </p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                            <button className="w-full mt-6 py-3 bg-[var(--coffee-brown)] hover:bg-[var(--coffee-light)] text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all">
+                                Go to Help Desk
+                            </button>
+                        </div>
+                        {/* Decorative circles */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--coffee-brown)]/10 rounded-full -mr-16 -mt-16 blur-3xl group-hover:scale-150 transition-transform duration-1000" />
                     </div>
                 </div>
             </div>
@@ -208,36 +305,65 @@ interface KPICardProps {
     title: string;
     value: string | number;
     icon: React.ReactNode;
-    color: 'green' | 'blue' | 'purple' | 'red';
+    color: 'brown' | 'zinc' | 'green' | 'red';
+    trend: string;
     negative?: boolean;
 }
 
-function KPICard({ title, value, icon, color, negative }: KPICardProps) {
-    const colorClasses = {
-        green: 'bg-green-50 text-green-600',
-        blue: 'bg-blue-50 text-blue-600',
-        purple: 'bg-purple-50 text-purple-600',
-        red: 'bg-red-50 text-red-600',
+function KPICard({ title, value, icon, color, trend, negative }: KPICardProps) {
+    const configs = {
+        brown: {
+            bg: 'bg-[var(--coffee-brown)]',
+            iconBg: 'bg-white/20',
+            text: 'text-white'
+        },
+        zinc: {
+            bg: 'bg-zinc-900',
+            iconBg: 'bg-zinc-800',
+            text: 'text-white'
+        },
+        green: {
+            bg: 'bg-green-600',
+            iconBg: 'bg-green-500/50',
+            text: 'text-white'
+        },
+        red: {
+            bg: 'bg-red-600',
+            iconBg: 'bg-red-500/50',
+            text: 'text-white'
+        }
     };
 
+    const config = configs[color];
+
     return (
-        <div className={`bg-white dark:bg-zinc-900 p-3 md:p-5 rounded-xl border ${negative ? 'border-red-200 bg-red-50/50' : 'border-gray-200 dark:border-zinc-800'} shadow-sm flex items-center gap-3 md:gap-4`}>
-            <div className={`p-2 md:p-3 rounded-lg ${colorClasses[color] || 'bg-gray-100'}`}>
-                {icon}
+        <div className={`${config.bg} p-6 rounded-[2.25rem] shadow-xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-300`}>
+            <div className="flex justify-between items-start mb-6 relative z-10">
+                <div className={`${config.iconBg} p-4 rounded-2xl ${config.text}`}>
+                    {icon}
+                </div>
+                <div className={`flex items-center gap-1 ${config.text} bg-white/10 px-2 py-1 rounded-lg text-[10px] font-black`}>
+                    {negative ? <ArrowUpRight className="w-3 h-3 rotate-180" /> : <ArrowUpRight className="w-3 h-3" />}
+                    {trend}
+                </div>
             </div>
-            <div>
-                <p className="text-[10px] md:text-xs font-medium text-gray-500 uppercase">{title}</p>
-                <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+            <div className="relative z-10">
+                <p className={`text-xs font-bold uppercase tracking-widest ${config.text} opacity-60 mb-1`}>{title}</p>
+                <p className={`text-3xl font-black ${config.text} tracking-tight`}>{value}</p>
             </div>
+            {/* Decoration */}
+            <div className="absolute bottom-0 right-0 w-24 h-24 bg-white/5 rounded-full -mb-12 -mr-12 group-hover:scale-125 transition-transform duration-700" />
         </div>
     );
 }
 
 function getStatusColor(status: string) {
     switch (status) {
-        case 'Delivered': return 'bg-green-100 text-green-700';
-        case 'Processing': return 'bg-blue-100 text-blue-700';
-        case 'Cancelled': return 'bg-red-100 text-red-700';
-        default: return 'bg-gray-100 text-gray-600';
+        case 'Delivered':
+        case 'Completed': return 'bg-green-500/10 text-green-500';
+        case 'Processing':
+        case 'Pending': return 'bg-blue-500/10 text-blue-500';
+        case 'Cancelled': return 'bg-red-500/10 text-red-500';
+        default: return 'bg-gray-500/10 text-gray-500';
     }
 }

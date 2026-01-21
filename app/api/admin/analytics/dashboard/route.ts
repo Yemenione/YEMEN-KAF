@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from '@/lib/mysql';
+import { verifyPermission } from "@/lib/admin-auth";
+import { Permission } from "@/lib/rbac";
 
 import { RowDataPacket } from 'mysql2';
 
@@ -34,6 +36,9 @@ interface RecentTicketRow extends RowDataPacket {
 
 export async function GET() {
     try {
+        const { authorized, response } = await verifyPermission(Permission.VIEW_ANALYTICS);
+        if (!authorized) return response;
+
         // 1. Get total revenue, orders, customers
         const [counts] = await pool.execute<KpiRow[]>(
             `SELECT 

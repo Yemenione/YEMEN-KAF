@@ -2,28 +2,53 @@ import { useState } from "react";
 import Image from "next/image";
 import { Plus, Heart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 
 interface ProductCardProps {
-    id?: number; // Make optional to avoid breaking existing usage immediately, but ideally required
+    id?: number;
     title: string;
     price: string;
+    startingPrice?: string;
+    compareAtPrice?: string;
     image: string;
     category: string;
+    colors?: string[];
+    hasVariants?: boolean;
+    variantCount?: number;
+    layout?: 'grid' | 'list';
 }
 
-export default function ProductCard({ id, title, price, image, category }: ProductCardProps) {
+export default function ProductCard({
+    id,
+    title,
+    price,
+    startingPrice,
+    compareAtPrice,
+    image,
+    category,
+    colors = [],
+    hasVariants = false,
+    variantCount = 0,
+    layout = 'grid'
+}: ProductCardProps) {
     const { isAuthenticated } = useAuth();
+    const { t, locale } = useLanguage();
     const router = useRouter();
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // Ideally, we fetch wishlist status on mount, but for now we start false
-    // A more robust implementation would check if this ID is in the user's wishlist list context
+    // Calculate Discount
+    const numericPrice = parseFloat(price.replace(/[^\d.]/g, ''));
+    const numericComparePrice = compareAtPrice ? parseFloat(compareAtPrice.replace(/[^\d.]/g, '')) : null;
+    const hasDiscount = numericComparePrice && numericComparePrice > numericPrice;
+    const discountPercentage = hasDiscount
+        ? Math.round(((numericComparePrice! - numericPrice) / numericComparePrice!) * 100)
+        : null;
 
     const toggleWishlist = async (e: React.MouseEvent) => {
-        e.preventDefault(); // Prevent navigating to product page
+        e.preventDefault();
         e.stopPropagation();
 
         if (!isAuthenticated) {
@@ -53,55 +78,168 @@ export default function ProductCard({ id, title, price, image, category }: Produ
         }
     };
 
+    if (layout === 'list') {
+        return (
+            <div className="group relative w-full bg-white rounded-2xl border border-black/5 flex flex-row overflow-hidden hover:shadow-xl transition-all duration-500 animate-in fade-in slide-in-from-bottom-2">
+                {/* Image Section */}
+                <div className="relative w-48 sm:w-64 aspect-square overflow-hidden bg-[#F9F6F1]">
+                    <Image
+                        src={image}
+                        alt={title}
+                        fill
+                        className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                    />
+                    {hasDiscount && (
+                        <div className="absolute top-3 start-3 bg-red-600 text-white px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg z-10">
+                            -{discountPercentage}%
+                        </div>
+                    )}
+                </div>
+
+                {/* Content Section */}
+                <div className="flex-1 p-6 flex flex-col justify-between">
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black">
+                                {category}
+                            </span>
+                            <button
+                                onClick={toggleWishlist}
+                                className="text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                                <Heart size={18} className={isWishlisted ? "fill-red-500 text-red-500" : ""} />
+                            </button>
+                        </div>
+                        <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-3 group-hover:text-[var(--coffee-brown)] transition-colors">
+                            {title}
+                        </h3>
+
+                        {colors.length > 0 && (
+                            <div className="flex items-center gap-2 mb-4">
+                                {colors.slice(0, 6).map((color, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="w-4 h-4 rounded-full border border-black/5 shadow-inner ring-1 ring-transparent hover:ring-black/20 transition-all cursor-pointer"
+                                        style={{ backgroundColor: color.startsWith('#') || color.startsWith('rgb') ? color : '#ddd' }}
+                                        title={color}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex items-end justify-between">
+                        <div className="space-y-1">
+                            {hasVariants && (
+                                <p className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black">
+                                    {t('product.startingAt') || (locale === 'fr' ? 'À partir de' : 'From')}
+                                </p>
+                            )}
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl font-black text-black">
+                                    {startingPrice ? `€${Number(startingPrice).toFixed(2)}` : price}
+                                </span>
+                                {hasDiscount && !hasVariants && (
+                                    <span className="text-sm text-gray-400 line-through decoration-red-400/30">
+                                        {compareAtPrice}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        <button className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[var(--coffee-brown)] transition-all shadow-lg hover:shadow-black/20">
+                            <Plus size={16} /> {t('shop.addToCart')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="group relative w-full cursor-pointer">
+        <div className="group relative w-full cursor-pointer overflow-hidden animate-in fade-in duration-700">
             {/* Image Container */}
-            <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-100 mb-6">
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F9F6F1] rounded-2xl mb-4">
                 <Image
                     src={image}
                     alt={title}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
 
-                {/* Minimal Overlay Badge */}
-                <div className="absolute top-4 start-4">
-                    <span className="inline-block px-3 py-1 text-[10px] uppercase tracking-widest bg-white text-black font-medium">
+                {/* Badges */}
+                <div className="absolute top-3 start-3 flex flex-col gap-2 z-10">
+                    <span className="inline-block px-2.5 py-1 text-[9px] uppercase tracking-[0.2em] bg-white text-black font-black rounded-lg shadow-sm border border-black/5">
                         {category}
                     </span>
+                    {hasDiscount && (
+                        <span className="inline-block px-2.5 py-1 text-[9px] uppercase tracking-[0.2em] bg-red-600 text-white font-black rounded-lg shadow-md self-start">
+                            -{discountPercentage}%
+                        </span>
+                    )}
                 </div>
 
                 {/* Wishlist Button */}
                 <button
                     onClick={toggleWishlist}
                     disabled={loading}
-                    className="absolute top-4 end-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all shadow-sm"
+                    className="absolute top-3 end-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all shadow-sm group/wish"
                 >
                     <Heart
-                        size={16}
+                        size={14}
                         className={clsx(
-                            "transition-colors duration-300",
-                            isWishlisted ? "fill-red-500 text-red-500" : "text-black group-hover:text-red-500"
+                            "transition-all duration-300",
+                            isWishlisted ? "fill-red-500 text-red-500 scale-110" : "text-black group-hover/wish:text-red-500"
                         )}
                     />
                 </button>
 
                 {/* 'Quick Add' Button - Appears on hover */}
-                <button className="absolute bottom-4 end-4 w-10 h-10 bg-white text-black flex items-center justify-center rounded-full translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black hover:text-white shadow-lg z-20">
-                    <Plus size={20} />
+                <button className="absolute bottom-3 end-3 w-9 h-9 bg-white text-black flex items-center justify-center rounded-full translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 hover:bg-black hover:text-white shadow-xl z-20 overflow-hidden">
+                    <Plus size={18} />
                 </button>
             </div>
 
-            {/* Content (Outside the image for cleanliness) */}
-            <div className="flex justify-between items-start px-2">
-                <div>
-                    <h3 className="text-base md:text-xl font-serif text-black mb-1 group-hover:underline decoration-1 underline-offset-4 line-clamp-2">
-                        {title}
-                    </h3>
-                    <p className="hidden md:block text-xs text-gray-400 uppercase tracking-wider">Premium Selection</p>
+            {/* Content */}
+            <div className="px-1 space-y-2 text-center">
+                {/* Color Swatches */}
+                {colors.length > 0 && (
+                    <div className="flex items-center justify-center gap-1.5 mb-2.5">
+                        {colors.slice(0, 4).map((color, idx) => (
+                            <div
+                                key={idx}
+                                className="w-3.5 h-3.5 rounded-full border border-black/5 shadow-inner ring-1 ring-transparent hover:ring-black/20 transition-all cursor-pointer"
+                                style={{ backgroundColor: color.startsWith('#') || color.startsWith('rgb') ? color : '#ddd' }}
+                                title={color}
+                            />
+                        ))}
+                        {colors.length > 4 && (
+                            <span className="text-[10px] font-bold text-gray-400">+{colors.length - 4}</span>
+                        )}
+                    </div>
+                )}
+
+                <h3 className="text-sm md:text-base font-medium text-gray-900 tracking-tight line-clamp-1 leading-snug group-hover:text-[var(--coffee-brown)] transition-colors uppercase">
+                    {title}
+                </h3>
+
+                <div className="flex flex-col items-center gap-0.5">
+                    {hasVariants && (
+                        <span className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black">
+                            {t('product.startingAt') || (locale === 'fr' ? 'À partir de' : 'From')}
+                        </span>
+                    )}
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm md:text-lg font-black text-black tracking-tighter">
+                            {startingPrice ? `€${Number(startingPrice).toFixed(2)}` : price}
+                        </span>
+                        {hasDiscount && !hasVariants && (
+                            <span className="text-xs md:text-sm text-gray-400 line-through tracking-tighter decoration-red-400/30">
+                                {compareAtPrice}
+                            </span>
+                        )}
+                    </div>
                 </div>
-                <span className="text-sm md:text-base font-medium text-black whitespace-nowrap">{price}</span>
             </div>
         </div>
     );

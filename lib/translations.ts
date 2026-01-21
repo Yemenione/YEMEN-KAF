@@ -128,6 +128,7 @@ export const translations = {
         },
         // Product
         product: {
+            startingAt: "Starting from",
             quantity: "Quantity",
             addToCart: "Add to Cart",
             description: "Description",
@@ -539,8 +540,26 @@ export const translations = {
                     height: "Height",
                     metaTitle: "Meta Title",
                     metaDescription: "Meta Description",
-                    slug: "URL Slug"
+                    slug: "URL Slug",
+                    publicName: "Public Name",
+                    internalName: "Internal Name",
+                    type: "Type",
+                    values: "Values"
                 }
+            },
+            brands: {
+                title: "Brands & Suppliers",
+                addNew: "Add Brand",
+                searchPlaceholder: "Search brands...",
+                logo: "Logo",
+                description: "Description",
+                confirmDelete: "Delete this brand? This might affect associated products."
+            },
+            attributes: {
+                title: "Product Attributes",
+                addNew: "Add Attribute",
+                searchPlaceholder: "Search attributes...",
+                confirmDelete: "Delete this attribute? Usage in products may break."
             },
             customers: {
                 title: "Customers Management",
@@ -559,6 +578,33 @@ export const translations = {
                     addresses: "Addresses",
                     notes: "Notes"
                 }
+            },
+            inventory: {
+                title: "Inventory Management",
+                description: "Real-time stock tracking and adjustments.",
+                stats: {
+                    totalItems: "Total Items",
+                    lowStock: "Low Stock Alerts",
+                    totalValue: "Total Stock Value"
+                },
+                table: {
+                    product: "Product",
+                    sku: "Ref / SKU",
+                    stock: "Stock",
+                    value: "Value (Est.)",
+                    actions: "Actions"
+                },
+                adjust: {
+                    title: "Adjust Stock",
+                    type: "Adjustment Type",
+                    quantity: "Quantity",
+                    reason: "Reason / Note",
+                    current: "Current",
+                    after: "After Adjustment",
+                    save: "Save Adjustment"
+                },
+                loading: "Loading inventory...",
+                noResults: "No products found."
             },
             settings: {
                 title: "Settings",
@@ -600,6 +646,9 @@ export const translations = {
                     payments: "Payments",
                     team: "Team",
                     systemLogs: "System Logs",
+                    blog: "Blog",
+                    profile: "My Profile",
+                    stripe: "Stripe Config",
                     signOut: "Sign Out"
                 }
             }
@@ -734,6 +783,7 @@ export const translations = {
         },
         // Product
         product: {
+            startingAt: "À partir de",
             quantity: "Quantité",
             addToCart: "Ajouter au panier",
             description: "Description",
@@ -1144,8 +1194,26 @@ export const translations = {
                     height: "Hauteur",
                     metaTitle: "Titre Meta",
                     metaDescription: "Description Meta",
-                    slug: "URL Slug"
+                    slug: "URL Slug",
+                    publicName: "Nom Public",
+                    internalName: "Nom Interne",
+                    type: "Type",
+                    values: "Valeurs"
                 }
+            },
+            brands: {
+                title: "Marques et Fournisseurs",
+                addNew: "Ajouter une Marque",
+                searchPlaceholder: "Rechercher des marques...",
+                logo: "Logo",
+                description: "Description",
+                confirmDelete: "Supprimer cette marque ? Cela pourrait affecter les produits associés."
+            },
+            attributes: {
+                title: "Attributs de Produit",
+                addNew: "Ajouter un Attribut",
+                searchPlaceholder: "Rechercher des attributs...",
+                confirmDelete: "Supprimer cet attribut ? L'utilisation dans les produits pourrait être compromise."
             },
             customers: {
                 title: "Gestion des Clients",
@@ -1164,6 +1232,33 @@ export const translations = {
                     addresses: "Adresses",
                     notes: "Notes"
                 }
+            },
+            inventory: {
+                title: "Gestion du Stock",
+                description: "Suivi et ajustements des stocks en temps réel.",
+                stats: {
+                    totalItems: "Articles Totaux",
+                    lowStock: "Alertes Stock Faible",
+                    totalValue: "Valeur Totale du Stock"
+                },
+                table: {
+                    product: "Produit",
+                    sku: "Réf / SKU",
+                    stock: "Stock",
+                    value: "Valeur (Est.)",
+                    actions: "Actions"
+                },
+                adjust: {
+                    title: "Ajuster le Stock",
+                    type: "Type d'Ajustement",
+                    quantity: "Quantité",
+                    reason: "Raison / Note",
+                    current: "Actuel",
+                    after: "Après Ajustement",
+                    save: "Enregistrer l'Ajustement"
+                },
+                loading: "Chargement du stock...",
+                noResults: "Aucun produit trouvé."
             },
             settings: {
                 title: "Paramètres",
@@ -1205,6 +1300,9 @@ export const translations = {
                     payments: "Paiements",
                     team: "Équipe",
                     systemLogs: "Journaux Système",
+                    blog: "Blog",
+                    profile: "Mon Profil",
+                    stripe: "Configuration Stripe",
                     signOut: "Déconnexion"
                 }
             }
@@ -1339,6 +1437,7 @@ export const translations = {
         },
         // Product
         product: {
+            startingAt: "ابتداءً من",
             quantity: "الكمية",
             addToCart: "أضف للسلة",
             description: "الوصف",
@@ -1749,8 +1848,26 @@ export const translations = {
                     height: "الارتفاع",
                     metaTitle: "عنوان Meta",
                     metaDescription: "وصف Meta",
-                    slug: "الرابط"
+                    slug: "الرابط",
+                    publicName: "الاسم العلني",
+                    internalName: "الاسم الداخلي",
+                    type: "النوع",
+                    values: "القيم"
                 }
+            },
+            brands: {
+                title: "العلامات التجارية والموردين",
+                addNew: "إضافة علامة تجارية",
+                searchPlaceholder: "البحث عن العلامات التجارية...",
+                logo: "الشعار",
+                description: "الوصف",
+                confirmDelete: "هل تريد حذف هذه العلامة التجارية؟ قد يؤثر ذلك على المنتجات المرتبطة."
+            },
+            attributes: {
+                title: "سمات المنتجات",
+                addNew: "إضافة سمة",
+                searchPlaceholder: "البحث عن السمات...",
+                confirmDelete: "هل تريد حذف هذه السمة؟ قد يتأثر استخدامها في المنتجات."
             },
             customers: {
                 title: "إدارة العملاء",
@@ -1769,6 +1886,33 @@ export const translations = {
                     addresses: "العناوين",
                     notes: "ملاحظات"
                 }
+            },
+            inventory: {
+                title: "إدارة المخزون",
+                description: "تتبع المخزون والتعديلات في الوقت الفعلي.",
+                stats: {
+                    totalItems: "إجمالي العناصر",
+                    lowStock: "تنبيهات انخفاض المخزون",
+                    totalValue: "إجمالي قيمة المخزون"
+                },
+                table: {
+                    product: "المنتج",
+                    sku: "المرجع / SKU",
+                    stock: "المخزون",
+                    value: "القيمة (تقديرية)",
+                    actions: "إجراءات"
+                },
+                adjust: {
+                    title: "تعديل المخزون",
+                    type: "نوع التعديل",
+                    quantity: "الكمية",
+                    reason: "السبب / ملاحظة",
+                    current: "الحالي",
+                    after: "بعد التعديل",
+                    save: "حفظ التعديل"
+                },
+                loading: "جاري تحميل المخزون...",
+                noResults: "لم يتم العثور على منتجات."
             },
             settings: {
                 title: "الإعدادات",
@@ -1810,6 +1954,9 @@ export const translations = {
                     payments: "المدفوعات",
                     team: "الفريق",
                     systemLogs: "سجلات النظام",
+                    blog: "المدونة",
+                    profile: "ملفي الشخصي",
+                    stripe: "إعدادات سترايب",
                     signOut: "تسجيل الخروج"
                 }
             }

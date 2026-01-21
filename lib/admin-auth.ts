@@ -53,6 +53,8 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     }
 }
 
+import { Permission, hasPermission } from './rbac';
+
 /**
  * Helper to enforce admin check and return unauthorized response if failed.
  */
@@ -61,5 +63,22 @@ export async function verifyAdmin() {
     if (!admin) {
         return { authorized: false, response: Response.json({ error: 'Unauthorized: Admin access required' }, { status: 401 }) };
     }
+    return { authorized: true, admin };
+}
+
+/**
+ * Enforce a specific permission check.
+ */
+export async function verifyPermission(permission: Permission) {
+    const { authorized, admin, response } = await verifyAdmin();
+    if (!authorized || !admin) return { authorized, response };
+
+    if (!hasPermission(admin.role, permission)) {
+        return {
+            authorized: false,
+            response: Response.json({ error: `Forbidden: Missing permission ${permission}` }, { status: 403 })
+        };
+    }
+
     return { authorized: true, admin };
 }

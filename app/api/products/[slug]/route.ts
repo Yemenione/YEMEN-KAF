@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { verifyAdmin } from '@/lib/admin-auth';
+import { verifyPermission } from '@/lib/admin-auth';
+import { Permission } from '@/lib/rbac';
 import { prisma } from '@/lib/prisma';
 import pool from '@/lib/mysql';
 
@@ -85,7 +86,7 @@ export async function PUT(
     { params }: { params: Promise<{ slug: string }> }
 ) {
     try {
-        const { authorized, response } = await verifyAdmin();
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_PRODUCTS);
         if (!authorized) return response;
 
         const { slug } = await params;
@@ -165,7 +166,7 @@ export async function DELETE(
     { params }: { params: Promise<{ slug: string }> }
 ) {
     try {
-        const { authorized, response } = await verifyAdmin();
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_PRODUCTS);
         if (!authorized) return response;
 
         const { slug } = await params;

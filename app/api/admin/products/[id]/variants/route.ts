@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+import { verifyPermission } from '@/lib/admin-auth';
+import { Permission } from '@/lib/rbac';
 
 export async function GET(
     req: NextRequest,
@@ -8,6 +10,8 @@ export async function GET(
 ) {
     const params = await props.params;
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_PRODUCTS);
+        if (!authorized) return response;
         const productId = parseInt(params.id);
         const variants = await prisma.productVariant.findMany({
             where: { productId, isActive: true },
@@ -62,6 +66,8 @@ export async function POST(
 ) {
     const params = await props.params;
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_PRODUCTS);
+        if (!authorized) return response;
         const productId = parseInt(params.id);
         const body = await req.json();
         const { variants } = body; // Array of variants

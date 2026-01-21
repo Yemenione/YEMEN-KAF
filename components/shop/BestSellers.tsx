@@ -10,11 +10,20 @@ interface Product {
     name: string;
     description: string;
     price: string | number;
-    images?: string | string[]; // Can be JSON string or array of URLs
+    regular_price?: string;
+    starting_price?: string;
+    has_variants?: boolean;
+    variant_count?: number;
+    colors?: string[];
+    images?: string | string[];
     slug: string;
+    category_name?: string;
+    category_translations?: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
 }
+
+import ProductCard from "./ProductCard";
 
 export default function BestSellers() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -26,12 +35,10 @@ export default function BestSellers() {
         try {
             if (!product.images) return '/images/honey-jar.jpg';
 
-            // If it's already an array, return the first item
             if (Array.isArray(product.images)) {
                 return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
             }
 
-            // Check if it's already a clean URL (legacy/csv import support)
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
@@ -41,7 +48,6 @@ export default function BestSellers() {
                 return parsed[0];
             }
         } catch {
-            // Fallback for non-JSON strings
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
@@ -81,7 +87,7 @@ export default function BestSellers() {
     if (products.length === 0) return null;
 
     return (
-        <section className="py-16 bg-gray-50 border-t border-black/5">
+        <section className="py-16 bg-gray-50/50 border-t border-black/5">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-12">
                     <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold flex items-center justify-center gap-2">
@@ -93,45 +99,21 @@ export default function BestSellers() {
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-10">
                     {products.map((product) => (
-                        <Link
-                            key={product.id}
-                            href={`/shop/${product.slug}`}
-                            className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100"
-                        >
-                            <div className="relative aspect-square overflow-hidden bg-gray-100">
-                                <Image
-                                    src={getMainImage(product)}
-                                    alt={product.name}
-                                    fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                    sizes="(max-width: 768px) 50vw, 25vw"
-                                />
-                                <div className="absolute top-2 start-2 flex flex-col gap-2">
-                                    <div className="bg-[var(--honey-gold)] text-white px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5">
-                                        <TrendingUp size={10} />
-                                        {t('home.bestSellers.topSale')}
-                                    </div>
-                                    <div className="bg-orange-600 text-white px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
-                                        <span>🔥</span>
-                                        {t('home.bestSellers.trending')}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-4 space-y-2">
-                                <h3 className="font-serif text-lg text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-2">
-                                    {getLocalizedValue(product, 'name')}
-                                </h3>
-                                <div className="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
-                                    <span className="text-xl font-bold text-[var(--coffee-brown)]">
-                                        €{Number(product.price).toFixed(2)}
-                                    </span>
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                                        42 {t('home.bestSellers.soldCount')}
-                                    </span>
-                                </div>
-                            </div>
+                        <Link key={product.id} href={`/shop/${product.slug}`} className="block">
+                            <ProductCard
+                                id={product.id}
+                                title={getLocalizedValue(product, 'name')}
+                                price={`€${Number(product.price).toFixed(2)}`}
+                                startingPrice={product.starting_price}
+                                compareAtPrice={`€${Number(product.regular_price).toFixed(2)}`}
+                                image={getMainImage(product)}
+                                category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || t('home.bestSellers.topSale')}
+                                colors={product.colors}
+                                hasVariants={product.has_variants}
+                                variantCount={product.variant_count}
+                            />
                         </Link>
                     ))}
                 </div>

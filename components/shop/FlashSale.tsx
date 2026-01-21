@@ -11,12 +11,21 @@ interface Product {
     id: number;
     name: string;
     price: string | number;
+    regular_price?: string | number;
+    starting_price?: string | number;
+    has_variants?: boolean;
+    variant_count?: number;
+    colors?: string[];
     compare_at_price?: string | number;
     images?: string | string[];
     slug: string;
+    category_name?: string;
+    category_translations?: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
 }
+
+import ProductCard from "./ProductCard";
 
 export default function FlashSale() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -122,53 +131,33 @@ export default function FlashSale() {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    {products.map((product) => {
-                        const price = Number(product.price);
-                        const comparePrice = product.compare_at_price ? Number(product.compare_at_price) : null;
-                        const savings = comparePrice ? Math.round(((comparePrice - price) / comparePrice) * 100) : 0;
-
-                        return (
-                            <Link
-                                key={product.id}
-                                href={`/shop/${product.slug}`}
-                                className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1"
-                            >
-                                <div className="relative aspect-square overflow-hidden bg-gray-50">
-                                    <Image
-                                        src={getMainImage(product)}
-                                        alt={product.name}
-                                        fill
-                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                        sizes="(max-width: 768px) 50vw, 25vw"
-                                    />
-                                    {savings > 0 && (
-                                        <div className="absolute top-3 end-3 bg-red-600 text-white px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
-                                            -{savings}%
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="p-5 space-y-3">
-                                    <h3 className="font-serif text-lg text-gray-900 line-clamp-1 group-hover:text-red-600 transition-colors">
-                                        {getLocalizedValue(product, 'name')}
-                                    </h3>
-                                    <div className="flex items-baseline gap-3">
-                                        <span className="text-xl font-bold text-red-600">{price.toFixed(2)}€</span>
-                                        {comparePrice && (
-                                            <span className="text-sm text-gray-400 line-through">{comparePrice.toFixed(2)}€</span>
-                                        )}
-                                    </div>
-                                    <div className="pt-2">
-                                        <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
-                                            <div className="bg-red-600 h-full w-[70%] animate-pulse" />
-                                        </div>
-                                        <p className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-tighter">
-                                            70% {t('home.flashSale.sold') || "VENDU"}
-                                        </p>
-                                    </div>
-                                </div>
+                    {products.map((product) => (
+                        <div key={product.id} className="space-y-4">
+                            <Link href={`/shop/${product.slug}`} className="block">
+                                <ProductCard
+                                    id={product.id}
+                                    title={getLocalizedValue(product, 'name')}
+                                    price={`€${Number(product.price).toFixed(2)}`}
+                                    startingPrice={product.starting_price?.toString()}
+                                    compareAtPrice={`€${Number(product.compare_at_price || product.regular_price).toFixed(2)}`}
+                                    image={getMainImage(product)}
+                                    category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || "Flash Sale"}
+                                    colors={product.colors}
+                                    hasVariants={product.has_variants}
+                                    variantCount={product.variant_count}
+                                />
                             </Link>
-                        );
-                    })}
+                            {/* Flash Sale Progress Bar */}
+                            <div className="px-1">
+                                <div className="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+                                    <div className="bg-red-600 h-full w-[70%] animate-pulse" />
+                                </div>
+                                <p className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-tighter">
+                                    70% {t('home.flashSale.sold') || "VENDU"}
+                                </p>
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
                 <div className="mt-12 text-center">

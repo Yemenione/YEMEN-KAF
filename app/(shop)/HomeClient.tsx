@@ -59,6 +59,7 @@ export default function HomeClient({ reviews, categories }: HomeClientProps) {
             {/* 2D Cinematic Hero */}
             <HeroSlider />
 
+
             {/* Promo Grid - Amazon Style v3 */}
             <PromoGrid categories={categories} />
 

@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import pool from '@/lib/mysql';
 import { sendOrderConfirmationEmail } from '@/lib/email';
+import { getAdminSession } from "@/lib/admin-auth";
+import { hasPermission, Permission } from "@/lib/rbac";
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
@@ -263,6 +265,28 @@ export async function POST(req: Request) {
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
+
+        // --- AUTHENTICATION & PERMISSION CHECK ---
+        const admin = await getAdminSession();
+        const token = (await cookies()).get('auth_token')?.value;
+        let customerId: number | null = null;
+
+        if (token && !admin) {
+            try {
+                const { payload } = await jwtVerify(token, JWT_SECRET);
+                customerId = payload.userId as number;
+            } catch {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
+        }
+
+        const isAdmin = admin && hasPermission(admin.role, Permission.VIEW_ORDERS);
+
+        if (!isAdmin && !customerId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        // -----------------------------------------
+
         const limit = parseInt(searchParams.get('limit') || '20');
         const offset = parseInt(searchParams.get('offset') || '0');
         const status = searchParams.get('status');
@@ -279,6 +303,12 @@ export async function GET(req: Request) {
         `;
 
         const params: (string | number)[] = [];
+
+        // Filter by customer if not admin
+        if (!isAdmin && customerId) {
+            query += ` AND o.customer_id = ?`;
+            params.push(customerId);
+        }
 
         if (status && status !== 'all') {
             query += ` AND o.status = ?`;

@@ -24,14 +24,43 @@ export async function GET() {
 
         const { payload } = await jwtVerify(token, JWT_SECRET);
         const userId = payload.userId as number;
+        const isAdminPayload = payload.isAdmin as boolean;
 
-        // Fetch user using direct SQL
-        const [rows] = await pool.execute<UserRow[]>(
-            'SELECT id, email, first_name as firstName, last_name as lastName FROM customers WHERE id = ? LIMIT 1',
-            [userId]
-        );
+        let user = null;
+        let role = null;
 
-        const user = rows[0];
+        if (isAdminPayload) {
+            // Fetch from admins table
+            const [rows] = await pool.execute<RowDataPacket[]>(
+                'SELECT id, email, name, role FROM admins WHERE id = ? LIMIT 1',
+                [userId]
+            );
+            if (rows[0]) {
+                const row = rows[0];
+                user = {
+                    id: row.id,
+                    email: row.email,
+                    firstName: row.name?.split(' ')[0] || 'Admin',
+                    lastName: row.name?.split(' ').slice(1).join(' ') || 'User',
+                    role: row.role || 'ADMIN',
+                    isAdmin: true
+                };
+            }
+        } else {
+            // Fetch from customers table
+            const [rows] = await pool.execute<RowDataPacket[]>(
+                'SELECT id, email, first_name as firstName, last_name as lastName FROM customers WHERE id = ? LIMIT 1',
+                [userId]
+            );
+            if (rows[0]) {
+                const row = rows[0];
+                user = {
+                    ...row,
+                    role: 'CUSTOMER',
+                    isAdmin: false
+                };
+            }
+        }
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });

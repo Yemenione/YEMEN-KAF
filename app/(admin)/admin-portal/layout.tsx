@@ -1,12 +1,59 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { usePathname, useRouter } from "next/navigation";
+import { canAccessModule, AdminRole } from "@/lib/rbac";
+import { AlertCircle, Lock, Menu } from "lucide-react";
 import { LanguageProvider, useLanguage } from "@/context/LanguageContext";
 import { useUI } from "@/context/UIContext";
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
     const { t, locale, setLocale } = useLanguage();
     const { toggleSidebar } = useUI();
+    const { user, isLoading } = useAuth();
+    const pathname = usePathname();
+
+    // Map pathname to module
+    const getModuleFromPath = (path: string) => {
+        if (path.includes('/dashboard')) return 'ANALYTICS';
+        if (path.includes('/categories') || path.includes('/products') || path.includes('/attributes') || path.includes('/brands')) return 'CATALOG';
+        if (path.includes('/orders') || path.includes('/inventory')) return 'ORDERS';
+        if (path.includes('/customers')) return 'CUSTOMERS';
+        if (path.includes('/cms') || path.includes('/design')) return 'CMS';
+        if (path.includes('/marketing')) return 'MARKETING';
+        if (path.includes('/support')) return 'SUPPORT';
+        if (path.includes('/settings') || path.includes('/translations')) return 'SETTINGS';
+        return null;
+    };
+
+    const module = getModuleFromPath(pathname);
+    const role = user?.role as AdminRole;
+    const isAuthorized = !module || canAccessModule(role || 'EDITOR', module as any);
+
+    if (!isAuthorized && !isLoading) {
+        return (
+            <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-zinc-950 p-6">
+                <div className="max-w-md w-full bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-red-100 dark:border-red-900/20 shadow-xl text-center space-y-6 animate-in fade-in zoom-in duration-300">
+                    <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mx-auto">
+                        <Lock className="w-10 h-10 text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Access Denied</h2>
+                        <p className="text-gray-500 dark:text-zinc-400">
+                            You don't have the required permissions to access the **{module}** module.
+                            Please contact your supervisor if you believe this is an error.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => window.history.back()}
+                        className="w-full py-3 bg-zinc-900 dark:bg-zinc-800 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                    >
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex-1 flex flex-col h-full bg-gray-50 dark:bg-zinc-900">

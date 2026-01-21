@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
-import { verifyAdmin } from '@/lib/admin-auth';
+import { verifyPermission } from '@/lib/admin-auth';
+import { Permission } from '@/lib/rbac';
 
 export async function GET(req: Request) {
     try {
@@ -44,7 +45,20 @@ export async function GET(req: Request) {
             skip: (page - 1) * limit,
             take: limit,
             include: {
-                category: true
+                category: true,
+                variants: {
+                    include: {
+                        attributeValues: {
+                            include: {
+                                attributeValue: {
+                                    include: {
+                                        attribute: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         });
 
@@ -57,11 +71,35 @@ export async function GET(req: Request) {
                 imageList = p.images ? [p.images] : [];
             }
 
+            // Extract unique colors from variants
+            const colors = new Set<string>();
+            p.variants.forEach(v => {
+                v.attributeValues.forEach(av => {
+                    const attr = av.attributeValue.attribute;
+                    if (attr.name.toLowerCase() === 'color' || attr.name.toLowerCase() === 'couleur' || attr.name.toLowerCase() === 'اللون') {
+                        if (av.attributeValue.value) {
+                            colors.add(av.attributeValue.value);
+                        }
+                    }
+                });
+            });
+
+            // Calculate starting price (min of variant prices or base price)
+            let startingPrice = parseFloat(p.price.toString());
+            if (p.variants.length > 0) {
+                const variantPrices = p.variants.map(v => parseFloat(v.price.toString()));
+                startingPrice = Math.min(startingPrice, ...variantPrices);
+            }
+
             return {
                 id: p.id,
                 name: p.name,
                 slug: p.slug,
                 price: p.price.toString(),
+                starting_price: startingPrice.toString(),
+                has_variants: p.variants.length > 0,
+                variant_count: p.variants.length,
+                colors: Array.from(colors),
                 regular_price: p.compareAtPrice ? p.compareAtPrice.toString() : p.price.toString(),
                 sale_price: p.price.toString(),
                 description: p.description,
@@ -89,7 +127,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
-        const { authorized, response } = await verifyAdmin();
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_PRODUCTS);
         if (!authorized) return response;
 
         const body = await req.json();

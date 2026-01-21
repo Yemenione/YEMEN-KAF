@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
+import { verifyPermission } from '@/lib/admin-auth';
+import { Permission } from '@/lib/rbac';
 
 export async function GET() {
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_BRANDS);
+        if (!authorized) return response;
         const brands = await prisma.brand.findMany({
             orderBy: { name: 'asc' },
             include: { _count: { select: { products: true } } }
@@ -16,6 +20,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_BRANDS);
+        if (!authorized) return response;
+
         const body = await req.json();
         const { name, slug, description, logo, isActive } = body;
 
@@ -29,7 +36,6 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        return NextResponse.json(brand);
         return NextResponse.json(brand);
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

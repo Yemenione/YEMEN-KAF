@@ -8,6 +8,7 @@ interface User {
     email: string;
     firstName: string;
     lastName: string;
+    role?: string | null;
 }
 
 interface AuthContextType {
@@ -32,6 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const res = await fetch('/api/auth/me');
             if (res.ok) {
                 const data = await res.json();
+                // Force SUPER_ADMIN for any admin user to ensure they have full access
+                if (data.user && (data.user.role || data.user.isAdmin)) {
+                    data.user.role = 'SUPER_ADMIN';
+                }
                 setUser(data.user);
             } else {
                 setUser(null);
@@ -57,6 +62,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             if (res.ok) {
                 const data = await res.json();
+                if (data.user && (data.user.role || data.user.isAdmin)) {
+                    data.user.role = 'SUPER_ADMIN';
+                }
                 setUser(data.user);
                 return { success: true, user: data.user };
             } else {

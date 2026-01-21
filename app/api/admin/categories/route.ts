@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { verifyPermission } from '@/lib/admin-auth';
+import { Permission } from '@/lib/rbac';
 
 export async function GET() {
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_CATEGORIES);
+        if (!authorized) return response;
         const query = `
             SELECT * FROM categories 
             ORDER BY display_order ASC, name ASC
@@ -20,6 +24,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_CATEGORIES);
+        if (!authorized) return response;
+
         const body = await req.json();
         const { name, slug, description, image_url, is_active, display_order } = body;
 

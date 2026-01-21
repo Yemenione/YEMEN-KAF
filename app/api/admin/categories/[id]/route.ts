@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { verifyPermission } from '@/lib/admin-auth';
+import { Permission } from '@/lib/rbac';
 import pool from '@/lib/mysql';
 import { RowDataPacket } from 'mysql2';
 
@@ -8,6 +10,8 @@ export async function GET(
 ) {
     const params = await props.params;
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_CATEGORIES);
+        if (!authorized) return response;
         const [rows] = await pool.execute<RowDataPacket[]>(
             'SELECT * FROM categories WHERE id = ?',
             [params.id]
@@ -30,6 +34,8 @@ export async function PUT(
     const params = await props.params;
     console.log('[PUT] Category ID:', params.id);
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_CATEGORIES);
+        if (!authorized) return response;
         const body = await req.json();
         console.log('[PUT] Body:', body);
         const { name, slug, description, image_url, is_active, display_order } = body;
@@ -51,7 +57,6 @@ export async function PUT(
 
         // New Fields
         if (body.parent_id !== undefined) { updates.push('parent_id = ?'); values.push(body.parent_id); }
-        if (body.meta_title !== undefined) { updates.push('meta_title = ?'); values.push(body.meta_title); }
         if (body.meta_title !== undefined) { updates.push('meta_title = ?'); values.push(body.meta_title); }
         if (body.meta_description !== undefined) { updates.push('meta_description = ?'); values.push(body.meta_description); }
         if (body.translations !== undefined) { updates.push('translations = ?'); values.push(JSON.stringify(body.translations)); }
@@ -85,6 +90,8 @@ export async function DELETE(
 ) {
     const params = await props.params;
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_CATEGORIES);
+        if (!authorized) return response;
         // Unlink products first to avoid Foreign Key Constraint failure
         await pool.execute('UPDATE products SET category_id = NULL WHERE category_id = ?', [params.id]);
 

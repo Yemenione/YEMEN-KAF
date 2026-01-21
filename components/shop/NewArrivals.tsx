@@ -9,12 +9,21 @@ interface Product {
     name: string;
     description: string;
     price: string | number;
-    images?: string | string[]; // Can be JSON string or array of URLs
+    regular_price?: string;
+    starting_price?: string;
+    has_variants?: boolean;
+    variant_count?: number;
+    colors?: string[];
+    images?: string | string[];
     slug: string;
+    category_name?: string;
+    category_translations?: any;
     created_at?: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;
 }
+
+import ProductCard from "./ProductCard";
 
 export default function NewArrivals() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -25,12 +34,10 @@ export default function NewArrivals() {
         try {
             if (!product.images) return '/images/honey-jar.jpg';
 
-            // If it's already an array, return the first item
             if (Array.isArray(product.images)) {
                 return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
             }
 
-            // Check if it's already a clean URL (legacy/csv import support)
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
@@ -40,7 +47,6 @@ export default function NewArrivals() {
                 return parsed[0];
             }
         } catch {
-            // Fallback for non-JSON strings
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
@@ -79,41 +85,21 @@ export default function NewArrivals() {
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-12">
                     {products.map((product) => (
-                        <Link
-                            key={product.id}
-                            href={`/shop/${product.slug}`}
-                            className="group bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-[var(--honey-gold)] transition-all duration-500 hover:shadow-xl"
-                        >
-                            <div className="relative aspect-square overflow-hidden bg-gray-100">
-                                <Image
-                                    src={getMainImage(product)}
-                                    alt={product.name}
-                                    fill
-                                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                    sizes="(max-width: 768px) 100vw, 33vw"
-                                />
-                                <div className="absolute top-3 start-3 bg-green-500 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md shadow-lg">
-                                    {t('home.newArrivals.newBadge')}
-                                </div>
-                            </div>
-                            <div className="p-6 space-y-3">
-                                <h3 className="font-serif text-2xl text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-2">
-                                    {getLocalizedValue(product, 'name')}
-                                </h3>
-                                <p className="text-sm text-gray-600 line-clamp-2">
-                                    {getLocalizedValue(product, 'description')}
-                                </p>
-                                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                                    <span className="text-2xl font-bold text-[var(--coffee-brown)]">
-                                        €{Number(product.price).toFixed(2)}
-                                    </span>
-                                    <span className="text-xs text-gray-500 uppercase tracking-wider">
-                                        {t('home.newArrivals.shopNow')}
-                                    </span>
-                                </div>
-                            </div>
+                        <Link key={product.id} href={`/shop/${product.slug}`} className="block">
+                            <ProductCard
+                                id={product.id}
+                                title={getLocalizedValue(product, 'name')}
+                                price={`€${Number(product.price).toFixed(2)}`}
+                                startingPrice={product.starting_price}
+                                compareAtPrice={`€${Number(product.regular_price).toFixed(2)}`}
+                                image={getMainImage(product)}
+                                category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || t('home.newArrivals.newBadge')}
+                                colors={product.colors}
+                                hasVariants={product.has_variants}
+                                variantCount={product.variant_count}
+                            />
                         </Link>
                     ))}
                 </div>

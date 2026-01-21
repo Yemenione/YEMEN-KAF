@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/mysql';
+import { verifyPermission } from "@/lib/admin-auth";
+import { Permission } from "@/lib/rbac";
 import { RowDataPacket } from 'mysql2';
 
 interface CustomerRow extends RowDataPacket {
@@ -16,6 +18,9 @@ interface CustomerRow extends RowDataPacket {
 
 export async function GET(req: Request) {
     try {
+        const { authorized, response } = await verifyPermission(Permission.VIEW_CUSTOMERS);
+        if (!authorized) return response;
+
         const { searchParams } = new URL(req.url);
         const limit = parseInt(searchParams.get('limit') || '50');
         const offset = parseInt(searchParams.get('offset') || '0');

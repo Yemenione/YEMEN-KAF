@@ -4,17 +4,22 @@ import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
-import { ShoppingBag, Star, Filter, Grid, List, Eye } from "lucide-react";
+import { ShoppingBag, Filter, Grid, List } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-import WishlistButton from "@/components/shop/WishlistButton";
 import ProductSkeleton from "@/components/shop/ProductSkeleton";
 import CategoryRail from "@/components/shop/CategoryRail";
+import ProductCard from "@/components/shop/ProductCard";
 import { useSearchParams } from "next/navigation";
 
 interface Product {
     id: number;
     name: string;
     price: number;
+    regular_price?: number;
+    starting_price?: number;
+    has_variants?: boolean;
+    variant_count?: number;
+    colors?: string[];
     slug: string;
     images?: string; // JSON string
     category_name: string;
@@ -290,110 +295,23 @@ function ShopContent() {
                         ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
                         : 'flex flex-col gap-4'
                     }>
-                        {displayProducts.map((product) => {
-                            // Calculate Discount
-                            const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
-                            const discountPercentage = hasDiscount
-                                ? Math.round(((product.compare_at_price! - product.price) / product.compare_at_price!) * 100)
-                                : null;
-
-                            const localizedName = getLocalizedValue(product, 'name');
-                            const localizedCategoryName = getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name');
-
-                            return (
-                                <div
-                                    key={product.id}
-                                    className={`group bg-white rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 ${viewMode === 'list' ? 'flex flex-row' : 'flex flex-col'
-                                        }`}
-                                >
-                                    <Link href={`/shop/${product.slug}`} className={viewMode === 'list' ? 'w-48 flex-shrink-0' : 'w-full'}>
-                                        <div className={`relative overflow-hidden bg-gray-100 ${viewMode === 'list' ? 'h-full' : 'aspect-square'}`}>
-                                            <Image
-                                                src={getMainImage(product)}
-                                                alt={localizedName}
-                                                fill
-                                                className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                                sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                            />
-
-
-                                            {/* Wishlist & Quick View */}
-                                            <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                <WishlistButton
-                                                    productId={product.id}
-                                                    className="p-2 bg-white rounded-full shadow-lg hover:bg-red-50"
-                                                />
-                                                <button className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-50">
-                                                    <Eye size={16} className="text-gray-700" />
-                                                </button>
-                                            </div>
-
-                                            {/* Badges Container */}
-                                            <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-                                                {/* Stock Badge */}
-                                                {product.stock_quantity !== undefined && product.stock_quantity < 5 && product.stock_quantity > 0 && (
-                                                    <span className="px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded shadow-md">
-                                                        {t('shop.stockLimited')}
-                                                    </span>
-                                                )}
-                                                {/* Sale Badge */}
-                                                {hasDiscount && (
-                                                    <span className="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded shadow-md">
-                                                        -{discountPercentage}%
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </Link>
-
-                                    <div className={`p-4 flex flex-col ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                                        <Link href={`/shop/${product.slug}`}>
-                                            <span className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">
-                                                {localizedCategoryName}
-                                            </span>
-                                            <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-gray-600 transition-colors">
-                                                {localizedName}
-                                            </h3>
-                                        </Link>
-
-                                        {/* Rating */}
-                                        <div className="flex items-center gap-1 mb-2">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} size={12} className="fill-yellow-400 text-yellow-400" />
-                                            ))}
-                                            <span className="text-xs text-gray-500 ml-1">(4.8)</span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between mt-auto">
-                                            <div className="flex flex-col">
-                                                <div className="flex items-baseline gap-2">
-                                                    <p className="text-xl font-bold text-black">
-                                                        {Number(product.price).toFixed(2)}€
-                                                    </p>
-                                                    {hasDiscount && (
-                                                        <span className="text-sm text-gray-400 line-through">
-                                                            {Number(product.compare_at_price).toFixed(2)}€
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                onClick={() => addToCart({
-                                                    id: product.id,
-                                                    title: localizedName,
-                                                    price: product.price,
-                                                    image: getMainImage(product)
-                                                })}
-                                                className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors"
-                                            >
-                                                <ShoppingBag size={18} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {displayProducts.map((product) => (
+                            <Link key={product.id} href={`/shop/${product.slug}`} className="block">
+                                <ProductCard
+                                    id={product.id}
+                                    title={getLocalizedValue(product, 'name')}
+                                    price={`€${Number(product.price).toFixed(2)}`}
+                                    startingPrice={product.starting_price?.toString()}
+                                    compareAtPrice={`€${Number(product.regular_price || product.compare_at_price).toFixed(2)}`}
+                                    image={getMainImage(product)}
+                                    category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || 'Collection'}
+                                    colors={product.colors}
+                                    hasVariants={product.has_variants}
+                                    variantCount={product.variant_count}
+                                    layout={viewMode}
+                                />
+                            </Link>
+                        ))}
                     </div>
                 )}
             </div>

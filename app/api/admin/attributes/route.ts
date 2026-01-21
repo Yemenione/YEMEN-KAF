@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyPermission } from '@/lib/admin-auth';
+import { Permission } from '@/lib/rbac';
 
 export async function GET() {
     try {
-        const attributes = await prisma.attribute.findMany({
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_ATTRIBUTES);
+        if (!authorized) return response;
+        const attributes = await prisma!.attribute.findMany({
             include: {
                 values: true
             },
@@ -25,17 +29,20 @@ interface AttributeValueInput {
 
 export async function POST(req: NextRequest) {
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_ATTRIBUTES);
+        if (!authorized) return response;
+
         const body = await req.json();
         const { name, publicName, type, values, translations } = body;
 
-        const attribute = await prisma.attribute.create({
+        const attribute = await prisma!.attribute.create({
             data: {
                 name,
                 publicName,
                 type,
                 translations: (translations || {}) as any,
                 values: {
-                    create: values.map((v: AttributeValueInput) => ({
+                    create: (values || []).map((v: AttributeValueInput) => ({
                         name: v.name,
                         value: v.value,
                         position: v.position || 0,

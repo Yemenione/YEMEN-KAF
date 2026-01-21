@@ -8,7 +8,12 @@ interface Product {
     name: string;
     description: string;
     price: string | number;
-    images?: string | string[]; // Can be JSON string or array of URLs
+    regular_price?: string;
+    starting_price?: string;
+    has_variants?: boolean;
+    variant_count?: number;
+    colors?: string[];
+    images?: string | string[];
     slug: string;
     category_name: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,8 +99,13 @@ export default function ProductShowcase() {
                                     id={product.id}
                                     title={getLocalizedValue(product, 'name')}
                                     price={`€${Number(product.price).toFixed(2)}`}
+                                    startingPrice={product.starting_price}
+                                    compareAtPrice={`€${Number(product.regular_price).toFixed(2)}`}
                                     image={getMainImage(product)}
                                     category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || 'Collection'}
+                                    colors={product.colors}
+                                    hasVariants={product.has_variants}
+                                    variantCount={product.variant_count}
                                 />
                             </Link>
                         ))

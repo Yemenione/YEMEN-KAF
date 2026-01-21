@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { verifyPermission } from '@/lib/admin-auth';
+import { Permission } from '@/lib/rbac';
 
 export async function GET(
     req: NextRequest,
@@ -7,6 +9,8 @@ export async function GET(
 ) {
     const params = await props.params;
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_ATTRIBUTES);
+        if (!authorized) return response;
         const id = parseInt(params.id);
         const attribute = await prisma.attribute.findUnique({
             where: { id },
@@ -29,6 +33,8 @@ export async function PUT(
 ) {
     const params = await props.params;
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_ATTRIBUTES);
+        if (!authorized) return response;
         const id = parseInt(params.id);
         const body = await req.json();
         const { name, publicName, type, values, translations } = body;
@@ -103,6 +109,8 @@ export async function DELETE(
 ) {
     const params = await props.params;
     try {
+        const { authorized, response } = await verifyPermission(Permission.MANAGE_ATTRIBUTES);
+        if (!authorized) return response;
         const id = parseInt(params.id);
         await prisma.attribute.delete({ where: { id } });
         return NextResponse.json({ success: true, message: 'Attribute deleted' });
