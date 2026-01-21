@@ -12,11 +12,12 @@ interface Product {
     price: string | number;
     images?: string | string[]; // Can be JSON string or array of URLs
     slug: string;
+    translations?: any;
 }
 
 export default function BestSellers() {
     const [products, setProducts] = useState<Product[]>([]);
-    const { t, locale } = useLanguage();
+    const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
 
     // Helper to extract main image from JSON or Array
@@ -113,20 +114,20 @@ export default function BestSellers() {
                                     </div>
                                     <div className="bg-orange-600 text-white px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5 animate-pulse">
                                         <span>🔥</span>
-                                        TRENDING
+                                        {t('home.bestSellers.trending')}
                                     </div>
                                 </div>
                             </div>
                             <div className="p-4 space-y-2">
                                 <h3 className="font-serif text-lg text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-2">
-                                    {product.name}
+                                    {getLocalizedValue(product, 'name')}
                                 </h3>
                                 <div className="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
                                     <span className="text-xl font-bold text-[var(--coffee-brown)]">
                                         €{Number(product.price).toFixed(2)}
                                     </span>
                                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                                        42 SOLD THIS WEEK
+                                        42 {t('home.bestSellers.soldCount')}
                                     </span>
                                 </div>
                             </div>

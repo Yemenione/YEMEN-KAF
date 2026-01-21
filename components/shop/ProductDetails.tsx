@@ -39,6 +39,8 @@ interface Product {
     stock?: number;
     stock_quantity?: number;
     quantity?: number;
+    translations?: any;
+    category_translations?: any;
 }
 
 interface Review {
@@ -80,7 +82,15 @@ function Accordion({ title, children, defaultOpen = false }: { title: string, ch
 
 export default function ProductDetails({ product, carriers = [] }: { product: Product, carriers?: Carrier[] }) {
     const { addToCart } = useCart();
-    const { t, language } = useLanguage();
+    const { t, language, getLocalizedValue } = useLanguage();
+
+    // Localized Strings
+    const localizedName = getLocalizedValue(product, 'name');
+    const localizedDescription = getLocalizedValue(product, 'description');
+
+    // Construct a pseudo-category object for translation if needed
+    const categoryObj = { name: product.category_name, translations: product.category_translations };
+    const localizedCategoryName = getLocalizedValue(categoryObj, 'name');
 
     // State
     const [quantity, setQuantity] = useState(1);
@@ -288,7 +298,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                         <span>/</span>
                         <Link href="/shop" className="hover:text-black transition-colors">{t('nav.shop')}</Link>
                         <span>/</span>
-                        <span className="text-black">{product.name}</span>
+                        <span className="text-black">{localizedName}</span>
                     </div>
                 </div>
             </div>
@@ -298,7 +308,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                     {/* Product Images */}
                     <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
                         <div className="hidden lg:block relative aspect-square bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-                            <Image src={mainImage} alt={product.name} fill className="object-cover" priority sizes="(min-width: 1024px) 50vw, 100vw" />
+                            <Image src={mainImage} alt={localizedName} fill className="object-cover" priority sizes="(min-width: 1024px) 50vw, 100vw" />
                             {discountPercentage && (
                                 <div className="absolute top-6 left-6 bg-red-600 text-white px-4 py-1.5 font-bold text-sm rounded-full shadow-xl z-10 uppercase tracking-wider">
                                     -{discountPercentage}%
@@ -309,7 +319,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             <div className="flex overflow-x-auto snap-x snap-mandatory h-full scrollbar-hide">
                                 {displayImages.map((img: string, idx: number) => (
                                     <div key={idx} className="flex-shrink-0 w-full h-full snap-center relative">
-                                        <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" priority={idx === 0} sizes="100vw" />
+                                        <Image src={img} alt={`${localizedName} ${idx + 1}`} fill className="object-cover" priority={idx === 0} sizes="100vw" />
                                     </div>
                                 ))}
                             </div>
@@ -329,7 +339,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                     >
                                         <Image
                                             src={img}
-                                            alt={`${product.name} ${idx + 1}`}
+                                            alt={`${localizedName} ${idx + 1}`}
                                             fill
                                             className="object-contain p-2"
                                             sizes="25vw"
@@ -345,9 +355,9 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                         <div className="mb-8 border-b border-gray-100 pb-8">
                             <h2 className="text-[10px] font-bold text-gray-400 tracking-[0.3em] uppercase mb-4 flex items-center gap-4">
                                 <span className="w-12 h-[1px] bg-gray-300"></span>
-                                {product.category_name}
+                                {localizedCategoryName}
                             </h2>
-                            <h1 className="text-4xl md:text-5xl font-serif text-black mb-6 leading-tight font-medium tracking-tight">{product.name}</h1>
+                            <h1 className="text-4xl md:text-5xl font-serif text-black mb-6 leading-tight font-medium tracking-tight">{localizedName}</h1>
 
                             {/* Star Rating Header */}
                             <div className="flex items-center gap-3 mb-8">
@@ -482,7 +492,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                 disabled={!canAddToCart}
                                 onClick={() => addToCart({
                                     id: product.id,
-                                    title: product.name,
+                                    title: localizedName,
                                     price: currentPrice,
                                     image: displayImages[0],
                                     variantId: selectedVariant?.id,
@@ -503,7 +513,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                         {/* Accordion Sections: Description, Logistics, Security */}
                         <div className="border-t border-gray-100">
                             <Accordion title={t('product.description') || "Description"} defaultOpen={true}>
-                                <div className="prose prose-stone prose-sm text-gray-600 leading-relaxed max-w-none" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
+                                <div className="prose prose-stone prose-sm text-gray-600 leading-relaxed max-w-none" dangerouslySetInnerHTML={{ __html: localizedDescription || '' }} />
                             </Accordion>
 
                             {carriers.length > 0 && (
@@ -694,7 +704,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                         disabled={!canAddToCart}
                         onClick={() => addToCart({
                             id: product.id,
-                            title: product.name,
+                            title: localizedName,
                             price: currentPrice,
                             image: displayImages[0],
                             variantId: selectedVariant?.id,

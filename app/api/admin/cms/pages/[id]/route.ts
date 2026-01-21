@@ -31,7 +31,7 @@ export async function PUT(
         const { id: paramId } = await params;
         const id = parseInt(paramId);
         const body = await req.json();
-        const { title, slug, content, metaTitle, metaDescription, isActive } = body;
+        const { title, slug, content, structured_content, metaTitle, metaDescription, isActive } = body;
 
         const page = await prisma.page.update({
             where: { id },
@@ -39,6 +39,7 @@ export async function PUT(
                 title,
                 slug,
                 content,
+                structured_content: structured_content || undefined,
                 metaTitle,
                 metaDescription,
                 isActive

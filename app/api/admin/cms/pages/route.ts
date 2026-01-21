@@ -16,7 +16,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { title, slug, content, metaTitle, metaDescription, isActive } = body;
+        const { title, slug, content, structured_content, metaTitle, metaDescription, isActive } = body;
 
         // Validations
         if (!title) {
@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
                 title,
                 slug: finalSlug,
                 content: content || '',
+                structured_content: structured_content || Prisma.JsonNull,
                 metaTitle,
                 metaDescription,
                 isActive: isActive !== undefined ? isActive : true

@@ -12,6 +12,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import TopMarquee from "./TopMarquee";
 import SearchWithSuggestions from "../search/SearchWithSuggestions";
 import { useSettings } from "@/context/SettingsContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 function LanguageSelector() {
     const { locale, setLocale, isRTL } = useLanguage();
@@ -89,7 +90,7 @@ export default function Navbar() {
     const { wishlistCount, openWishlist } = useWishlist();
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
     const { settings } = useSettings();
-    const { t, isRTL, locale } = useLanguage();
+    const { t, isRTL, locale, setLocale } = useLanguage();
 
     const [categories, setCategories] = useState<{ id: number; name: string; slug: string; }[]>([]);
 
@@ -126,32 +127,105 @@ export default function Navbar() {
 
     const logoSrc = settings.logo_url || "/images/logo.png";
 
-    // NavLink definition moved outside
+    // Menu Animation Variants
+    const menuVariants = {
+        closed: {
+            x: isRTL ? "100%" : "-100%",
+            transition: {
+                type: "spring" as const,
+                stiffness: 400,
+                damping: 40
+            }
+        },
+        open: {
+            x: "0%",
+            transition: {
+                type: "spring" as const,
+                stiffness: 400,
+                damping: 40
+            }
+        }
+    };
 
+    const listVariants = {
+        closed: {
+            x: -20,
+            opacity: 0
+        },
+        open: (i: number) => ({
+            x: 0,
+            opacity: 1,
+            transition: {
+                delay: i * 0.1,
+                duration: 0.5
+            }
+        })
+    };
 
     return (
         <>
             <header className={clsx(
                 "fixed top-0 start-0 end-0 z-50 flex flex-col transition-all duration-300",
-                isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-0 border-b border-black/5" : "bg-transparent py-2"
+                isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-0 border-b border-black/5" : "bg-transparent py-2 px-0"
             )}>
-                {/* Top Level: Marquee - Only show at top? Or always? Let's hide on scroll to save space if requested compact */}
-                <div className={clsx("transition-all duration-300", isScrolled ? "h-0 opacity-0 overflow-hidden" : "h-auto opacity-100")}>
+                {/* Top Level: Marquee */}
+                <div className={clsx("transition-all duration-300 hidden md:block", isScrolled ? "h-0 opacity-0 overflow-hidden" : "h-auto opacity-100")}>
                     <TopMarquee />
                 </div>
 
-                {/* Main Navbar */}
+                {/* Main Navbar Container */}
                 <nav className="relative z-50 w-full">
                     <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16">
+
+                        {/* --- MOBILE HEADER LAYOUT --- */}
+                        <div className="flex md:hidden items-center justify-between h-16">
+                            {/* Left: Icons (Menu, Cart) */}
+                            <div className="flex items-center gap-5">
+                                <button
+                                    onClick={() => setIsMobileMenuOpen(true)}
+                                    className="text-[var(--coffee-brown)] hover:text-black transition-colors"
+                                >
+                                    <Menu className="w-6 h-6 stroke-1.5" />
+                                </button>
+                                <button
+                                    onClick={openCart}
+                                    className="relative text-[var(--coffee-brown)] hover:text-black transition-colors"
+                                >
+                                    <ShoppingBag className="w-5 h-5 stroke-1.5" />
+                                    {itemCount > 0 && (
+                                        <span className="absolute -top-1.5 -end-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[var(--honey-gold)] text-[9px] text-white font-bold">
+                                            {itemCount}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
+
+                            {/* Right: Logo */}
+                            <Link href="/" className="relative block">
+                                <div className="relative w-28 h-8 transition-all duration-300">
+                                    <Image
+                                        src={logoSrc}
+                                        alt={`${settings.site_name} Logo`}
+                                        fill
+                                        className="object-contain object-right"
+                                        priority
+                                        sizes="120px"
+                                    />
+                                </div>
+                            </Link>
+                        </div>
+
+
+                        {/* --- DESKTOP HEADER LAYOUT --- */}
                         <div className={clsx(
-                            "flex items-center justify-between transition-all duration-300",
+                            "hidden md:flex items-center justify-between transition-all duration-300",
                             isScrolled ? "h-16" : "h-20"
                         )}>
 
                             {/* LEFT: Logo */}
                             <div className="flex-shrink-0 flex items-center gap-8">
                                 <Link href="/" className="relative block">
-                                    <div className="relative w-10 h-10 md:w-12 md:h-12 transition-all duration-300">
+                                    <div className="relative w-12 h-12 transition-all duration-300">
                                         <Image
                                             src={logoSrc}
                                             alt={`${settings.site_name} Logo`}
@@ -163,7 +237,7 @@ export default function Navbar() {
                                     </div>
                                 </Link>
 
-                                {/* DESKTOP NAV LINKS (Moved next to Logo) */}
+                                {/* DESKTOP NAV LINKS */}
                                 <div className="hidden md:flex items-center gap-6 lg:gap-8">
                                     <NavLink href="/" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.home") || "Home"}</NavLink>
 
@@ -186,30 +260,26 @@ export default function Navbar() {
 
                                     <NavLink href="/our-story" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.ourStory")}</NavLink>
                                     <NavLink href="/the-farms" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.farms")}</NavLink>
-                                    <NavLink href="/contact" isScrolled={isScrolled} isRTL={isRTL}>Contact</NavLink>
+                                    <NavLink href="/contact" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.contact") || "Contact"}</NavLink>
                                 </div>
                             </div>
 
                             {/* RIGHT: Actions */}
-                            <div className="flex items-center justify-end gap-3 md:gap-5 text-[var(--coffee-brown)]">
-                                <div className="hidden md:block">
-                                    <LanguageSelector />
-                                </div>
-                                <div className="hidden md:block w-px h-3 bg-gray-300 mx-1"></div>
-                                <div className="hidden md:block">
-                                    <SearchWithSuggestions />
-                                </div>
+                            <div className="flex items-center justify-end gap-5 text-[var(--coffee-brown)]">
+                                <LanguageSelector />
+                                <div className="w-px h-3 bg-gray-300 mx-1"></div>
+                                <SearchWithSuggestions />
 
                                 <Link
                                     href={user ? "/account" : "/login"}
-                                    className="hidden md:flex hover:text-[var(--honey-gold)] transition-transform hover:scale-105 duration-300"
+                                    className="flex hover:text-[var(--honey-gold)] transition-transform hover:scale-105 duration-300"
                                 >
                                     <User className="w-5 h-5 stroke-1.5" />
                                 </Link>
 
                                 <button
                                     onClick={openWishlist}
-                                    className="hidden md:block hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 relative"
+                                    className="hover:text-[var(--honey-gold)] transition-transform hover:scale-110 duration-300 relative"
                                     title="Wishlist"
                                 >
                                     <Heart className="w-5 h-5 stroke-1.5" />
@@ -232,23 +302,14 @@ export default function Navbar() {
                                         </span>
                                     )}
                                 </button>
-
-                                {/* Mobile Menu Trigger (Right side on mobile) */}
-                                <button
-                                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                    className="md:hidden p-1 text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors"
-                                >
-                                    {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                                </button>
                             </div>
-
                         </div>
                     </div>
 
-                    {/* MEGA MENU DROPDOWN */}
+                    {/* MEGA MENU DROPDOWN (Desktop) */}
                     <div
                         className={clsx(
-                            "absolute top-full start-0 w-full bg-white border-b border-black/5 shadow-2xl overflow-hidden transition-all duration-500 ease-in-out z-40",
+                            "absolute top-full start-0 w-full bg-white border-b border-black/5 shadow-2xl overflow-hidden transition-all duration-500 ease-in-out z-40 hidden md:block",
                             isMegaMenuOpen ? "max-h-[500px] opacity-100 visible translate-y-0" : "max-h-0 opacity-0 invisible -translate-y-2"
                         )}
                         onMouseEnter={() => setIsMegaMenuOpen(true)}
@@ -320,67 +381,137 @@ export default function Navbar() {
                                     <p>{t('shop.loading')}</p>
                                 </div>
                             )}                        </div>
-
-                        {/* MOBILE SEARCH BAR - Persistent (Amazon/Shein Style) */}
-                        <div className="md:hidden pb-4 px-6 scale-95 origin-top transition-all duration-300">
-                            <SearchWithSuggestions isFullWidth />
-                        </div>
                     </div>
                 </nav>
-            </header>
+            </header >
 
-            {/* MOBILE MENU OVERLAY */}
-            <div className={clsx(
-                "fixed inset-0 bg-white z-[60] flex flex-col transition-all duration-500",
-                isMobileMenuOpen ? "opacity-100 translate-x-0" : clsx("opacity-0 pointer-events-none", isRTL ? "translate-x-full" : "-translate-x-full")
-            )}>
-                <div className="flex items-center justify-between p-6 border-b border-black/5">
-                    <span className="font-serif text-2xl text-[var(--coffee-brown)]">{t("nav.menu") || "Menu"}</span>
-                    <button
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-black hover:bg-gray-100 hover:rotate-90 transition-all duration-300"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
+            {/* ANIMATED MOBILE SIDE MENU */}
+            <AnimatePresence>
+                {
+                    isMobileMenuOpen && (
+                        <>
+                            {/* Backdrop */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[10000]"
+                            />
 
-                <div className="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
-                    <LanguageSelector />
+                            {/* Drawer */}
+                            <motion.div
+                                initial="closed"
+                                animate="open"
+                                exit="closed"
+                                variants={menuVariants}
+                                className={clsx(
+                                    "fixed top-0 bottom-0 w-[85%] max-w-[360px] bg-white z-[10001] shadow-2xl flex flex-col overflow-hidden",
+                                    isRTL ? "right-0" : "left-0"
+                                )}
+                                style={{
+                                    left: isRTL ? 'auto' : 0,
+                                    right: isRTL ? 0 : 'auto',
+                                    transformOrigin: isRTL ? "right" : "left"
+                                }}
+                            >
+                                <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100">
+                                    <span className="font-serif text-2xl text-[var(--coffee-brown)]">{t("nav.menu")}</span>
+                                    <button
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-black hover:bg-gray-100 transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
 
-                    <nav className="flex flex-col space-y-4">
-                        <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">{t("nav.home")}</Link>
-                        <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">{t("nav.shop")}</Link>
-                        <Link href="/our-story" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">{t("nav.ourStory")}</Link>
-                        <Link href="/the-farms" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">{t("nav.farms")}</Link>
-                        <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">Contact</Link>
-                    </nav>
+                                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                                    {/* Search in Menu */}
+                                    <div className="border-b border-gray-100 pb-6">
+                                        <SearchWithSuggestions isFullWidth />
+                                    </div>
 
-                    <div className="w-full h-px bg-gray-100 my-2" />
+                                    <nav className="flex flex-col space-y-1">
+                                        {[
+                                            { href: "/", label: t("nav.home") },
+                                            { href: "/shop", label: t("nav.shop") },
+                                            { href: "/our-story", label: t("nav.ourStory") },
+                                            { href: "/the-farms", label: t("nav.farms") },
+                                            { href: "/contact", label: t("nav.contact") || "Contact" }
+                                        ].map((item, i) => (
+                                            <motion.div
+                                                key={item.href}
+                                                custom={i}
+                                                variants={listVariants}
+                                            >
+                                                <Link
+                                                    href={item.href}
+                                                    onClick={() => setIsMobileMenuOpen(false)}
+                                                    className="block py-3 text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors"
+                                                >
+                                                    {item.label}
+                                                </Link>
+                                            </motion.div>
+                                        ))}
+                                    </nav>
 
-                    <div className="space-y-4">
-                        {user ? (
-                            <>
-                                <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
-                                    <User size={16} /> {t('nav.account')}
-                                </Link>
-                                <button
-                                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                    className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-red-500"
-                                >
-                                    {t('nav.logout')}
-                                </button>
-                            </>
-                        ) : (
-                            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
-                                <User size={16} /> {t('nav.login')}
-                            </Link>
-                        )}
-                        <Link href="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
-                            <Heart size={16} /> Wishlist
-                        </Link>
-                    </div>
-                </div>
-            </div>
+                                    <div className="border-t border-gray-100 pt-6 space-y-4">
+                                        {user ? (
+                                            <>
+                                                <Link href="/account" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
+                                                    <User size={16} /> {t('nav.account')}
+                                                </Link>
+                                                <button
+                                                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                                    className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-red-500"
+                                                >
+                                                    {t('nav.logout')}
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
+                                                <User size={16} /> {t('nav.login')}
+                                            </Link>
+                                        )}
+                                        <Link href="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-sm uppercase tracking-widest font-bold text-[var(--coffee-brown)]">
+                                            <Heart size={16} /> Wishlist
+                                        </Link>
+
+                                        <div className="pt-4">
+                                            <h4 className="text-xs uppercase tracking-widest text-gray-400 mb-4">{t('admin.settings.languages') || 'Language'}</h4>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[
+                                                    { id: 'ar', label: 'العربية' },
+                                                    { id: 'en', label: 'English' },
+                                                    { id: 'fr', label: 'Français' }
+                                                ].map((lang) => (
+                                                    <button
+                                                        key={lang.id}
+                                                        onClick={() => {
+                                                            setLocale(lang.id as any);
+                                                            // Maybe don't close menu automatically if they want to see the change
+                                                        }}
+                                                        className={clsx(
+                                                            "py-3 px-2 text-sm rounded-lg border transition-all duration-300",
+                                                            locale === lang.id
+                                                                ? "bg-[var(--honey-gold)] border-[var(--honey-gold)] text-white font-bold shadow-md"
+                                                                : "bg-gray-50 border-gray-100 text-gray-600 hover:bg-gray-100"
+                                                        )}
+                                                    >
+                                                        {lang.id === 'ar' ? 'عربي' : lang.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Additional padding for bottom nav */}
+                                    <div className="h-24 md:hidden" />
+                                </div>
+                            </motion.div>
+                        </>
+                    )
+                }
+            </AnimatePresence >
         </>
     );
 }

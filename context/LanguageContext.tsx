@@ -9,6 +9,7 @@ interface LanguageContextType {
     setLocale: (locale: Locale) => void;
     t: (key: string) => string;
     isRTL: boolean;
+    getLocalizedValue: (obj: any, key: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -69,8 +70,26 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
     const isRTL = locale === 'ar';
 
+    const getLocalizedValue = (obj: any, key: string): string => {
+        if (!obj) return '';
+        if (locale === 'en') return obj[key] || '';
+
+        // Try to get translation
+        let translations = obj.translations;
+        // Handle common cases where translations might be a string (JSON string from DB)
+        if (typeof translations === 'string') {
+            try {
+                translations = JSON.parse(translations);
+            } catch {
+                translations = {};
+            }
+        }
+
+        return translations?.[locale]?.[key] || obj[key] || '';
+    };
+
     return (
-        <LanguageContext.Provider value={{ locale, language: locale, setLocale, t, isRTL }}>
+        <LanguageContext.Provider value={{ locale, language: locale, setLocale, t, isRTL, getLocalizedValue }}>
             {children}
         </LanguageContext.Provider>
     );

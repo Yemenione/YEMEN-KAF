@@ -12,11 +12,12 @@ interface Product {
     images?: string | string[]; // Can be JSON string or array of URLs
     slug: string;
     created_at?: string;
+    translations?: any;
 }
 
 export default function NewArrivals() {
     const [products, setProducts] = useState<Product[]>([]);
-    const { t } = useLanguage();
+    const { t, getLocalizedValue } = useLanguage();
 
     // Helper to extract main image from JSON or Array
     const getMainImage = (product: Product): string => {
@@ -98,10 +99,10 @@ export default function NewArrivals() {
                             </div>
                             <div className="p-6 space-y-3">
                                 <h3 className="font-serif text-2xl text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-2">
-                                    {product.name}
+                                    {getLocalizedValue(product, 'name')}
                                 </h3>
                                 <p className="text-sm text-gray-600 line-clamp-2">
-                                    {product.description}
+                                    {getLocalizedValue(product, 'description')}
                                 </p>
                                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                                     <span className="text-2xl font-bold text-[var(--coffee-brown)]">

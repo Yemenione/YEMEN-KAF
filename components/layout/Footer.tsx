@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useToast } from "@/context/ToastContext";
 
 export default function Footer() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const { settings } = useSettings();
     const { showToast } = useToast();
     const [email, setEmail] = useState("");
@@ -48,7 +48,7 @@ export default function Footer() {
                     <form onSubmit={handleSubscribe} className="w-full md:w-auto flex items-end border-b border-[var(--coffee-brown)] focus-within:border-[var(--honey-gold)] transition-colors py-2">
                         <input
                             type="email"
-                            placeholder="Your email address"
+                            placeholder={t('newsletter.placeholder') || "Your email address"}
                             className="bg-transparent outline-none px-4 py-2 w-full md:w-80 text-sm"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -71,7 +71,7 @@ export default function Footer() {
                 <div className="space-y-6">
                     <h2 className="text-2xl font-serif text-[var(--coffee-brown)] tracking-widest uppercase">{settings.site_name}</h2>
                     <p className="text-[var(--coffee-brown)]/60 text-sm leading-relaxed max-w-xs">
-                        {settings.site_description || t('footer.description')}
+                        {(locale === 'en' ? settings.site_description : null) || t('footer.description')}
                     </p>
                     <div className="flex gap-4">
                         {settings.social_instagram && (

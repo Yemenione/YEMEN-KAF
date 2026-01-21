@@ -31,14 +31,19 @@ export async function PUT(
     try {
         const id = parseInt(params.id);
         const body = await req.json();
-        const { name, publicName, type, values } = body;
+        const { name, publicName, type, values, translations } = body;
 
         // Transaction to handle updates and nested values
         const updatedAttribute = await prisma.$transaction(async (tx) => {
             // Update parent
             await tx.attribute.update({
                 where: { id },
-                data: { name, publicName, type }
+                data: {
+                    name,
+                    publicName,
+                    type,
+                    translations: translations || {}
+                }
             });
 
             // Handle values:
@@ -53,14 +58,16 @@ export async function PUT(
             });
 
             // 2. Upsert (Update existing, Create new)
-            for (const val of values) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (const val of values as any[]) {
                 if (val.id) {
                     await tx.attributeValue.update({
                         where: { id: val.id },
                         data: {
                             name: val.name,
                             value: val.value,
-                            position: val.position
+                            position: val.position,
+                            translations: val.translations || {}
                         }
                     });
                 } else {
@@ -69,7 +76,8 @@ export async function PUT(
                             attributeId: id,
                             name: val.name,
                             value: val.value,
-                            position: val.position
+                            position: val.position,
+                            translations: val.translations || {}
                         }
                     });
                 }

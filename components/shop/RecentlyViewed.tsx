@@ -12,11 +12,12 @@ interface Product {
     price: string | number;
     images?: string | string[];
     slug: string;
+    translations?: any;
 }
 
 export default function RecentlyViewed() {
     const [products, setProducts] = useState<Product[]>([]);
-    const { t, locale } = useLanguage();
+    const { t, locale, getLocalizedValue } = useLanguage();
 
     const getMainImage = (product: Product): string => {
         try {
@@ -84,7 +85,7 @@ export default function RecentlyViewed() {
                                 />
                             </div>
                             <h3 className="font-serif text-base text-[var(--coffee-brown)] line-clamp-1 group-hover:text-[var(--honey-gold)] transition-colors">
-                                {product.name}
+                                {getLocalizedValue(product, 'name')}
                             </h3>
                             <p className="text-sm font-bold text-gray-900 mt-1">{Number(product.price).toFixed(2)}€</p>
                         </Link>

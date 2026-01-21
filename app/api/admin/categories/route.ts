@@ -33,8 +33,8 @@ export async function POST(req: Request) {
         const query = `
             INSERT INTO categories (
                 name, slug, description, image_url, is_active, display_order, 
-                parent_id, meta_title, meta_description, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                parent_id, meta_title, meta_description, translations, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `;
 
         const [result] = await pool.execute<ResultSetHeader>(query, [
@@ -46,7 +46,8 @@ export async function POST(req: Request) {
             display_order || 0,
             body.parent_id || null,
             body.meta_title || null,
-            body.meta_description || null
+            body.meta_description || null,
+            body.translations ? JSON.stringify(body.translations) : null
         ]);
 
         return NextResponse.json({

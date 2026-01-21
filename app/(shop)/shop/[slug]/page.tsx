@@ -67,7 +67,9 @@ async function getProduct(slug: string) {
                     value: av.attributeValue.name,
                     name: av.attributeValue.attribute.name
                 }))
-            }))
+            })),
+            translations: (product as any).translations || {},
+            category_translations: (product.category as any)?.translations || {}
         };
     } catch (error) {
         console.error("Error fetching product from Prisma:", error);
@@ -181,6 +183,8 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
                     shelfLife="24 months"
                     description={product.description || ''}
                     category={product.category_slug || 'honey'}
+                    translations={product.translations}
+                    category_translations={product.category_translations}
                 />
                 <ProductCarousel title="Produits Similaires" products={relatedProducts} />
                 <ProductCarousel title="Nouveautés" products={newArrivals} />

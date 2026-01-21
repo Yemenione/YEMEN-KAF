@@ -11,11 +11,12 @@ interface Category {
     slug: string;
     description: string;
     image_url: string;
+    translations?: Record<string, any>;
 }
 
 export default function CategoriesSection() {
     const [categories, setCategories] = useState<Category[]>([]);
-    const { t } = useLanguage();
+    const { t, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
 
     useEffect(() => {
@@ -84,9 +85,11 @@ export default function CategoriesSection() {
                                 <span className="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--honey-gold)] mb-2">
                                     {t('home.categories.explore')}
                                 </span>
-                                <h3 className="text-2xl font-serif mb-2 transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-500">{cat.name}</h3>
+                                <h3 className="text-2xl font-serif mb-2 transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-500">
+                                    {getLocalizedValue(cat, 'name')}
+                                </h3>
                                 <p className="text-white/70 text-sm font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 line-clamp-2">
-                                    {cat.description}
+                                    {getLocalizedValue(cat, 'description')}
                                 </p>
                             </div>
 

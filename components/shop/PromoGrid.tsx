@@ -12,6 +12,7 @@ interface Category {
     description?: string;
     imageUrl?: string;
     image_url?: string;
+    translations?: any;
 }
 
 interface PromoGridProps {
@@ -19,7 +20,7 @@ interface PromoGridProps {
 }
 
 export default function PromoGrid({ categories }: PromoGridProps) {
-    const { t } = useLanguage();
+    const { t, getLocalizedValue } = useLanguage();
 
     // Map categories to promo cards
     // We want 3 specific cards. If we have categories, we use them.
@@ -57,7 +58,7 @@ export default function PromoGrid({ categories }: PromoGridProps) {
         // We'll pick the first 3, or specific ones if we had logic for it.
         // For now, simple mapping of first 3.
         promos = categories.slice(0, 3).map((cat, idx) => ({
-            title: cat.name,
+            title: getLocalizedValue(cat, 'name'),
             subtitle: t('home.categories.explore') || "Discover",
             image: cat.imageUrl || cat.image_url || "/images/placeholder.jpg", // Handle casing from DB vs API
             link: `/shop?category=${cat.slug}`,
@@ -79,10 +80,13 @@ export default function PromoGrid({ categories }: PromoGridProps) {
                                 src={promo.image}
                                 alt={promo.title}
                                 fill
-                                className="object-cover mix-blend-multiply opacity-80"
+                                className="object-cover"
                                 sizes="(max-width: 768px) 100vw, 33vw"
                             />
                         </div>
+
+                        {/* Gradient Overlay for Text Readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/50 to-transparent pointer-events-none" />
 
                         <div className="relative z-10 space-y-2">
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--coffee-brown)]/60">

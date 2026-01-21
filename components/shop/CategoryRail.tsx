@@ -12,13 +12,14 @@ interface Category {
     slug: string;
     image?: string;
     image_url?: string;
+    translations?: any;
 }
 
 import { useSearchParams } from "next/navigation";
 // ... imports
 
 export default function CategoryRail() {
-    const { t } = useLanguage();
+    const { t, getLocalizedValue } = useLanguage();
     const [categories, setCategories] = useState<Category[]>([]);
     const searchParams = useSearchParams();
     const activeCategory = searchParams.get('category') || 'all';
@@ -99,7 +100,7 @@ export default function CategoryRail() {
                             "text-[10px] lg:text-sm font-bold uppercase tracking-wide text-center truncate w-full",
                             activeCategory === cat.slug ? "text-[var(--coffee-brown)]" : "text-gray-500 group-hover:text-gray-700"
                         )}>
-                            {cat.name}
+                            {getLocalizedValue(cat, 'name')}
                         </span>
                     </Link>
                 ))}

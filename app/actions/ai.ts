@@ -49,3 +49,57 @@ export async function generateProductDescription(name: string, category: string,
         return { error: 'Failed to generate description. Please try again.' };
     }
 }
+
+export async function translateContent(content: Record<string, string>, targetLanguages: string[], sourceLanguage: string = 'auto') {
+    if (!process.env.GROQ_API_KEY) {
+        return { error: 'Groq API Key is missing' };
+    }
+
+    try {
+        const prompt = `
+        You are a professional translator for a luxury e-commerce store.
+        Translate the following JSON content from ${sourceLanguage} to these languages: ${targetLanguages.join(', ')}.
+
+        Input JSON:
+        ${JSON.stringify(content, null, 2)}
+
+        Output Format:
+        Return a JSON object where keys are the language codes (${targetLanguages.join(', ')}) and values are objects containing the translated keys.
+
+        Example Output Structure:
+        {
+            "en": { "name": "...", "description": "..." },
+            "fr": { "name": "...", "description": "..." }
+        }
+
+        Rules:
+        1. Maintain the professional, luxury tone.
+        2. Keep the same JSON structure keys within each language object.
+        3. Do not translate branded terms like "Yem Kaf" or technical IDs.
+        4. For Arabic, ensure correct grammar and terminology suitable for a Yemeni/Gulf audience.
+        5. Output ONLY the valid JSON with translated values. No markdown blocks.
+        `;
+
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: 'user',
+                    content: prompt,
+                },
+            ],
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.3,
+            max_tokens: 2000,
+            response_format: { type: 'json_object' }
+        });
+
+        const translatedText = completion.choices[0]?.message?.content || '{}';
+        const translatedData = JSON.parse(translatedText);
+
+        return { data: translatedData };
+
+    } catch (error) {
+        console.error('Error translating content:', error);
+        return { error: 'Translation failed.' };
+    }
+}

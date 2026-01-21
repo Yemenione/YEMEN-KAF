@@ -10,6 +10,8 @@ interface ProductSpecsProps {
     shelfLife?: string;
     description?: string;
     category?: string;
+    translations?: any;
+    category_translations?: any;
 }
 
 export default function ProductSpecs({
@@ -17,9 +19,11 @@ export default function ProductSpecs({
     origin = "Yemen",
     shelfLife = "24 months",
     description = "",
-    category = "honey"
+    category = "honey",
+    translations,
+    category_translations
 }: ProductSpecsProps) {
-    const { t } = useLanguage();
+    const { t, getLocalizedValue } = useLanguage();
     const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'shipping'>('description');
 
     const weightInLbs = (weight * 2.20462).toFixed(2);
@@ -123,8 +127,8 @@ export default function ProductSpecs({
                 {activeTab === 'description' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div className="prose prose-stone prose-lg text-gray-600 leading-loose">
-                            {description ? (
-                                <p>{description}</p>
+                            {getLocalizedValue({ description, translations }, 'description') ? (
+                                <p dangerouslySetInnerHTML={{ __html: getLocalizedValue({ description, translations }, 'description') }} />
                             ) : (
                                 <p>{t('product.defaultDescription')}</p>
                             )}

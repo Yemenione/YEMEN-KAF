@@ -52,7 +52,9 @@ export async function PUT(
         // New Fields
         if (body.parent_id !== undefined) { updates.push('parent_id = ?'); values.push(body.parent_id); }
         if (body.meta_title !== undefined) { updates.push('meta_title = ?'); values.push(body.meta_title); }
+        if (body.meta_title !== undefined) { updates.push('meta_title = ?'); values.push(body.meta_title); }
         if (body.meta_description !== undefined) { updates.push('meta_description = ?'); values.push(body.meta_description); }
+        if (body.translations !== undefined) { updates.push('translations = ?'); values.push(JSON.stringify(body.translations)); }
 
         if (updates.length === 0) {
             return NextResponse.json({ error: 'No fields to update' }, { status: 400 });

@@ -12,11 +12,12 @@ interface Product {
     price: string | number;
     images?: string | string[]; // Can be JSON string or array of URLs
     slug: string;
+    translations?: any;
 }
 
 export default function SpecialOffers() {
     const [offers, setOffers] = useState<Product[]>([]);
-    const { t, locale } = useLanguage();
+    const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
 
     // Helper to extract main image from JSON or Array
@@ -113,8 +114,8 @@ export default function SpecialOffers() {
                             {/* Text Part */}
                             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                                 <div className="space-y-2">
-                                    <h3 className="font-serif text-3xl text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors">{offer.name}</h3>
-                                    <p className="text-[var(--coffee-brown)]/60 text-sm leading-relaxed line-clamp-2">{offer.description}</p>
+                                    <h3 className="font-serif text-3xl text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors">{getLocalizedValue(offer, 'name')}</h3>
+                                    <p className="text-[var(--coffee-brown)]/60 text-sm leading-relaxed line-clamp-2">{getLocalizedValue(offer, 'description')}</p>
                                 </div>
                                 <div className="text-end">
                                     <span className="block text-xl font-serif text-[var(--coffee-brown)]">€{Number(offer.price).toFixed(2)}</span>

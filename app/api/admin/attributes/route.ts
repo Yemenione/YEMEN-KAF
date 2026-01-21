@@ -19,23 +19,26 @@ interface AttributeValueInput {
     name: string;
     value: string;
     position?: number;
+    translations?: Record<string, any>;
 }
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { name, publicName, type, values } = body;
+        const { name, publicName, type, values, translations } = body;
 
         const attribute = await prisma.attribute.create({
             data: {
                 name,
                 publicName,
                 type,
+                translations: translations || {},
                 values: {
                     create: values.map((v: AttributeValueInput) => ({
                         name: v.name,
                         value: v.value,
-                        position: v.position || 0
+                        position: v.position || 0,
+                        translations: v.translations || {}
                     }))
                 }
             },

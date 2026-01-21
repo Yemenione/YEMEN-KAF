@@ -48,8 +48,8 @@ export default function Testimonials({ reviews = [] }: { reviews?: Review[] }) {
     ];
 
     const displayReviews: Testimonial[] = reviews.length > 0 ? reviews.map(r => ({
-        name: `${r.patient?.firstName || ''} ${r.patient?.lastName || ''}`.trim() || 'Client',
-        location: r.isVerified ? 'Achat vérifié' : 'Client Vérifié',
+        name: `${r.patient?.firstName || ''} ${r.patient?.lastName || ''}`.trim() || t('home.testimonials.client'),
+        location: r.isVerified ? t('home.testimonials.verifiedPurchase') : t('home.testimonials.verifiedClient'),
         text: r.comment || '',
         rating: r.rating,
         avatar: r.patient?.avatar || undefined

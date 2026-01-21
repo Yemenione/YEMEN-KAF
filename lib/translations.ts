@@ -16,6 +16,7 @@ export const translations = {
             farms: "The Farms",
             wishlist: "Wishlist",
             shopAll: "Shop All",
+            menu: "Menu",
         },
         // Home
         home: {
@@ -46,7 +47,9 @@ export const translations = {
             bestSellers: {
                 badge: "Best Sellers",
                 title: "Our Most Popular Products",
-                topSale: "Best Seller"
+                topSale: "Best Seller",
+                trending: "TRENDING",
+                soldCount: "SOLD THIS WEEK"
             },
             newArrivals: {
                 badge: "New Arrivals",
@@ -57,6 +60,9 @@ export const translations = {
             testimonials: {
                 badge: "Testimonials",
                 title: "What Our Customers Say",
+                verifiedPurchase: "Verified Purchase",
+                verifiedClient: "Verified Client",
+                client: "Client",
                 customer1: {
                     name: "Fatima Ahmed",
                     location: "Paris, France",
@@ -138,6 +144,7 @@ export const translations = {
             weight: "Weight",
             origin: "Origin",
             shelfLife: "Shelf Life",
+
             purity: "Purity",
             packaging: "Packaging",
             roastLevel: "Roast Level",
@@ -183,6 +190,13 @@ export const translations = {
             onlyLeft: "Only",
             stockScarcity: "in stock - Order soon!",
             deliveryPromise: "Free Delivery: Get it by",
+        },
+        trust: {
+            shipping: "Free Shipping",
+            authentic: "Authentic Products",
+            quality: "Yemeni Excellence",
+            excellence: "Yemeni Excellence",
+            subtitle: "The best of Yemen at your doorstep"
         },
         // Account
         account: {
@@ -402,6 +416,7 @@ export const translations = {
             error: "An error occurred. Please try again.",
             joinTitle: "Join the World of Yemeni Market",
             joinSubtitle: "Be the first to know about new arrivals and exclusive honey harvests.",
+            loading: "Subscribing...",
         },
         admin: {
             common: {
@@ -607,6 +622,7 @@ export const translations = {
             farms: "Les Fermes",
             wishlist: "Liste de Souhaits",
             shopAll: "Toute la Boutique",
+            menu: "Menu",
         },
         // Home
         home: {
@@ -637,7 +653,9 @@ export const translations = {
             bestSellers: {
                 badge: "Meilleures Ventes",
                 title: "Nos Produits Les Plus Demandés",
-                topSale: "Top Vente"
+                topSale: "Top Vente",
+                trending: "TENDANCE",
+                soldCount: "VENDUS CETTE SEMAINE"
             },
             newArrivals: {
                 badge: "Nouveautés",
@@ -648,6 +666,9 @@ export const translations = {
             testimonials: {
                 badge: "Témoignages",
                 title: "Ce Que Disent Nos Clients",
+                verifiedPurchase: "Achat Vérifié",
+                verifiedClient: "Client Vérifié",
+                client: "Client",
                 customer1: {
                     name: "Fatima Ahmed",
                     location: "Paris, France",
@@ -774,6 +795,13 @@ export const translations = {
             onlyLeft: "Plus que",
             stockScarcity: "en stock - Commandez vite !",
             deliveryPromise: "Livraison Gratuite : Recevez-le le",
+        },
+        trust: {
+            shipping: "Livraison Gratuite",
+            authentic: "Produits Authentiques",
+            quality: "Qualité Premium Garantie",
+            excellence: "Excellence Yéménite",
+            subtitle: "Le meilleur du Yémen à votre porte"
         },
         // Account
         account: {
@@ -993,6 +1021,7 @@ export const translations = {
             error: "Une erreur s'est produite. Veuillez réessayer.",
             joinTitle: "Rejoignez l'univers du marché yéménite",
             joinSubtitle: "Soyez le premier informé des nouveautés et des récoltes de miel exclusives.",
+            loading: "Inscription...",
         },
         admin: {
             common: {
@@ -1198,6 +1227,7 @@ export const translations = {
             farms: "المزارع",
             wishlist: "قائمة الرغبات",
             shopAll: "كل المنتجات",
+            menu: "القائمة",
         },
         // Home
         home: {
@@ -1228,7 +1258,9 @@ export const translations = {
             bestSellers: {
                 badge: "الأكثر مبيعاً",
                 title: "منتجاتنا الأكثر طلباً",
-                topSale: "الأكثر مبيعاً"
+                topSale: "الأكثر مبيعاً",
+                trending: "رائج",
+                soldCount: "تم بيعه هذا الأسبوع"
             },
             newArrivals: {
                 badge: "وصل حديثاً",
@@ -1239,6 +1271,9 @@ export const translations = {
             testimonials: {
                 badge: "آراء العملاء",
                 title: "ماذا يقول عملاؤنا",
+                verifiedPurchase: "شراء موثق",
+                verifiedClient: "عميل موثق",
+                client: "عميل",
                 customer1: {
                     name: "فاطمة أحمد",
                     location: "باريس، فرنسا",
@@ -1365,6 +1400,13 @@ export const translations = {
             onlyLeft: "باقي فقط",
             stockScarcity: "في المخزون - اطلب الآن!",
             deliveryPromise: "شحن مجاني: احصل عليه بتاريخ",
+        },
+        trust: {
+            shipping: "شحن مجاني",
+            authentic: "منتجات أصلية",
+            quality: "جودة مضمونة",
+            excellence: "تميز يمني",
+            subtitle: "أفضل ما في اليمن يصل إلى بابك"
         },
         // Account
         account: {
@@ -1584,6 +1626,7 @@ export const translations = {
             error: "حدث خطأ. يرجى المحاولة مرة أخرى.",
             joinTitle: "انضم إلى عالم السوق اليمني",
             joinSubtitle: "كن أول من يعرف عن المنتجات الجديدة ومحاصيل العسل الحصرية.",
+            loading: "جاري التسجيل...",
         },
         admin: {
             common: {

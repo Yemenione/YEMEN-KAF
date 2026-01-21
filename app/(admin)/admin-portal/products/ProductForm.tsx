@@ -38,6 +38,7 @@ interface Product {
     height?: number;
     depth?: number;
     carriers?: { id: number }[];
+    translations?: Record<string, any>;
     // Removed index signature to enforce stricter typing, add optional fields if needed
     [key: string]: unknown; // Safer than any if strictly necessary, or remove entirely if possible
 }
@@ -83,8 +84,16 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
         related_ids: "[]",
         hs_code: "",
         origin_country: "Yemen",
-        carriers: [] as number[]
+        carriers: [] as number[],
+        translations: {} as Record<string, any>
     });
+
+    const [activeLang, setActiveLang] = useState('en');
+    const languages = [
+        { code: 'en', label: 'English', flag: '🇬🇧' },
+        { code: 'fr', label: 'French', flag: '🇫🇷' },
+        { code: 'ar', label: 'Arabic', flag: '🇾🇪' }
+    ];
 
     // Fetch Categories, Brands, Tax Rules, Carriers
     useEffect(() => {
@@ -157,7 +166,8 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 related_ids: initialData.related_ids || "[]",
                 hs_code: initialData.hs_code || "",
                 origin_country: initialData.origin_country || "Yemen",
-                carriers: initialData.carriers ? initialData.carriers.map((c: { id: number }) => c.id) : []
+                carriers: initialData.carriers ? initialData.carriers.map((c: { id: number }) => c.id) : [],
+                translations: initialData.translations ? (typeof initialData.translations === 'string' ? JSON.parse(initialData.translations) : initialData.translations) : {}
             });
         }
     }, [initialData]);
@@ -212,6 +222,87 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 image_url: newImages[0] || ""
             };
         });
+    };
+
+    // Helper to get value based on active language
+    const getValue = (field: string) => {
+        if (activeLang === 'en') return formData[field as keyof typeof formData] as string;
+        return formData.translations?.[activeLang]?.[field] || '';
+    };
+
+    // Helper to set value based on active language
+    const setValue = (field: string, value: string) => {
+        if (activeLang === 'en') {
+            setFormData(prev => ({ ...prev, [field]: value }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                translations: {
+                    ...prev.translations,
+                    [activeLang]: {
+                        ...prev.translations[activeLang],
+                        [field]: value
+                    }
+                }
+            }));
+        }
+    };
+
+    const handleAutoTranslate = async () => {
+        // Gather content from current active language
+        const currentContent = {
+            name: getValue('name'),
+            description: getValue('description'),
+            meta_title: getValue('meta_title'),
+            meta_description: getValue('meta_description')
+        };
+
+        if (!currentContent.name) return alert(`Please fill in ${activeLang.toUpperCase()} name first.`);
+
+        setLoading(true);
+        try {
+            const { translateContent } = await import('@/app/actions/ai');
+
+            // Target languages are all except current
+            const targetLangs = languages.filter(l => l.code !== activeLang).map(l => l.code);
+
+            const res = await translateContent(currentContent, targetLangs, activeLang);
+
+            if (res.error) {
+                alert(res.error);
+            } else if (res.data) {
+                setFormData(prev => {
+                    const next = { ...prev };
+
+                    // Distribute translations
+                    Object.entries(res.data).forEach(([langCode, values]: [string, any]) => {
+                        if (langCode === 'en') {
+                            // Update main fields if English is one of the targets (i.e. source was not English)
+                            next.name = values.name || next.name;
+                            next.description = values.description || next.description;
+                            next.meta_title = values.meta_title || next.meta_title;
+                            next.meta_description = values.meta_description || next.meta_description;
+                        } else {
+                            // Update translation object
+                            next.translations = {
+                                ...next.translations,
+                                [langCode]: {
+                                    ...next.translations[langCode],
+                                    ...values
+                                }
+                            };
+                        }
+                    });
+
+                    return next;
+                });
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Translation failed");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -314,17 +405,46 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     {/* General Tab */}
                     {activeTab === "general" && (
                         <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
-                            <h3 className="text-lg font-semibold border-b pb-4 dark:border-zinc-800">Basic Information</h3>
+                            <div className="flex items-center justify-between border-b pb-4 dark:border-zinc-800">
+                                <h3 className="text-lg font-semibold">Basic Information</h3>
+                                <div className="flex items-center gap-2">
+                                    {languages.map(lang => (
+                                        <button
+                                            key={lang.code}
+                                            type="button"
+                                            onClick={() => setActiveLang(lang.code)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${activeLang === lang.code
+                                                ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
+                                                : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800'
+                                                }`}
+                                        >
+                                            <span className="text-base">{lang.flag}</span>
+                                            {lang.label}
+                                        </button>
+                                    ))}
+                                    {activeLang !== 'en' && (
+                                        <button
+                                            type="button"
+                                            onClick={handleAutoTranslate}
+                                            disabled={loading}
+                                            className="ml-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold uppercase tracking-wide hover:bg-purple-200 transition-colors flex items-center gap-1"
+                                        >
+                                            ✨ AI Translate
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
 
                             <div className="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Product Name *</label>
+                                    <label className="block text-sm font-medium mb-1">Product Name ({activeLang.toUpperCase()}) *</label>
                                     <input
-                                        required
+                                        required={activeLang === 'en'}
                                         type="text"
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                        value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        value={getValue('name')}
+                                        onChange={e => setValue('name', e.target.value)}
+                                        dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                     />
                                 </div>
 
@@ -372,13 +492,14 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Description</label>
+                                    <label className="block text-sm font-medium mb-1">Description ({activeLang.toUpperCase()})</label>
                                     <div className="relative">
                                         <textarea
                                             className="w-full px-3 py-2 border rounded-lg h-40 dark:bg-zinc-800 dark:border-zinc-700 pb-10"
-                                            value={formData.description}
-                                            onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                            placeholder="Enter product description..."
+                                            value={getValue('description')}
+                                            onChange={e => setValue('description', e.target.value)}
+                                            placeholder={`Enter product description in ${activeLang}...`}
+                                            dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                         />
                                         <button
                                             type="button"
@@ -667,26 +788,45 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     {/* SEO Tab */}
                     {activeTab === "seo" && (
                         <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
-                            <h3 className="text-lg font-semibold border-b pb-4 dark:border-zinc-800">Search Engine Optimization</h3>
+                            <div className="flex items-center justify-between border-b pb-4 dark:border-zinc-800">
+                                <h3 className="text-lg font-semibold">Search Engine Optimization</h3>
+                                <div className="flex items-center gap-2">
+                                    {languages.map(lang => (
+                                        <button
+                                            key={lang.code}
+                                            type="button"
+                                            onClick={() => setActiveLang(lang.code)}
+                                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${activeLang === lang.code
+                                                ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
+                                                : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800'
+                                                }`}
+                                        >
+                                            {lang.flag} {lang.code.toUpperCase()}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Meta Title</label>
+                                <label className="block text-sm font-medium mb-1">Meta Title ({activeLang.toUpperCase()})</label>
                                 <input
                                     type="text"
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                    value={formData.meta_title}
-                                    placeholder={formData.name}
-                                    onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
+                                    value={getValue('meta_title')}
+                                    placeholder={getValue('name')}
+                                    onChange={e => setValue('meta_title', e.target.value)}
+                                    dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                 />
                                 <p className="text-xs text-gray-500 mt-1">Ideally 50-60 characters.</p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Meta Description</label>
+                                <label className="block text-sm font-medium mb-1">Meta Description ({activeLang.toUpperCase()})</label>
                                 <textarea
                                     className="w-full px-3 py-2 border rounded-lg h-24 dark:bg-zinc-800 dark:border-zinc-700"
-                                    value={formData.meta_description}
-                                    onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
+                                    value={getValue('meta_description')}
+                                    onChange={e => setValue('meta_description', e.target.value)}
+                                    dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                 />
                                 <p className="text-xs text-gray-500 mt-1"> Ideally 150-160 characters.</p>
                             </div>

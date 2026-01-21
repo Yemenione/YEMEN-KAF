@@ -17,14 +17,16 @@ interface Product {
     slug: string;
     category?: {
         name: string;
+        translations?: Record<string, any>;
     } | null;
+    translations?: Record<string, any>;
 }
 
 export default function RamadanSection() {
     const { settings, loading: settingsLoading } = useSettings();
     const [products, setProducts] = useState<Product[]>([]);
     // loading state removed as it was unused in render
-    const { t } = useLanguage();
+    const { t, getLocalizedValue, locale } = useLanguage();
 
     const isRamadanEnabled = settings.ramadan_mode_enabled === 'true';
 
@@ -102,11 +104,12 @@ export default function RamadanSection() {
                     </div>
 
                     <h2 className="text-4xl md:text-6xl font-serif text-[#3e2723] leading-tight">
-                        {settings.ramadan_title || t('ramadan.title')}
+                        {/* Use settings only if locale is English, otherwise force translation */}
+                        {(locale === 'en' ? settings.ramadan_title : null) || t('home.ramadan.title')}
                     </h2>
 
                     <p className="text-[#5d4037] max-w-2xl mx-auto text-lg italic font-light tracking-wide">
-                        {settings.ramadan_subtitle || t('ramadan.subtitle')}
+                        {(locale === 'en' ? settings.ramadan_subtitle : null) || t('home.ramadan.subtitle')}
                     </p>
                 </div>
 
@@ -117,11 +120,11 @@ export default function RamadanSection() {
                             <Link href={`/shop/${product.slug}`} className="block h-full">
                                 <div className="relative h-full bg-white rounded-t-full rounded-b-2xl overflow-hidden border border-[#cfb160]/30 group-hover:border-[#cfb160] transition-all duration-500 shadow-sm group-hover:shadow-[0_10px_40px_-10px_rgba(207,177,96,0.3)] flex flex-col group-hover:-translate-y-2">
                                     {/* Image Container - Arch Shape */}
-                                    <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-[#FCF9F5] to-white p-6">
+                                    <div className="relative aspect-[4/5] overflow-hidden bg-gradient-to-b from-[#FCF9F5] to-white">
                                         {/* Premium Badge */}
                                         <div className="absolute top-4 left-0 right-0 flex justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                             <span className="bg-[#cfb160] text-white text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-[0.2em] shadow-md">
-                                                {t('ramadan.premium') || "Premium"}
+                                                {t('home.ramadan.premium') || "Premium"}
                                             </span>
                                         </div>
 
@@ -131,7 +134,7 @@ export default function RamadanSection() {
                                                 <img
                                                     src={getMainImage(product)}
                                                     alt={product.name}
-                                                    className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-xl transition-all duration-700"
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                 />
                                             </div>
                                         </div>
@@ -140,7 +143,7 @@ export default function RamadanSection() {
                                     {/* Content */}
                                     <div className="p-5 pt-2 flex-1 flex flex-col items-center text-center border-t border-[#cfb160]/10">
                                         <h3 className="text-[#3e2723] font-serif text-lg leading-snug mb-1 group-hover:text-[#cfb160] transition-colors line-clamp-2">
-                                            {product.name}
+                                            {getLocalizedValue(product, 'name')}
                                         </h3>
                                         <div className="mt-auto pt-3 flex flex-col items-center gap-2 w-full">
                                             <span className="text-xl font-bold text-[#cfb160]">

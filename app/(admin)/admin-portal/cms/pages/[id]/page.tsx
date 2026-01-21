@@ -4,11 +4,14 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Globe, Code, FileText, Search } from "lucide-react";
 
+import StructuredPageForm from "./StructuredPageForm";
+
 interface PageData {
     id?: number;
     title: string;
     slug: string;
     content: string;
+    structured_content?: any;
     metaTitle: string;
     metaDescription: string;
     isActive: boolean;
@@ -25,6 +28,7 @@ export default function CMSPageEditor({ params }: { params: Promise<{ id: string
         title: '',
         slug: '',
         content: '',
+        structured_content: null,
         metaTitle: '',
         metaDescription: '',
         isActive: true
@@ -135,23 +139,31 @@ export default function CMSPageEditor({ params }: { params: Promise<{ id: string
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
-                                <span>Content (HTML)</span>
-                                <span className="text-xs text-gray-400 font-normal flex items-center gap-1"><Code className="w-3 h-3" /> Raw HTML Mode</span>
-                            </label>
-                            <div className="relative">
-                                <textarea
-                                    className="w-full h-[500px] font-mono text-sm p-4 border rounded-lg bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 leading-relaxed"
-                                    placeholder="<div class='container'>...</div>"
-                                    value={formData.content}
-                                    onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                />
-                                <div className="absolute bottom-4 right-4 text-xs text-gray-400 bg-white dark:bg-zinc-900 px-2 py-1 rounded border shadow-sm">
-                                    {formData.content.length} chars
+                        {formData.structured_content ? (
+                            <StructuredPageForm
+                                slug={formData.slug}
+                                data={formData.structured_content}
+                                onChange={(newData) => setFormData({ ...formData, structured_content: newData })}
+                            />
+                        ) : (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex justify-between">
+                                    <span>Content (HTML)</span>
+                                    <span className="text-xs text-gray-400 font-normal flex items-center gap-1"><Code className="w-3 h-3" /> Raw HTML Mode</span>
+                                </label>
+                                <div className="relative">
+                                    <textarea
+                                        className="w-full h-[500px] font-mono text-sm p-4 border rounded-lg bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 focus:ring-2 focus:ring-blue-500 leading-relaxed"
+                                        placeholder="<div class='container'>...</div>"
+                                        value={formData.content}
+                                        onChange={e => setFormData({ ...formData, content: e.target.value })}
+                                    />
+                                    <div className="absolute bottom-4 right-4 text-xs text-gray-400 bg-white dark:bg-zinc-900 px-2 py-1 rounded border shadow-sm">
+                                        {formData.content.length} chars
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 

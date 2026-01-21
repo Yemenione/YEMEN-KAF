@@ -8,6 +8,7 @@ interface AttributeValue {
     name: string;
     value: string; // Hex color or text
     position: number;
+    translations?: Record<string, any>;
 }
 
 interface Attribute {
@@ -16,6 +17,7 @@ interface Attribute {
     publicName: string | null; // Frontend label
     type: string; // select, color, radio
     values: AttributeValue[];
+    translations?: Record<string, any>;
 }
 
 export default function AttributesPage() {
@@ -29,12 +31,22 @@ export default function AttributesPage() {
         publicName: string;
         type: string;
         values: AttributeValue[];
+        translations?: Record<string, any>;
     }>({
         name: "",
         publicName: "",
         type: "select",
-        values: []
+        values: [],
+        translations: {}
     });
+
+    const [activeLang, setActiveLang] = useState('en');
+    const languages = [
+        { code: 'en', label: 'English', flag: '🇬🇧' },
+        { code: 'fr', label: 'French', flag: '🇫🇷' },
+        { code: 'ar', label: 'Arabic', flag: '🇾🇪' }
+    ];
+    const [loading, setLoading] = useState(false);
 
     const fetchAttributes = useCallback(async () => {
         try {
@@ -58,8 +70,13 @@ export default function AttributesPage() {
             name: attr.name,
             publicName: attr.publicName || "",
             type: attr.type,
-            values: attr.values.map(v => ({ ...v }))
+            values: attr.values.map(v => ({
+                ...v,
+                translations: v.translations || {}
+            })),
+            translations: attr.translations || {}
         });
+        setActiveLang('en');
         setIsModalOpen(true);
     };
 
@@ -69,9 +86,141 @@ export default function AttributesPage() {
             name: "",
             publicName: "",
             type: "select",
-            values: [{ name: "", value: "", position: 0 }]
+            values: [{ name: "", value: "", position: 0, translations: {} }],
+            translations: {}
         });
+        setActiveLang('en');
         setIsModalOpen(true);
+    };
+
+    const getValue = (field: string) => {
+        if (activeLang === 'en') return formData[field as keyof typeof formData] as string;
+        // @ts-expect-error: dynamic translation access
+        return formData.translations?.[activeLang]?.[field] || '';
+    };
+
+    const setValue = (field: string, value: string) => {
+        if (activeLang === 'en') {
+            setFormData(prev => ({ ...prev, [field]: value }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                translations: {
+                    ...prev.translations,
+                    [activeLang]: {
+                        // @ts-expect-error: dynamic translation access
+                        ...prev.translations?.[activeLang],
+                        [field]: value
+                    }
+                }
+            }));
+        }
+    };
+
+    const getValueForValue = (index: number, field: keyof AttributeValue) => {
+        const val = formData.values[index];
+        if (activeLang === 'en') return val[field] as string;
+        // @ts-expect-error: dynamic translation access
+        return val.translations?.[activeLang]?.[field] || '';
+    };
+
+    const handleValueChange = (index: number, field: keyof AttributeValue, val: string) => {
+        setFormData(prev => {
+            const newValues = [...prev.values];
+            if (activeLang === 'en') {
+                // @ts-expect-error: indexing with dynamic field key
+                newValues[index][field] = val;
+            } else {
+                newValues[index] = {
+                    ...newValues[index],
+                    translations: {
+                        ...newValues[index].translations,
+                        [activeLang]: {
+                            ...newValues[index].translations?.[activeLang],
+                            [field]: val
+                        }
+                    }
+                };
+            }
+            return { ...prev, values: newValues };
+        });
+    };
+
+    const handleAutoTranslate = async () => {
+        // Gather content
+        const currentContent = {
+            publicName: getValue('publicName'),
+            values: formData.values.map((v, i) => ({ id: i, name: getValueForValue(i, 'name') }))
+        };
+
+        if (!currentContent.publicName) return alert(`Please fill in ${activeLang.toUpperCase()} Public Name first.`);
+
+        setLoading(true);
+        try {
+            const { translateContent } = await import('@/app/actions/ai');
+            const targetLangs = languages.filter(l => l.code !== activeLang).map(l => l.code);
+
+            // 1. Translate Attribute Info
+            const attrRes = await translateContent({ publicName: currentContent.publicName }, targetLangs, activeLang);
+
+            // 2. Translate Values (batching might be needed for many values, but simplified here)
+            // convert values to a map for translation: "key_0": "Blue", "key_1": "Red"
+            const valuesMap: Record<string, string> = {};
+            currentContent.values.forEach(v => { valuesMap[`val_${v.id}`] = v.name; });
+
+            const valuesRes = await translateContent(valuesMap, targetLangs, activeLang);
+
+            if (attrRes.data && valuesRes.data) {
+                setFormData(prev => {
+                    const next = { ...prev };
+
+                    // Update Translations
+                    targetLangs.forEach(lang => {
+                        // Attribute
+                        if (lang === 'en') {
+                            next.publicName = attrRes.data[lang]?.publicName || next.publicName;
+                        } else {
+                            next.translations = {
+                                ...next.translations,
+                                [lang]: {
+                                    ...next.translations?.[lang],
+                                    publicName: attrRes.data[lang]?.publicName
+                                }
+                            };
+                        }
+
+                        // Values
+                        next.values = next.values.map((v, i) => {
+                            const newName = valuesRes.data[lang]?.[`val_${i}`];
+                            if (!newName) return v;
+
+                            if (lang === 'en') {
+                                return { ...v, name: newName };
+                            } else {
+                                return {
+                                    ...v,
+                                    translations: {
+                                        ...v.translations,
+                                        [lang]: {
+                                            ...v.translations?.[lang],
+                                            name: newName
+                                        }
+                                    }
+                                };
+                            }
+                        });
+                    });
+
+                    return next;
+                });
+            }
+
+        } catch (e) {
+            console.error(e);
+            alert("Translation failed");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAddValue = () => {
@@ -79,7 +228,7 @@ export default function AttributesPage() {
             ...prev,
             values: [
                 ...prev.values,
-                { name: "", value: "", position: prev.values.length }
+                { name: "", value: "", position: prev.values.length, translations: {} }
             ]
         }));
     };
@@ -89,15 +238,6 @@ export default function AttributesPage() {
             ...prev,
             values: prev.values.filter((_, i) => i !== index)
         }));
-    };
-
-    const handleValueChange = (index: number, field: keyof AttributeValue, val: string) => {
-        setFormData(prev => {
-            const newValues = [...prev.values];
-            // @ts-expect-error: indexing with dynamic field key
-            newValues[index][field] = val;
-            return { ...prev, values: newValues };
-        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -192,13 +332,44 @@ export default function AttributesPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in-up">
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 sticky top-0 bg-white dark:bg-zinc-900 z-10">
-                            <h3 className="text-xl font-semibold">{editingAttr ? 'Edit Attribute' : 'New Attribute'}</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={20} />
-                            </button>
+                            <div>
+                                <h3 className="text-xl font-semibold">{editingAttr ? 'Edit Attribute' : 'New Attribute'}</h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {languages.map(lang => (
+                                    <button
+                                        key={lang.code}
+                                        type="button"
+                                        onClick={() => setActiveLang(lang.code)}
+                                        className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${activeLang === lang.code
+                                            ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
+                                            : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800'
+                                            }`}
+                                    >
+                                        {lang.flag} {lang.code.toUpperCase()}
+                                    </button>
+                                ))}
+                                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 ml-4">
+                                    <X size={20} />
+                                </button>
+                            </div>
                         </div>
 
                         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                            {/* AI Translate Button */}
+                            {activeLang !== 'en' && (
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={handleAutoTranslate}
+                                        disabled={loading}
+                                        className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold uppercase tracking-wide hover:bg-purple-200 transition-colors flex items-center gap-1"
+                                    >
+                                        ✨ AI Translate to {languages.find(l => l.code === activeLang)?.label}
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-1">Internal Name</label>
@@ -209,17 +380,19 @@ export default function AttributesPage() {
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
                                         value={formData.name}
                                         onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        disabled={activeLang !== 'en'}
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">Used in backend (e.g. &quot;color_v2&quot;)</p>
+                                    <p className="text-xs text-gray-500 mt-1">Used in backend (English only)</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Public Name</label>
+                                    <label className="block text-sm font-medium mb-1">Public Name ({activeLang.toUpperCase()})</label>
                                     <input
                                         type="text"
                                         placeholder="Coating Color"
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                        value={formData.publicName}
-                                        onChange={e => setFormData({ ...formData, publicName: e.target.value })}
+                                        value={getValue('publicName')}
+                                        onChange={e => setValue('publicName', e.target.value)}
+                                        dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                     />
                                     <p className="text-xs text-gray-500 mt-1">Visible to customers</p>
                                 </div>
@@ -236,6 +409,7 @@ export default function AttributesPage() {
                                             checked={formData.type === 'select'}
                                             onChange={() => setFormData({ ...formData, type: 'select' })}
                                             className="text-[var(--coffee-brown)] focus:ring-[var(--honey-gold)]"
+                                            disabled={activeLang !== 'en'}
                                         />
                                         <span>Dropdown / Text</span>
                                     </label>
@@ -247,6 +421,7 @@ export default function AttributesPage() {
                                             checked={formData.type === 'color'}
                                             onChange={() => setFormData({ ...formData, type: 'color' })}
                                             className="text-[var(--coffee-brown)] focus:ring-[var(--honey-gold)]"
+                                            disabled={activeLang !== 'en'}
                                         />
                                         <span>Color Swatch</span>
                                     </label>
@@ -258,6 +433,7 @@ export default function AttributesPage() {
                                             checked={formData.type === 'radio'}
                                             onChange={() => setFormData({ ...formData, type: 'radio' })}
                                             className="text-[var(--coffee-brown)] focus:ring-[var(--honey-gold)]"
+                                            disabled={activeLang !== 'en'}
                                         />
                                         <span>Radio Buttons</span>
                                     </label>
@@ -280,13 +456,17 @@ export default function AttributesPage() {
                                     {formData.values.map((val, index) => (
                                         <div key={index} className="flex gap-3 items-center">
                                             <GripVertical size={16} className="text-gray-300 cursor-move" />
-                                            <input
-                                                type="text"
-                                                placeholder="Label (e.g. Red)"
-                                                className="flex-1 px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                                value={val.name}
-                                                onChange={e => handleValueChange(index, 'name', e.target.value)}
-                                            />
+                                            <div className="flex-1">
+                                                <input
+                                                    type="text"
+                                                    placeholder={`Label (${activeLang.toUpperCase()})`}
+                                                    className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
+                                                    value={getValueForValue(index, 'name')}
+                                                    onChange={e => handleValueChange(index, 'name', e.target.value)}
+                                                    dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
+                                                />
+                                            </div>
+
                                             {formData.type === 'color' && (
                                                 <input
                                                     type="color"
@@ -295,12 +475,12 @@ export default function AttributesPage() {
                                                     onChange={e => handleValueChange(index, 'value', e.target.value)}
                                                 />
                                             )}
-                                            {(formData.type === 'select' || formData.type === 'radio') && (
+                                            {(formData.type === 'select' || formData.type === 'radio') && activeLang === 'en' && (
                                                 <input
                                                     type="text"
-                                                    placeholder="Value (optional)"
+                                                    placeholder="Value (technical)"
                                                     className="flex-1 px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 text-gray-500"
-                                                    value={val.value}
+                                                    value={val.value || ''}
                                                     onChange={e => handleValueChange(index, 'value', e.target.value)}
                                                 />
                                             )}
@@ -326,14 +506,16 @@ export default function AttributesPage() {
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
                                     className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg"
+                                    disabled={loading}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-6 py-2 bg-[var(--coffee-brown)] text-white font-medium text-sm rounded-lg hover:opacity-90"
+                                    disabled={loading}
+                                    className="px-6 py-2 bg-[var(--coffee-brown)] text-white font-medium text-sm rounded-lg hover:opacity-90 disabled:opacity-50"
                                 >
-                                    Save Attribute
+                                    {loading ? 'Saving...' : 'Save Attribute'}
                                 </button>
                             </div>
                         </form>

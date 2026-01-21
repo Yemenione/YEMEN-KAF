@@ -88,8 +88,8 @@ export default function HomeClient({ reviews, categories }: HomeClientProps) {
                             <Truck className="w-6 h-6" />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('footer.shipping')}</h3>
-                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('product.freeShipping') || 'Livraison gratuite dès 100€'}</p>
+                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('trust.shipping')}</h3>
+                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('product.freeShippingDesc') || 'Livraison gratuite dès 100€'}</p>
                         </div>
                     </div>
                     <div className="flex flex-col items-center gap-4 group">
@@ -97,8 +97,8 @@ export default function HomeClient({ reviews, categories }: HomeClientProps) {
                             <ShieldCheck className="w-6 h-6" />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('product.authentic') || 'Produits Authentiques'}</h3>
-                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('product.qualityGuaranteed') || 'Qualité Premium Garantie'}</p>
+                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('trust.authentic') || 'Produits Authentiques'}</h3>
+                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('trust.quality') || 'Qualité Premium Garantie'}</p>
                         </div>
                     </div>
                     <div className="flex flex-col items-center gap-4 group">
@@ -106,8 +106,8 @@ export default function HomeClient({ reviews, categories }: HomeClientProps) {
                             <Star className="w-6 h-6" />
                         </div>
                         <div className="space-y-1">
-                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('product.qualityGuaranteed') || 'Excellence Yéménite'}</h3>
-                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('home.hero.subtitle') || 'Le meilleur du Yémen à votre porte'}</p>
+                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('trust.excellence') || 'Excellence Yéménite'}</h3>
+                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('trust.subtitle') || 'Le meilleur du Yémen à votre porte'}</p>
                         </div>
                     </div>
                 </div>

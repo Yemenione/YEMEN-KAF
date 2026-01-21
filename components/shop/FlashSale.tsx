@@ -14,12 +14,13 @@ interface Product {
     compare_at_price?: string | number;
     images?: string | string[];
     slug: string;
+    translations?: any;
 }
 
 export default function FlashSale() {
     const [products, setProducts] = useState<Product[]>([]);
     const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
-    const { t, locale } = useLanguage();
+    const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
 
     // Helper for main image (reusing logic for safety)
@@ -147,7 +148,7 @@ export default function FlashSale() {
                                 </div>
                                 <div className="p-5 space-y-3">
                                     <h3 className="font-serif text-lg text-gray-900 line-clamp-1 group-hover:text-red-600 transition-colors">
-                                        {product.name}
+                                        {getLocalizedValue(product, 'name')}
                                     </h3>
                                     <div className="flex items-baseline gap-3">
                                         <span className="text-xl font-bold text-red-600">{price.toFixed(2)}€</span>

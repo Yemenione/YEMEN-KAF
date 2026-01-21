@@ -67,8 +67,10 @@ export async function GET(req: Request) {
                 description: p.description,
                 images: imageList,
                 category_name: p.category?.name || 'Uncategorized',
+                category_translations: (p.category as any)?.translations || {},
                 stock_quantity: p.stockQuantity,
-                in_stock: p.stockQuantity > 0
+                in_stock: p.stockQuantity > 0,
+                translations: (p as any).translations || {}
             };
         });
 
@@ -113,7 +115,8 @@ export async function POST(req: Request) {
             related_ids,
             hs_code,
             origin_country,
-            variants // Array of { sku, price, stock, attributes: { Size: "L", Color: "Red" } }
+            variants, // Array of { sku, price, stock, attributes: { Size: "L", Color: "Red" } }
+            translations
         } = body;
 
         // Basic validation
@@ -164,6 +167,7 @@ export async function POST(req: Request) {
                     relatedIds: related_ids || "[]",
                     hsCode: hs_code,
                     originCountry: origin_country || "Yemen",
+                    translations: translations || Prisma.JsonNull,
                     carriers: body.carriers && Array.isArray(body.carriers) ? {
                         connect: body.carriers.map((id: number) => ({ id: parseInt(id.toString()) }))
                     } : undefined

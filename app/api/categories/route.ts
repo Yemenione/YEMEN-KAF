@@ -23,7 +23,8 @@ export async function GET(req: Request) {
             slug: c.slug,
             description: c.description,
             image_url: c.imageUrl,
-            count: 0 // Count might be added later with aggregations if needed
+            count: 0, // Count might be added later with aggregations if needed
+            translations: (c as any).translations || {}
         }));
 
         return NextResponse.json({ categories: normalizedCategories });

@@ -105,7 +105,7 @@ export async function PUT(
             cost_price, weight, width, height, depth,
             meta_title, meta_description, related_ids,
             compare_at_price, hs_code, origin_country,
-            tax_rule_id, carriers
+            tax_rule_id, carriers, translations
         } = body;
 
         const updatedProduct = await prisma.product.update({
@@ -133,6 +133,7 @@ export async function PUT(
                 compareAtPrice: compare_at_price !== undefined ? parseFloat(compare_at_price) : undefined,
                 hsCode: hs_code,
                 originCountry: origin_country,
+                translations: translations,
                 taxRuleId: tax_rule_id ? parseInt(tax_rule_id) : null,
                 carriers: carriers ? {
                     set: Array.isArray(carriers) ? carriers.map((cid: string | number) => ({ id: parseInt(cid.toString()) })) : []

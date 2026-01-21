@@ -11,12 +11,14 @@ interface Product {
     images?: string | string[]; // Can be JSON string or array of URLs
     slug: string;
     category_name: string;
+    translations?: Record<string, any>;
+    category_translations?: Record<string, any>;
 }
 
 export default function ProductShowcase() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
-    const { t } = useLanguage();
+    const { t, getLocalizedValue } = useLanguage();
 
     // Helper to extract main image from JSON or Array
     const getMainImage = (product: Product): string => {
@@ -88,10 +90,10 @@ export default function ProductShowcase() {
                             <Link key={product.id} href={`/shop/${product.slug}`} className="block">
                                 <ProductCard
                                     id={product.id}
-                                    title={product.name}
+                                    title={getLocalizedValue(product, 'name')}
                                     price={`€${Number(product.price).toFixed(2)}`}
                                     image={getMainImage(product)}
-                                    category={product.category_name || 'Collection'}
+                                    category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || 'Collection'}
                                 />
                             </Link>
                         ))

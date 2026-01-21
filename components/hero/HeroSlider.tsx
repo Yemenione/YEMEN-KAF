@@ -15,12 +15,14 @@ interface Product {
     slug: string;
     images?: string | string[]; // Can be JSON string or array of URLs
     image_url: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    translations?: Record<string, any>;
 }
 
 export default function HeroSlider() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [slides, setSlides] = useState<Product[]>([]);
-    const { t, locale } = useLanguage();
+    const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
 
     // Helper to extract main image from JSON or Array
@@ -95,31 +97,31 @@ export default function HeroSlider() {
         <section className="relative w-full min-h-[90vh] bg-[var(--cream-white)] overflow-hidden flex flex-col lg:flex-row">
 
             {/* Left Column: Content */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-20 py-20 z-10 relative">
-                <div className="max-w-xl space-y-8 animate-fade-in-up">
-                    <div key={currentSlide} className="animate-fade-in space-y-6">
-                        <span className="text-[var(--coffee-brown)]/60 text-sm font-bold uppercase tracking-[0.3em] block border-l-2 border-[var(--coffee-brown)] pl-4">
+            <div className="absolute inset-0 lg:relative lg:w-1/2 flex flex-col justify-end lg:justify-center items-center lg:items-start text-center lg:text-start px-8 md:px-20 pb-20 md:pb-32 lg:py-20 z-20 lg:min-h-full">
+                <div className="max-w-xl space-y-6 md:space-y-8 animate-fade-in-up">
+                    <div key={currentSlide} className="animate-fade-in space-y-3 md:space-y-6">
+                        <span className="text-[var(--honey-gold)] lg:text-[var(--coffee-brown)]/60 text-[10px] md:text-sm font-bold uppercase tracking-[0.3em] block lg:border-l-2 border-[var(--honey-gold)] lg:border-[var(--coffee-brown)] lg:pl-4">
                             {t("home.hero.tagline")}
                         </span>
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-[var(--coffee-brown)] leading-[0.9] tracking-tight">
-                            {slides[currentSlide].name}
+                        <h1 className="text-3xl md:text-7xl lg:text-8xl font-serif text-white lg:text-[var(--coffee-brown)] leading-[1.2] lg:leading-[0.9] tracking-tight drop-shadow-sm">
+                            {getLocalizedValue(slides[currentSlide], 'name')}
                         </h1>
-                        <p className="text-lg md:text-xl text-[var(--coffee-brown)]/80 font-light leading-relaxed max-w-md line-clamp-5">
-                            {slides[currentSlide].description}
+                        <p className="text-xs md:text-xl text-white/80 lg:text-[var(--coffee-brown)]/80 font-light leading-relaxed max-w-[280px] md:max-w-md line-clamp-2 lg:line-clamp-5 mx-auto lg:mx-0">
+                            {getLocalizedValue(slides[currentSlide], 'description')}
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-6 pt-4">
+                    <div className="flex flex-col lg:flex-row items-center gap-5 md:gap-6 pt-2 md:pt-4">
                         <Link href={`/shop/${slides[currentSlide].slug}`}>
-                            <button className="group flex items-center gap-4 px-10 py-4 bg-[var(--coffee-brown)] text-[var(--cream-white)] font-bold uppercase tracking-widest hover:bg-[var(--coffee-brown)]/90 transition-all shadow-xl rounded-full">
+                            <button className="group flex items-center gap-3 md:gap-4 px-6 md:px-10 py-3 md:py-4 bg-[var(--honey-gold)] lg:bg-[var(--coffee-brown)] text-white font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-xl rounded-full text-[10px] md:text-base">
                                 {t("home.hero.cta")}
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
+                                <ArrowRight className="w-3.5 h-3.5 md:w-5 md:h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
                             </button>
                         </Link>
 
-                        {/* Pagination - Moved near CTA for accessibility */}
-                        <div className="flex items-center gap-3 ml-4">
-                            <span className="text-xs font-bold text-[var(--coffee-brown)]">0{currentSlide + 1}</span>
+                        {/* Pagination */}
+                        <div className="flex items-center gap-3 lg:ml-4">
+                            <span className="text-[10px] md:text-xs font-bold text-white/60 lg:text-[var(--coffee-brown)]">0{currentSlide + 1}</span>
                             <div className="flex gap-2">
                                 {slides.map((_, index) => (
                                     <button
@@ -127,7 +129,7 @@ export default function HeroSlider() {
                                         onClick={() => setCurrentSlide(index)}
                                         className={clsx(
                                             "h-[2px] transition-all duration-500",
-                                            index === currentSlide ? "w-12 bg-[var(--coffee-brown)]" : "w-4 bg-[var(--coffee-brown)]/20 hover:bg-[var(--coffee-brown)]/40"
+                                            index === currentSlide ? "w-8 md:w-12 bg-[var(--honey-gold)] lg:bg-[var(--coffee-brown)]" : "w-3 md:w-4 bg-white/20 lg:bg-[var(--coffee-brown)]/20 hover:bg-white/40 lg:hover:bg-[var(--coffee-brown)]/40"
                                         )}
                                     />
                                 ))}
@@ -137,26 +139,28 @@ export default function HeroSlider() {
                 </div>
             </div>
 
-            {/* Right Column: Image Slider */}
-            <div className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">
+            {/* Image Slider */}
+            <div className="absolute inset-0 lg:relative lg:w-1/2 h-full order-1 lg:order-2">
                 {slides.map((slide, index) => (
                     <div
                         key={slide.id}
                         className={clsx(
-                            "absolute inset-0 transition-opacity duration-1000 ease-in-out flex flex-col items-center justify-start pt-32 md:pt-48",
+                            "absolute inset-0 transition-opacity duration-1000 ease-in-out flex flex-col items-center justify-center lg:justify-start lg:pt-32",
                             index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
                         )}
                     >
-                        <div className="relative w-full max-w-2xl px-4 md:px-8">
-                            {/* Image Container - Clean, Large, Framed */}
-                            <div className="relative w-full aspect-square shadow-2xl rounded-[3rem] overflow-hidden border border-gray-100">
+                        {/* Overlay Gradient for readability on mobile */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent lg:hidden z-10" />
+
+                        <div className="relative w-full h-full lg:h-auto lg:max-w-2xl px-0 lg:px-8">
+                            <div className="relative w-full h-full lg:aspect-square lg:shadow-2xl lg:rounded-[3rem] overflow-hidden lg:border lg:border-gray-100">
                                 <Image
                                     src={getMainImage(slide)}
                                     alt={slide.name}
                                     fill
                                     className="object-cover"
                                     priority={index === 0}
-                                    sizes="(min-width: 1024px) 50vw, 100vw"
+                                    sizes="100vw, (min-width: 1024px) 50vw"
                                 />
                             </div>
                         </div>

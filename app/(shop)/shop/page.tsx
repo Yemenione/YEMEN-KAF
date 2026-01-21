@@ -22,12 +22,15 @@ interface Product {
     description?: string;
     stock_quantity?: number;
     compare_at_price?: number;
+    translations?: any;
+    category_translations?: any;
 }
 
 interface Category {
     id: number;
     name: string;
     slug: string;
+    translations?: any;
 }
 
 // ... (imports remain)
@@ -36,7 +39,7 @@ import { Suspense } from "react";
 // ... (interfaces remain)
 
 function ShopContent() {
-    const { t, locale } = useLanguage();
+    const { t, locale, getLocalizedValue } = useLanguage();
     const { addToCart } = useCart();
     const searchParams = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);
@@ -291,6 +294,9 @@ function ShopContent() {
                                 ? Math.round(((product.compare_at_price! - product.price) / product.compare_at_price!) * 100)
                                 : null;
 
+                            const localizedName = getLocalizedValue(product, 'name');
+                            const localizedCategoryName = getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name');
+
                             return (
                                 <div
                                     key={product.id}
@@ -301,7 +307,7 @@ function ShopContent() {
                                         <div className={`relative overflow-hidden bg-gray-100 ${viewMode === 'list' ? 'h-full' : 'aspect-square'}`}>
                                             <Image
                                                 src={getMainImage(product)}
-                                                alt={product.name}
+                                                alt={localizedName}
                                                 fill
                                                 className="object-cover group-hover:scale-110 transition-transform duration-500"
                                                 sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -340,10 +346,10 @@ function ShopContent() {
                                     <div className={`p-4 flex flex-col ${viewMode === 'list' ? 'flex-1' : ''}`}>
                                         <Link href={`/shop/${product.slug}`}>
                                             <span className="text-xs text-gray-500 uppercase tracking-wide mb-1 block">
-                                                {product.category_name}
+                                                {localizedCategoryName}
                                             </span>
                                             <h3 className="font-medium text-gray-900 mb-2 line-clamp-2 hover:text-gray-600 transition-colors">
-                                                {product.name}
+                                                {localizedName}
                                             </h3>
                                         </Link>
 
@@ -372,7 +378,7 @@ function ShopContent() {
                                             <button
                                                 onClick={() => addToCart({
                                                     id: product.id,
-                                                    title: product.name,
+                                                    title: localizedName,
                                                     price: product.price,
                                                     image: getMainImage(product)
                                                 })}

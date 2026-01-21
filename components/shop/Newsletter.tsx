@@ -71,7 +71,7 @@ export default function Newsletter() {
                         disabled={status === 'loading'}
                         className="px-8 py-4 bg-white text-[var(--coffee-brown)] rounded-lg font-bold uppercase tracking-wider hover:bg-gray-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                     >
-                        {status === 'loading' ? '...' : t('newsletter.button')}
+                        {status === 'loading' ? t('newsletter.loading') : t('newsletter.button')}
                     </button>
                 </form>
 

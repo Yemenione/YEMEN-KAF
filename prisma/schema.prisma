@@ -96,6 +96,7 @@ model Category {
   parent          Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children        Category[] @relation("CategoryHierarchy")
   products        Product[]
+  translations    Json?      @map("translations")
 
   @@index([parentId], map: "categories_parent_id_fkey")
   @@map("categories")
@@ -131,6 +132,7 @@ model Product {
   taxRule         TaxRule?         @relation(fields: [taxRuleId], references: [id])
   metaDescription String?          @map("meta_description")
   metaTitle       String?          @map("meta_title")
+  translations    Json?            @map("translations")
   relatedIds      String?          @map("related_ids") @db.Text
   hsCode          String?          @map("hs_code")
   originCountry   String?          @map("origin_country")
@@ -233,6 +235,7 @@ model Attribute {
   name       String
   publicName String?          @map("public_name")
   type       String           @default("select")
+  translations Json?          @map("translations")
   values     AttributeValue[]
 
   @@map("attributes")
@@ -244,6 +247,7 @@ model AttributeValue {
   name          String
   value         String?
   position      Int                   @default(0)
+  translations  Json?                 @map("translations")
   attribute     Attribute             @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   variantValues ProductVariantValue[]
 
@@ -546,6 +550,7 @@ model Page {
   title           String
   slug            String   @unique
   content         String?  @db.LongText
+  structured_content Json? @map("structured_content")
   metaTitle       String?  @map("meta_title")
   metaDescription String?  @map("meta_description")
   isActive        Boolean  @default(true) @map("is_active")

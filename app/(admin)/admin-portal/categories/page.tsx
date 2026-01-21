@@ -15,6 +15,7 @@ interface Category {
     parent_id?: number | null;
     meta_title?: string | null;
     meta_description?: string | null;
+    translations?: Record<string, any>;
 }
 
 export default function CategoriesPage() {
@@ -34,8 +35,16 @@ export default function CategoriesPage() {
         display_order: 0,
         parent_id: "",
         meta_title: "",
-        meta_description: ""
+        meta_description: "",
+        translations: {} as Record<string, any>
     });
+
+    const [activeLang, setActiveLang] = useState('en');
+    const languages = [
+        { code: 'en', label: 'English', flag: '🇬🇧' },
+        { code: 'fr', label: 'French', flag: '🇫🇷' },
+        { code: 'ar', label: 'Arabic', flag: '🇾🇪' }
+    ];
     const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
@@ -58,6 +67,13 @@ export default function CategoriesPage() {
 
     const handleEdit = (cat: Category) => {
         setEditingCategory(cat);
+        let parsedTranslations = {};
+        try {
+            parsedTranslations = typeof cat.translations === 'string' ? JSON.parse(cat.translations) : (cat.translations || {});
+        } catch {
+            parsedTranslations = {};
+        }
+
         setFormData({
             name: cat.name,
             slug: cat.slug,
@@ -67,8 +83,10 @@ export default function CategoriesPage() {
             display_order: cat.display_order,
             parent_id: cat.parent_id !== null && cat.parent_id !== undefined ? String(cat.parent_id) : "",
             meta_title: cat.meta_title || "",
-            meta_description: cat.meta_description || ""
+            meta_description: cat.meta_description || "",
+            translations: parsedTranslations
         });
+        setActiveLang('en');
         setIsModalOpen(true);
     };
 
@@ -83,9 +101,93 @@ export default function CategoriesPage() {
             display_order: 0,
             parent_id: "",
             meta_title: "",
-            meta_description: ""
+            meta_description: "",
+            translations: {}
         });
+        setActiveLang('en');
         setIsModalOpen(true);
+    };
+
+    // Helper to get value based on active language
+    const getValue = (field: string) => {
+        if (activeLang === 'en') return formData[field as keyof typeof formData] as string;
+        return formData.translations?.[activeLang]?.[field] || '';
+    };
+
+    // Helper to set value based on active language
+    const setValue = (field: string, value: string) => {
+        if (activeLang === 'en') {
+            setFormData(prev => ({ ...prev, [field]: value }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                translations: {
+                    ...prev.translations,
+                    [activeLang]: {
+                        ...prev.translations[activeLang],
+                        [field]: value
+                    }
+                }
+            }));
+        }
+    };
+
+    const handleAutoTranslate = async () => {
+        // Gather content from current active language
+        const currentContent = {
+            name: getValue('name'),
+            description: getValue('description'),
+            meta_title: getValue('meta_title'),
+            meta_description: getValue('meta_description')
+        };
+
+        if (!currentContent.name) return alert(`Please fill in ${activeLang.toUpperCase()} name first.`);
+
+        setUploading(true); // Reuse uploading state for loading indicator
+
+        try {
+            const { translateContent } = await import('@/app/actions/ai');
+
+            // Target languages are all except current
+            const targetLangs = languages.filter(l => l.code !== activeLang).map(l => l.code);
+
+            const res = await translateContent(currentContent, targetLangs, activeLang);
+
+            if (res.error) {
+                alert(res.error);
+            } else if (res.data) {
+                setFormData(prev => {
+                    const next = { ...prev };
+
+                    // Distribute translations
+                    Object.entries(res.data).forEach(([langCode, values]: [string, any]) => {
+                        if (langCode === 'en') {
+                            // Update main fields if English is one of the targets (i.e. source was not English)
+                            next.name = values.name || next.name;
+                            next.description = values.description || next.description;
+                            next.meta_title = values.meta_title || next.meta_title;
+                            next.meta_description = values.meta_description || next.meta_description;
+                        } else {
+                            // Update translation object
+                            next.translations = {
+                                ...next.translations,
+                                [langCode]: {
+                                    ...next.translations[langCode],
+                                    ...values
+                                }
+                            };
+                        }
+                    });
+
+                    return next;
+                });
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Translation failed");
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -280,22 +382,53 @@ export default function CategoriesPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300">
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
-                            <h3 className="text-xl font-semibold text-[var(--coffee-brown)] dark:text-white">{editingCategory ? 'Edit Category' : 'New Category'}</h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                                <X size={20} />
-                            </button>
+                            <div>
+                                <h3 className="text-xl font-semibold text-[var(--coffee-brown)] dark:text-white">{editingCategory ? 'Edit Category' : 'New Category'}</h3>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {languages.map(lang => (
+                                    <button
+                                        key={lang.code}
+                                        type="button"
+                                        onClick={() => setActiveLang(lang.code)}
+                                        className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${activeLang === lang.code
+                                            ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
+                                            : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800'
+                                            }`}
+                                    >
+                                        {lang.flag} {lang.code.toUpperCase()}
+                                    </button>
+                                ))}
+                                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors ml-4">
+                                    <X size={20} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="overflow-y-auto p-6 space-y-4">
                             <form id="categoryForm" onSubmit={handleSubmit} className="space-y-4">
+                                {activeLang !== 'en' && (
+                                    <div className="flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={handleAutoTranslate}
+                                            disabled={uploading}
+                                            className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold uppercase tracking-wide hover:bg-purple-200 transition-colors flex items-center gap-1"
+                                        >
+                                            ✨ AI Translate to {languages.find(l => l.code === activeLang)?.label}
+                                        </button>
+                                    </div>
+                                )}
+
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Name</label>
+                                    <label className="block text-sm font-medium mb-1">Name ({activeLang.toUpperCase()})</label>
                                     <input
-                                        required
+                                        required={activeLang === 'en'}
                                         type="text"
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
-                                        value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                        value={getValue('name')}
+                                        onChange={e => setValue('name', e.target.value)}
+                                        dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                     />
                                 </div>
 
@@ -339,11 +472,12 @@ export default function CategoriesPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Description</label>
+                                    <label className="block text-sm font-medium mb-1">Description ({activeLang.toUpperCase()})</label>
                                     <textarea
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 h-20"
-                                        value={formData.description}
-                                        onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        value={getValue('description')}
+                                        onChange={e => setValue('description', e.target.value)}
+                                        dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                     />
                                 </div>
 
@@ -389,20 +523,22 @@ export default function CategoriesPage() {
                                 <div className="bg-gray-50 dark:bg-zinc-800 p-4 rounded-lg border border-gray-100 dark:border-zinc-700 space-y-3">
                                     <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">SEO Settings</h4>
                                     <div>
-                                        <label className="block text-xs font-medium mb-1 text-gray-500">Meta Title</label>
+                                        <label className="block text-xs font-medium mb-1 text-gray-500">Meta Title ({activeLang.toUpperCase()})</label>
                                         <input
                                             type="text"
                                             className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-900 dark:border-zinc-600 text-sm"
-                                            value={formData.meta_title}
-                                            onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
+                                            value={getValue('meta_title')}
+                                            onChange={e => setValue('meta_title', e.target.value)}
+                                            dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium mb-1 text-gray-500">Meta Description</label>
+                                        <label className="block text-xs font-medium mb-1 text-gray-500">Meta Description ({activeLang.toUpperCase()})</label>
                                         <textarea
                                             className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-900 dark:border-zinc-600 text-sm h-16"
-                                            value={formData.meta_description}
-                                            onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
+                                            value={getValue('meta_description')}
+                                            onChange={e => setValue('meta_description', e.target.value)}
+                                            dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                         />
                                     </div>
                                 </div>
