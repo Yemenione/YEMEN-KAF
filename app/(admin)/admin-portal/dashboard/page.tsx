@@ -115,8 +115,8 @@ export default function AdminDashboard() {
                 {/* Sales Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm min-h-[300px] md:min-h-[400px]">
                     <h3 className="font-semibold mb-4 md:mb-6">Sales Overview (Last 30 Days)</h3>
-                    <div className="h-60 md:h-80 w-full" style={{ width: '100%', height: 320 }}>
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-60 md:h-80 w-full">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <AreaChart data={data.salesChart}>
                                 <defs>
                                     <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">

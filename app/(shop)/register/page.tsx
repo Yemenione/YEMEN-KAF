@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 export default function RegisterPage() {
     const { register } = useAuth();

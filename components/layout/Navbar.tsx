@@ -91,7 +91,7 @@ export default function Navbar() {
     const { settings } = useSettings();
     const { t, isRTL, locale } = useLanguage();
 
-    const [categories, setCategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<{ id: number; name: string; slug: string; }[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {

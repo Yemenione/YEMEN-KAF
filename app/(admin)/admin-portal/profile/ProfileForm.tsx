@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Camera, Loader2 } from "lucide-react";
-import { updateAdminAvatar } from "@/app/actions/profile";
 
 interface Admin {
     id: string | number;
@@ -15,8 +14,8 @@ interface Admin {
 
 
 export default function ProfileForm({ admin }: { admin: Admin }) {
-    const [uploading, setUploading] = useState(false);
-    const [avatarUrl, setAvatarUrl] = useState(admin?.avatar || '/images/placeholder-user.jpg');
+    const [uploading] = useState(false);
+    const [avatarUrl] = useState(admin?.avatar || '/images/placeholder-user.jpg');
     const [message, setMessage] = useState("");
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

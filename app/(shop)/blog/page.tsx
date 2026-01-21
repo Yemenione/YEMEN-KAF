@@ -4,7 +4,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
-import { Calendar, ArrowRight, Clock, LayoutGrid } from "lucide-react";
+import { Calendar, ArrowRight, LayoutGrid } from "lucide-react";
 import { getPublishedBlogPosts } from "@/app/actions/blog";
 import { useEffect, useState } from "react";
 

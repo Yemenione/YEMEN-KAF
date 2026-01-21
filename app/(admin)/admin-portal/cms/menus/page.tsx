@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Trash2, FileText, Newspaper, Menu, Save, ExternalLink } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -26,7 +26,7 @@ export default function CMSMenusPage() {
         fetchSettings();
     }, []);
 
-    const fetchSettings = async () => {
+    const fetchSettings = useCallback(async () => {
         try {
             const res = await fetch('/api/admin/config');
             if (res.ok) {
@@ -48,7 +48,7 @@ export default function CMSMenusPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [showToast]);
 
     const handleAddLink = () => {
         if (!newLabel || !newHref) {

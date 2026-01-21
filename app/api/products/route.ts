@@ -76,7 +76,9 @@ export async function GET(req: Request) {
 
     } catch (error) {
         console.error('Products fetch error:', error);
-        return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
+        // Log more details if possible to understand 409 Conflict source
+        console.log('Request URL:', req.url);
+        return NextResponse.json({ error: 'Failed to fetch products', details: String(error) }, { status: 500 });
     }
 }
 

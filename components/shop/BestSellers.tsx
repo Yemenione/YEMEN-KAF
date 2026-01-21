@@ -74,7 +74,7 @@ export default function BestSellers() {
         };
 
         fetchBestSellers();
-    }, [locale, settings.homepage_best_sellers_ids]);
+    }, [locale, settings, settings.homepage_best_sellers_ids]);
 
     if (products.length === 0) return null;
 

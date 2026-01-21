@@ -375,7 +375,7 @@ export default function SettingsPage() {
                             <div className="flex items-center justify-between border-b pb-4">
                                 <div>
                                     <h3 className="text-lg font-medium">Footer Menu Links</h3>
-                                    <p className="text-sm text-gray-500">Manage the "Quick Links" section in the footer.</p>
+                                    <p className="text-sm text-gray-500">Manage the &quot;Quick Links&quot; section in the footer.</p>
                                 </div>
                             </div>
 
@@ -401,6 +401,6 @@ export default function SettingsPage() {
             </div>
 
             {/* Media Picker Modal would go here */}
-        </div>
+        </div >
     );
 }

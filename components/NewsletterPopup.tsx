@@ -73,7 +73,7 @@ export default function NewsletterPopup() {
                             </div>
 
                             <h3 className="text-2xl font-playfair text-[var(--cream-white)] mb-3">
-                                Rejoignez l'Excellence
+                                Rejoignez l&apos;Excellence
                             </h3>
 
                             <p className="text-gray-400 text-sm mb-8 leading-relaxed font-light">
@@ -105,8 +105,8 @@ export default function NewsletterPopup() {
                                     type="submit"
                                     disabled={!accepted || !email}
                                     className={`w-full py-3.5 rounded-lg flex items-center justify-center gap-2 font-bold uppercase text-xs tracking-widest transition-all ${accepted && email
-                                            ? "bg-[var(--honey-gold)] text-black hover:bg-[#D4AF37] shadow-[0_4px_20px_rgba(197,160,89,0.2)]"
-                                            : "bg-gray-800 text-gray-500 cursor-not-allowed"
+                                        ? "bg-[var(--honey-gold)] text-black hover:bg-[#D4AF37] shadow-[0_4px_20px_rgba(197,160,89,0.2)]"
+                                        : "bg-gray-800 text-gray-500 cursor-not-allowed"
                                         }`}
                                 >
                                     S&apos;inscrire

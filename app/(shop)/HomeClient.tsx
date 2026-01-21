@@ -34,13 +34,21 @@ interface Article {
     category: string;
 }
 
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    image?: string;
+    [key: string]: unknown;
+}
+
 interface HomeClientProps {
     reviews: Review[];
     posts: Article[];
-    categories: any[]; // Using any[] temporarily for speed, ideally import Category type
+    categories: Category[];
 }
 
-export default function HomeClient({ reviews, posts, categories }: HomeClientProps) {
+export default function HomeClient({ reviews, categories }: HomeClientProps) {
     const { t } = useLanguage();
 
     return (

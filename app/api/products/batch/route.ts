@@ -26,9 +26,9 @@ export async function GET(req: Request) {
         const slugMap = new Map(products.map(p => [p.slug, p]));
         const orderedProducts = slugs
             .map(slug => slugMap.get(slug))
-            .filter(Boolean);
+            .filter((p): p is typeof products[0] => p !== undefined);
 
-        const normalizedProducts = orderedProducts.map((p: any) => {
+        const normalizedProducts = orderedProducts.map((p) => {
             let imageList: string[] = [];
             try {
                 imageList = p.images ? JSON.parse(p.images) : [];

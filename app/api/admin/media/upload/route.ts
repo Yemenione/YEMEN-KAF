@@ -23,6 +23,15 @@ export async function POST(req: NextRequest) {
         const relativeDir = `/uploads/${year}/${month}`;
         const uploadDir = join(process.cwd(), 'public', relativeDir);
 
+        // Check if we are running in a serverless environment (Vercel) where FS is read-only
+        if (process.env.VERCEL || process.env.NEXT_PUBLIC_VERCEL_ENV) {
+            console.error("Uploads to local filesystem are not supported on Vercel. Please configure S3/Blob storage.");
+            return NextResponse.json(
+                { error: 'Configuration Error', details: "Local file uploads not supported in production. Please configure S3 or Cloudinary." },
+                { status: 501 } // Not Implemented
+            );
+        }
+
         await mkdir(uploadDir, { recursive: true });
 
         // Generate unique filename to prevent collisions

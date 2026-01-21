@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Package, Weight, MapPin, Clock, Truck, Shield, RefreshCw, Award } from "lucide-react";
+import { Package, Weight, MapPin, Clock, Award, Shield } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
 interface ProductSpecsProps {
@@ -80,23 +80,6 @@ export default function ProductSpecs({
 
     const specifications = getSpecifications();
 
-    const shippingInfo = [
-        {
-            icon: Truck,
-            title: t('product.freeShipping') || 'Free Shipping',
-            desc: 'On orders over €50'
-        },
-        {
-            icon: Shield,
-            title: t('product.securePayment') || 'Secure Payment',
-            desc: '100% secure transactions'
-        },
-        {
-            icon: RefreshCw,
-            title: t('product.easyReturns') || 'Easy Returns',
-            desc: '30-day return policy'
-        }
-    ];
 
     return (
 
@@ -211,7 +194,7 @@ export default function ProductSpecs({
                             <div>
                                 <h3 className="font-serif text-2xl mb-4">Garantie Satisfait ou Remboursé</h3>
                                 <p className="text-white/80 leading-relaxed text-sm mb-8">
-                                    Nous nous engageons à vous offrir la meilleure qualité. Si vous n'êtes pas satisfait de votre commande, vous disposez de 14 jours pour nous la retourner dans son emballage d'origine.
+                                    Nous nous engageons à vous offrir la meilleure qualité. Si vous n&apos;êtes pas satisfait de votre commande, vous disposez de 14 jours pour nous la retourner dans son emballage d&apos;origine.
                                 </p>
                             </div>
                             <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-[#D4AF37]">

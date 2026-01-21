@@ -49,7 +49,7 @@ function ShopContent() {
     const [maxPrice, setMaxPrice] = useState("");
 
     // Helper to extract main image from JSON
-    const getMainImage = (product: any): string => {
+    const getMainImage = (product: Product): string => {
         try {
             const images = product.images;
             if (!images) return '/images/honey-jar.jpg';
@@ -85,7 +85,7 @@ function ShopContent() {
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
-            const currentParams = new URLSearchParams(searchParams.toString());
+            // const currentParams = new URLSearchParams(searchParams.toString());
 
             const params: Record<string, string | number> = {
                 per_page: 20,
@@ -123,7 +123,7 @@ function ShopContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [searchParams, selectedCategory, sortBy, minPrice, maxPrice, locale, t]);
+    }, [searchParams, selectedCategory, sortBy, minPrice, maxPrice, locale]);
 
     // Read URL query params on mount or change
     useEffect(() => {

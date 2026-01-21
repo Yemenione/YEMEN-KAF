@@ -104,9 +104,9 @@ export default function AdminProductsPage() {
                                         <Image
                                             src={(() => {
                                                 try {
-                                                    if (!product.images) return '/placeholder.png';
+                                                    if (!product.images) return '/placeholder.svg';
                                                     if (Array.isArray(product.images)) {
-                                                        return product.images.length > 0 ? product.images[0] : '/placeholder.png';
+                                                        return product.images.length > 0 ? product.images[0] : '/placeholder.svg';
                                                     }
                                                     if (typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http'))) {
                                                         return product.images;
@@ -115,7 +115,7 @@ export default function AdminProductsPage() {
                                                     const url = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : null;
                                                     if (url && typeof url === 'string' && (url.startsWith('/') || url.startsWith('http'))) return url;
                                                 } catch { }
-                                                return typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http')) ? product.images : '/placeholder.png';
+                                                return typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http')) ? product.images : '/placeholder.svg';
                                             })()}
                                             alt={product.name}
                                             fill
@@ -183,9 +183,9 @@ export default function AdminProductsPage() {
                                                     <Image
                                                         src={(() => {
                                                             try {
-                                                                if (!product.images) return '/placeholder.png';
+                                                                if (!product.images) return '/placeholder.svg';
                                                                 if (Array.isArray(product.images)) {
-                                                                    return product.images.length > 0 ? product.images[0] : '/placeholder.png';
+                                                                    return product.images.length > 0 ? product.images[0] : '/placeholder.svg';
                                                                 }
                                                                 if (typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http'))) {
                                                                     return product.images;
@@ -194,7 +194,7 @@ export default function AdminProductsPage() {
                                                                 const url = Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : null;
                                                                 if (url && typeof url === 'string' && (url.startsWith('/') || url.startsWith('http'))) return url;
                                                             } catch { }
-                                                            return typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http')) ? product.images : '/placeholder.png';
+                                                            return typeof product.images === 'string' && (product.images.startsWith('/') || product.images.startsWith('http')) ? product.images : '/placeholder.svg';
                                                         })()}
                                                         alt={product.name}
                                                         fill

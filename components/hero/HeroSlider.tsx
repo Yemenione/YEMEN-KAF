@@ -78,7 +78,7 @@ export default function HeroSlider() {
         };
 
         fetchProducts();
-    }, [settings.homepage_hero_products]);
+    }, [settings.homepage_hero_products, locale]);
 
     // Auto-advance
     useEffect(() => {
@@ -92,75 +92,78 @@ export default function HeroSlider() {
     if (slides.length === 0) return null; // Or a loading skeleton/default static slide
 
     return (
-        <section className="relative h-screen w-full overflow-hidden bg-[var(--cream-white)]">
-            {/* Background Slides */}
-            {slides.map((slide, index) => (
-                <div
-                    key={slide.id}
-                    className={clsx(
-                        "absolute inset-0 transition-opacity duration-1000 ease-in-out",
-                        index === currentSlide ? "opacity-100" : "opacity-0"
-                    )}
-                >
-                    <Image
-                        src={getMainImage(slide)}
-                        alt={slide.name}
-                        fill
-                        className="object-cover"
-                        priority={index === 0}
-                        sizes="100vw"
-                    />
-                    {/* Light/White Overlay for readability of black text */}
-                    <div className="absolute inset-0 bg-white/30" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent" />
-                </div>
-            ))}
+        <section className="relative w-full min-h-[90vh] bg-[var(--cream-white)] overflow-hidden flex flex-col lg:flex-row">
 
-            {/* Content - Bottom Aligned for Magazine Look */}
-            <div className="absolute inset-0 z-20 flex flex-col justify-end pb-32 px-6 md:px-20">
-                <div className="max-w-4xl space-y-8 animate-fade-in-up">
-
-                    {/* Slide Specific Text */}
-                    <div key={currentSlide} className="animate-fade-in space-y-4">
-                        <span className="text-[var(--coffee-brown)]/60 text-sm font-medium uppercase tracking-[0.4em] block ps-1">
+            {/* Left Column: Content */}
+            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-20 py-20 z-10 relative">
+                <div className="max-w-xl space-y-8 animate-fade-in-up">
+                    <div key={currentSlide} className="animate-fade-in space-y-6">
+                        <span className="text-[var(--coffee-brown)]/60 text-sm font-bold uppercase tracking-[0.3em] block border-l-2 border-[var(--coffee-brown)] pl-4">
                             {t("home.hero.tagline")}
                         </span>
-                        <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif text-[var(--coffee-brown)] leading-none tracking-tight line-clamp-2">
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-[var(--coffee-brown)] leading-[0.9] tracking-tight">
                             {slides[currentSlide].name}
                         </h1>
-                        <p className="text-xl md:text-2xl text-[var(--coffee-brown)] font-light max-w-xl leading-relaxed ps-1 pt-2 line-clamp-2">
+                        <p className="text-lg md:text-xl text-[var(--coffee-brown)]/80 font-light leading-relaxed max-w-md line-clamp-5">
                             {slides[currentSlide].description}
                         </p>
                     </div>
 
-                    <div className="pt-4 flex items-center gap-6">
+                    <div className="flex items-center gap-6 pt-4">
                         <Link href={`/shop/${slides[currentSlide].slug}`}>
-                            <button className="group flex items-center gap-4 px-12 py-5 bg-[var(--coffee-brown)] text-[var(--cream-white)] font-bold uppercase tracking-widest hover:bg-[var(--coffee-brown)]/90 transition-all shadow-xl">
+                            <button className="group flex items-center gap-4 px-10 py-4 bg-[var(--coffee-brown)] text-[var(--cream-white)] font-bold uppercase tracking-widest hover:bg-[var(--coffee-brown)]/90 transition-all shadow-xl rounded-full">
                                 {t("home.hero.cta")}
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
                             </button>
                         </Link>
+
+                        {/* Pagination - Moved near CTA for accessibility */}
+                        <div className="flex items-center gap-3 ml-4">
+                            <span className="text-xs font-bold text-[var(--coffee-brown)]">0{currentSlide + 1}</span>
+                            <div className="flex gap-2">
+                                {slides.map((_, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setCurrentSlide(index)}
+                                        className={clsx(
+                                            "h-[2px] transition-all duration-500",
+                                            index === currentSlide ? "w-12 bg-[var(--coffee-brown)]" : "w-4 bg-[var(--coffee-brown)]/20 hover:bg-[var(--coffee-brown)]/40"
+                                        )}
+                                    />
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Pagination Lines */}
-            <div className="absolute bottom-12 end-6 md:end-20 z-30 flex items-center gap-4">
-                <span className="text-xs font-bold text-[var(--coffee-brown)]">0{currentSlide + 1}</span>
-                <div className="flex gap-2">
-                    {slides.map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setCurrentSlide(index)}
-                            className={clsx(
-                                "h-[2px] transition-all duration-500",
-                                index === currentSlide ? "w-16 bg-[var(--coffee-brown)]" : "w-8 bg-[var(--coffee-brown)]/20 hover:bg-[var(--coffee-brown)]/40"
-                            )}
-                        />
-                    ))}
-                </div>
-                <span className="text-xs font-bold text-[var(--coffee-brown)]/40">0{slides.length}</span>
+            {/* Right Column: Image Slider */}
+            <div className="w-full lg:w-1/2 relative min-h-[50vh] lg:min-h-full">
+                {slides.map((slide, index) => (
+                    <div
+                        key={slide.id}
+                        className={clsx(
+                            "absolute inset-0 transition-opacity duration-1000 ease-in-out flex flex-col items-center justify-start pt-32 md:pt-48",
+                            index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+                        )}
+                    >
+                        <div className="relative w-full max-w-2xl px-4 md:px-8">
+                            {/* Image Container - Clean, Large, Framed */}
+                            <div className="relative w-full aspect-square shadow-2xl rounded-[3rem] overflow-hidden border border-gray-100">
+                                <Image
+                                    src={getMainImage(slide)}
+                                    alt={slide.name}
+                                    fill
+                                    className="object-cover"
+                                    priority={index === 0}
+                                    sizes="(min-width: 1024px) 50vw, 100vw"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
+
         </section>
     );
 }

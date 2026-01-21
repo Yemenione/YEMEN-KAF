@@ -74,7 +74,7 @@ export default function SpecialOffers() {
         };
 
         fetchOffers();
-    }, [locale, settings.homepage_special_offers_ids]);
+    }, [locale, settings, settings.homepage_special_offers_ids]);
 
     if (offers.length === 0) return null;
 

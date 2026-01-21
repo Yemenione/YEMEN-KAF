@@ -10,11 +10,12 @@ interface Category {
     name: string;
     slug: string;
     description?: string;
-    imageUrl?: string; // Note: DB schema has imageUrl, check casing
+    imageUrl?: string;
+    image_url?: string;
 }
 
 interface PromoGridProps {
-    categories?: any[]; // Using any to avoid strict type mismatch for now, ideally strictly typed
+    categories?: Category[];
 }
 
 export default function PromoGrid({ categories }: PromoGridProps) {

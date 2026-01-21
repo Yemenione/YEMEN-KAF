@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Home, Save, Loader2, X, LayoutTemplate, Zap, Star, Upload, Search, Plus, Check } from 'lucide-react';
+import { Home, Save, Loader2, X, LayoutTemplate, Zap, Star, Upload, Search, Plus } from 'lucide-react';
 
 interface Product {
     id: number;
@@ -301,7 +301,10 @@ export default function HomepageManager() {
                                 </div>
                                 {promo.image && (
                                     <div className="h-20 w-full relative rounded-md overflow-hidden">
-                                        <img src={promo.image} alt="Preview" className="object-cover h-full w-full" />
+                                        <div className="relative w-full h-full">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={promo.image} alt="Preview" className="object-cover h-full w-full" />
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -327,7 +330,8 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
 
 function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = false, max }: {
     items: number[];
-    all: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    all: { id: number; name: string;[key: string]: any }[];
     onAdd: (id: number) => void;
     onRemove: (id: number) => void;
     placeholder: string;

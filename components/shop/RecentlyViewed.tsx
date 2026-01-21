@@ -4,7 +4,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { History, ArrowRight } from "lucide-react";
+import { History } from "lucide-react";
 
 interface Product {
     id: number;

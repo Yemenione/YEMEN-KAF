@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
-import { Camera, Loader2, User } from "lucide-react";
+import { Camera, User } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -15,7 +15,7 @@ export default function ProfilePage() {
     const [phone, setPhone] = useState("");
     const [avatar, setAvatar] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
+    const [isUploading] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 

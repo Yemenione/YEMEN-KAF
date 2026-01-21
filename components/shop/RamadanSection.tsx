@@ -126,11 +126,14 @@ export default function RamadanSection() {
                                         </div>
 
                                         <div className="w-full h-full relative">
-                                            <img
-                                                src={getMainImage(product)}
-                                                alt={product.name}
-                                                className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-xl transition-all duration-700"
-                                            />
+                                            <div className="relative w-full h-full">
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={getMainImage(product)}
+                                                    alt={product.name}
+                                                    className="w-full h-full object-contain drop-shadow-sm group-hover:drop-shadow-xl transition-all duration-700"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
