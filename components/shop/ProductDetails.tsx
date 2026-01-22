@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft, ChevronDown, Clock, Flame } from "lucide-react";
+import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft, ChevronDown, Clock, Flame, Share2, Facebook, Copy } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
@@ -510,6 +510,44 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             <button className="hidden lg:block p-5 border border-gray-100 rounded-full hover:border-black transition-all bg-white shadow-sm group">
                                 <Heart className="w-5 h-5 text-gray-300 group-hover:text-red-500 transition-colors" />
                             </button>
+                        </div>
+
+                        {/* Social Sharing */}
+                        <div className="flex items-center gap-4 mb-10">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('product.share') || "PARTAGER"}</span>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        const url = window.location.href;
+                                        const text = `${t('product.checkOut') || 'Découvrez'} ${localizedName} - Yemeni Market`;
+                                        window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+                                    }}
+                                    className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-[#25D366] hover:border-[#25D366] transition-colors"
+                                    title="WhatsApp"
+                                >
+                                    <Share2 size={14} />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const url = window.location.href;
+                                        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                                    }}
+                                    className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-[#1877F2] hover:border-[#1877F2] transition-colors"
+                                    title="Facebook"
+                                >
+                                    <Facebook size={14} />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(window.location.href);
+                                        alert(t('common.copied') || 'Lien copié !');
+                                    }}
+                                    className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-black hover:border-black transition-colors"
+                                    title="Copy Link"
+                                >
+                                    <Copy size={14} />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Accordion Sections: Description, Logistics, Security */}

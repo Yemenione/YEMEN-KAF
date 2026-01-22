@@ -76,6 +76,7 @@ export default function AdminSidebar() {
                 { name: t('admin.sidebar.items.contentCms'), href: '/admin-portal/cms/pages', icon: FileText },
                 { name: t('admin.sidebar.items.blog'), href: '/admin-portal/cms/blog', icon: Newspaper },
                 { name: t('admin.sidebar.items.coupons'), href: '/admin-portal/marketing/coupons', icon: TicketPercent, permission: 'MARKETING' },
+                { name: 'Newsletter', href: '/admin-portal/marketing/newsletter', icon: Users, permission: 'MARKETING' },
             ]
         },
         {
