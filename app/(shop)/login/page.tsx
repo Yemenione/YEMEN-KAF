@@ -23,6 +23,7 @@ export default function LoginPage() {
         const result = await login(email, password);
 
         if (result.success) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const user = (result as any).user;
             if (user?.isAdmin || user?.role === 'SUPER_ADMIN' || user?.role === 'ADMIN') {
                 router.push('/admin-portal');

@@ -84,6 +84,7 @@ export default function AdminsPage() {
 
             const payload = { ...formData };
             if (editingAdmin && !payload.password) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 delete (payload as any).password;
             }
 
@@ -101,7 +102,7 @@ export default function AdminsPage() {
                 const error = await res.json();
                 toast.error(error.error || 'Operation failed');
             }
-        } catch (error) {
+        } catch {
             toast.error('Something went wrong');
         } finally {
             setIsSaving(false);
@@ -123,7 +124,7 @@ export default function AdminsPage() {
                 const error = await res.json();
                 toast.error(error.error || 'Delete failed');
             }
-        } catch (error) {
+        } catch {
             toast.error('Failed to delete admin');
         }
     };

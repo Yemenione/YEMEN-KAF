@@ -73,16 +73,16 @@ export const WelcomeTemplate = () => (
             </div>
 
             <div style={contentStyle}>
-                <h1 style={headingStyle}>Bienvenue dans l'Excellence</h1>
+                <h1 style={headingStyle}>Bienvenue dans l&apos;Excellence</h1>
                 <p>Cher client,</p>
                 <p>
-                    Merci de vous être inscrit à notre newsletter. Nous sommes ravis de vous accueillir dans notre communauté dédiée à l'authenticité et au luxe yéménite.
+                    Merci de vous être inscrit à notre newsletter. Nous sommes ravis de vous accueillir dans notre communauté dédiée à l&apos;authenticité et au luxe yéménite.
                 </p>
                 <p>
-                    Vous serez désormais le premier informé de nos nouvelles collections, de nos offres exclusives et de l'histoire derrière nos produits d'exception.
+                    Vous serez désormais le premier informé de nos nouvelles collections, de nos offres exclusives et de l&apos;histoire derrière nos produits d&apos;exception.
                 </p>
                 <p>
-                    Pour commencer votre voyage, découvrez notre collection "Héritage".
+                    Pour commencer votre voyage, découvrez notre collection &quot;Héritage&quot;.
                 </p>
 
                 <div style={{ margin: '30px 0' }}>
@@ -92,7 +92,7 @@ export const WelcomeTemplate = () => (
                 </div>
 
                 <p style={{ fontSize: '14px', fontStyle: 'italic', textAlign: 'center' }}>
-                    "L'authenticité n'est pas un luxe, c'est une promesse."
+                    &quot;L&apos;authenticité n&apos;est pas un luxe, c&apos;est une promesse.&quot;
                 </p>
             </div>
 

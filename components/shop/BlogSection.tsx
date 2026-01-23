@@ -9,6 +9,8 @@ interface Article {
     image: string;
     date: string;
     slug: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    translations?: any;
 }
 
 export default function BlogSection({ articles = [] }: { articles?: Article[] }) {
@@ -86,13 +88,16 @@ export default function BlogSection({ articles = [] }: { articles?: Article[] })
         ]
     };
 
-    const displayArticles = articles.length > 0 ? articles.map(a => ({
-        title: a.title,
-        excerpt: a.excerpt || '',
-        image: a.image || '/images/blog/placeholder.jpg',
-        date: a.date,
-        slug: a.slug
-    })) : (fallbackArticles[language as keyof typeof fallbackArticles] || fallbackArticles.en);
+    const displayArticles = articles.length > 0 ? articles.map(a => {
+        const translations = typeof a.translations === 'string' ? JSON.parse(a.translations) : a.translations;
+        return {
+            title: (language !== 'en' && translations?.[language]?.title) || a.title,
+            excerpt: (language !== 'en' && translations?.[language]?.excerpt) || a.excerpt || '',
+            image: a.image || '/images/blog/placeholder.jpg',
+            date: a.date,
+            slug: a.slug
+        };
+    }) : (fallbackArticles[language as keyof typeof fallbackArticles] || fallbackArticles.en);
 
     const titles = {
         ar: { badge: "المدونة", title: "آخر الأخبار والمقالات", readMore: "اقرأ المزيد" },

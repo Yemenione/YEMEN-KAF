@@ -27,7 +27,8 @@ export async function PUT(
             data
         });
 
-        const { passwordHash: _, ...adminWithoutPassword } = updated;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { passwordHash: _passwordHash, ...adminWithoutPassword } = updated;
         return NextResponse.json(adminWithoutPassword);
     } catch (error) {
         console.error('Update failed:', error);

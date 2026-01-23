@@ -166,62 +166,68 @@ export default function AdminDashboard() {
                         </select>
                     </div>
 
-                    <div className="h-[350px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={data.salesChart}>
-                                <defs>
-                                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#6F4E37" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="#6F4E37" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" strokeOpacity={0.5} />
-                                <XAxis
-                                    dataKey="date"
-                                    tickFormatter={(str) => {
-                                        const d = new Date(str);
-                                        return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-                                    }}
-                                    stroke="#94A3B8"
-                                    fontSize={10}
-                                    fontWeight={600}
-                                    axisLine={false}
-                                    tickLine={false}
-                                    dy={10}
-                                />
-                                <YAxis
-                                    stroke="#94A3B8"
-                                    fontSize={10}
-                                    fontWeight={600}
-                                    axisLine={false}
-                                    tickLine={false}
-                                    dx={-10}
-                                    tickFormatter={(val) => `€${val}`}
-                                />
-                                <Tooltip
-                                    cursor={{ stroke: '#6F4E37', strokeWidth: 2, strokeDasharray: '4 4' }}
-                                    contentStyle={{
-                                        borderRadius: '1.5rem',
-                                        border: 'none',
-                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-                                        padding: '1rem',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                        backdropFilter: 'blur(8px)'
-                                    }}
-                                    itemStyle={{ color: '#6F4E37', fontWeight: 800, fontSize: '14px' }}
-                                    labelStyle={{ fontWeight: 600, color: '#64748B', marginBottom: '0.5rem' }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="sales"
-                                    stroke="#6F4E37"
-                                    strokeWidth={4}
-                                    fillOpacity={1}
-                                    fill="url(#colorSales)"
-                                    animationDuration={2000}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
+                    <div className="h-[350px] w-full" style={{ minHeight: '350px' }}>
+                        {data.salesChart && data.salesChart.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%" key={data.salesChart.length}>
+                                <AreaChart data={data.salesChart}>
+                                    <defs>
+                                        <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#6F4E37" stopOpacity={0.2} />
+                                            <stop offset="95%" stopColor="#6F4E37" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" strokeOpacity={0.5} />
+                                    <XAxis
+                                        dataKey="date"
+                                        tickFormatter={(str) => {
+                                            const d = new Date(str);
+                                            return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+                                        }}
+                                        stroke="#94A3B8"
+                                        fontSize={10}
+                                        fontWeight={600}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        dy={10}
+                                    />
+                                    <YAxis
+                                        stroke="#94A3B8"
+                                        fontSize={10}
+                                        fontWeight={600}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        dx={-10}
+                                        tickFormatter={(val) => `€${val}`}
+                                    />
+                                    <Tooltip
+                                        cursor={{ stroke: '#6F4E37', strokeWidth: 2, strokeDasharray: '4 4' }}
+                                        contentStyle={{
+                                            borderRadius: '1.5rem',
+                                            border: 'none',
+                                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                                            padding: '1rem',
+                                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                            backdropFilter: 'blur(8px)'
+                                        }}
+                                        itemStyle={{ color: '#6F4E37', fontWeight: 800, fontSize: '14px' }}
+                                        labelStyle={{ fontWeight: 600, color: '#64748B', marginBottom: '0.5rem' }}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="sales"
+                                        stroke="#6F4E37"
+                                        strokeWidth={4}
+                                        fillOpacity={1}
+                                        fill="url(#colorSales)"
+                                        animationDuration={2000}
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+                                No sales data available for this period
+                            </div>
+                        )}
                     </div>
                 </div>
 

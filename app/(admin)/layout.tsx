@@ -31,9 +31,9 @@ export default function AdminRootLayout({
                             <ToastProvider>
                                 <UIProvider>
                                     <AdminSidebar />
-                                    <main className="flex-1 p-8 h-screen overflow-y-auto w-full">
+                                    <div className="flex-1 flex flex-col min-w-0 h-screen relative">
                                         {children}
-                                    </main>
+                                    </div>
                                 </UIProvider>
                             </ToastProvider>
                         </SettingsProvider>

@@ -11,9 +11,9 @@ export default async function AdminProfilePage() {
 
     return (
         <div className="max-w-4xl mx-auto">
-            <div className="mb-8">
-                <h1 className="text-2xl font-bold mb-2">My Profile</h1>
-                <p className="text-gray-500">Manage your personal information and account settings.</p>
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold mb-1">Account & Settings</h1>
+                <p className="text-gray-500 text-sm">Manage your profile information and system preferences.</p>
             </div>
 
             <ProfileForm admin={admin} />

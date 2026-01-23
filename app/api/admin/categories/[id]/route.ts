@@ -56,7 +56,11 @@ export async function PUT(
         if (display_order !== undefined) { updates.push('display_order = ?'); values.push(display_order); }
 
         // New Fields
-        if (body.parent_id !== undefined) { updates.push('parent_id = ?'); values.push(body.parent_id); }
+        if (body.parent_id !== undefined) {
+            updates.push('parent_id = ?');
+            const pid = body.parent_id === '' ? null : body.parent_id;
+            values.push(pid);
+        }
         if (body.meta_title !== undefined) { updates.push('meta_title = ?'); values.push(body.meta_title); }
         if (body.meta_description !== undefined) { updates.push('meta_description = ?'); values.push(body.meta_description); }
         if (body.translations !== undefined) { updates.push('translations = ?'); values.push(JSON.stringify(body.translations)); }

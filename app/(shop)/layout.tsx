@@ -19,10 +19,27 @@ import "../globals.css";
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
-export const metadata: Metadata = {
-  title: "Yemeni Market - Authentic Goods",
-  description: "Premium Yemeni products including Sidr Honey and Coffee.",
-};
+import { prisma } from "@/lib/prisma";
+export async function generateMetadata(): Promise<Metadata> {
+  const configs = await prisma.storeConfig.findMany({
+    where: {
+      key: { in: ['site_name', 'site_description', 'logo_url'] }
+    }
+  });
+
+  const settings = configs.reduce((acc, curr) => ({
+    ...acc,
+    [curr.key]: curr.value
+  }), {} as Record<string, string>);
+
+  return {
+    title: settings['site_name'] || "Yemeni Market - Authentic Goods",
+    description: settings['site_description'] || "Premium Yemeni products including Sidr Honey and Coffee.",
+    icons: {
+      icon: settings['logo_url'] || '/icon.png'
+    }
+  };
+}
 
 export default function ShopLayout({
   children,

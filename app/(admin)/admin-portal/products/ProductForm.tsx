@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, UploadCloud, Box, DollarSign, FileText, Layers, Truck, Globe, Trash2, Percent } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import clsx from 'clsx';
 import ProductVariantsManager from "@/components/admin/products/ProductVariantsManager";
 
 interface ProductFormProps {
@@ -358,44 +359,63 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
     return (
         <form onSubmit={handleSubmit} className="max-w-6xl mx-auto space-y-6">
 
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <Link href="/admin-portal/products" className="flex items-center gap-2 text-gray-500 hover:text-black transition-colors">
-                    <ArrowLeft size={18} /> Back to Inventory
-                </Link>
-                <div className="flex gap-3">
-                    <button type="button" onClick={() => router.back()} className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-800 dark:border-zinc-700">
-                        Cancel
+            {/* Header / Toolbar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm p-4 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm sticky top-20 z-[30]">
+                <div className="flex flex-col gap-1">
+                    <Link href="/admin-portal/products" className="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-[var(--coffee-brown)] dark:hover:text-[var(--honey-gold)] transition-colors uppercase tracking-widest">
+                        <ArrowLeft size={14} /> Back to Catalog
+                    </Link>
+                    <h2 className="text-xl font-black text-gray-900 dark:text-white">
+                        {isEdit ? 'Modify Product' : 'Create New Product'}
+                    </h2>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => router.back()}
+                        className="px-5 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+                    >
+                        Discard
                     </button>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-2 bg-[var(--coffee-brown)] dark:bg-[var(--honey-gold)] text-white dark:text-black font-medium text-sm rounded-lg hover:opacity-90 flex items-center gap-2 disabled:opacity-50"
+                        className="px-8 py-2.5 bg-gradient-to-r from-[var(--coffee-brown)] to-zinc-800 dark:from-[var(--honey-gold)] dark:to-amber-500 text-white dark:text-black font-black text-sm rounded-xl hover:shadow-lg hover:shadow-black/10 dark:hover:shadow-amber-500/20 transition-all flex items-center gap-2 disabled:opacity-50 active:scale-95"
                     >
-                        {loading ? 'Saving...' : <><Save size={18} /> Save Product</>}
+                        {loading ? 'Processing...' : <><Save size={18} /> Save Changes</>}
                     </button>
                 </div>
             </div>
 
-            {/* Layout */}
-            <div className="grid grid-cols-12 gap-6">
+            {/* Main Form Layout */}
+            <div className="grid grid-cols-12 gap-8">
 
                 {/* Sidebar Navigation (Tabs) */}
-                <div className="col-span-12 md:col-span-3">
-                    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden sticky top-6">
-                        <nav className="flex flex-col">
+                <div className="col-span-12 lg:col-span-3">
+                    <div className="bg-white/40 dark:bg-black/40 backdrop-blur-md rounded-2xl border border-gray-200/50 dark:border-white/5 p-2 sticky top-44 shadow-sm">
+                        <nav className="flex flex-col gap-1">
                             {tabs.filter(t => !t.hidden).map(tab => (
                                 <button
                                     key={tab.id}
                                     type="button"
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors ${activeTab === tab.id
-                                        ? "bg-[var(--coffee-brown)] text-white dark:bg-[var(--honey-gold)] dark:text-black"
-                                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800"
-                                        }`}
+                                    className={clsx(
+                                        "flex items-center gap-3 px-4 py-3.5 text-sm font-bold rounded-xl transition-all duration-300 relative group/tab",
+                                        activeTab === tab.id
+                                            ? "bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-md ring-1 ring-black/5 dark:ring-white/5"
+                                            : "text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-zinc-900/50"
+                                    )}
                                 >
-                                    <tab.icon size={18} />
-                                    {tab.label}
+                                    <div className={clsx(
+                                        "p-1.5 rounded-lg transition-colors group-hover/tab:scale-110 duration-300",
+                                        activeTab === tab.id ? "bg-[var(--coffee-brown)] text-white dark:bg-[var(--honey-gold)] dark:text-black" : "bg-gray-100 dark:bg-zinc-800 group-hover/tab:bg-gray-200 dark:group-hover/tab:bg-zinc-700"
+                                    )}>
+                                        <tab.icon size={16} />
+                                    </div>
+                                    <span className="flex-1 text-left">{tab.label}</span>
+                                    {activeTab === tab.id && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--honey-gold)]" />
+                                    )}
                                 </button>
                             ))}
                         </nav>

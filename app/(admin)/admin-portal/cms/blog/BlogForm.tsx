@@ -18,12 +18,23 @@ interface BlogFormProps {
         image: string;
         category: string;
         status: string;
+        author?: string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        translations?: Record<string, any>;
     }
 }
 
 export default function BlogForm({ post }: BlogFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [activeLang, setActiveLang] = useState('en');
+
+    const languages = [
+        { code: 'en', label: 'English', flag: '🇬🇧' },
+        { code: 'fr', label: 'French', flag: '🇫🇷' },
+        { code: 'ar', label: 'Arabic', flag: '🇾🇪' }
+    ];
 
     const [formData, setFormData] = useState({
         title: post?.title || "",
@@ -33,14 +44,102 @@ export default function BlogForm({ post }: BlogFormProps) {
         image: post?.image || "",
         category: post?.category || "General",
         status: post?.status || "DRAFT",
+        author: post?.author || "Yem Kaf",
+        translations: post?.translations || {}
     });
-
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        toast.info("Le téléchargement d&apos;images est temporairement désactivé (migration en cours).");
+        setUploading(true);
+        const form = new FormData();
+        form.append('file', file);
+        form.append('folder', 'blog');
+
+        try {
+            const res = await fetch('/api/admin/media/upload', {
+                method: 'POST',
+                body: form
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setFormData(prev => ({ ...prev, image: data.path }));
+                toast.success("Image téléchargée");
+            } else {
+                toast.error("Échec du téléchargement");
+            }
+        } catch {
+            toast.error("Erreur réseau");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleAutoTranslate = async () => {
+        const sourceText = activeLang === 'en' ? formData.title : formData.translations?.en?.title;
+        if (!sourceText) {
+            toast.error("Veuillez d'abord saisir un titre en anglais");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const res = await fetch('/api/admin/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: sourceText,
+                    targetLangs: languages.filter(l => l.code !== 'en').map(l => l.code)
+                })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setFormData(prev => ({
+                    ...prev,
+                    translations: {
+                        ...prev.translations,
+                        fr: { ...prev.translations?.fr, title: data.translations.fr },
+                        ar: { ...prev.translations?.ar, title: data.translations.ar }
+                    }
+                }));
+                toast.success("Traductions générées !");
+            }
+        } catch {
+            toast.error("Échec de la traduction");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getValue = (field: 'title' | 'content' | 'excerpt') => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (activeLang === 'en') return (formData as Record<string, any>)[field] || '';
+        return formData.translations?.[activeLang]?.[field] || '';
+    };
+
+    const setValue = (field: 'title' | 'content' | 'excerpt', val: string) => {
+        if (activeLang === 'en') {
+            setFormData(prev => ({
+                ...prev,
+                [field]: val,
+                // Auto slugify if title and not editing
+                ...(field === 'title' && !post ? { slug: val.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') } : {})
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                translations: {
+                    ...prev.translations,
+                    [activeLang]: {
+                        ...prev.translations?.[activeLang],
+                        [field]: val
+                    }
+                }
+            }));
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -52,8 +151,8 @@ export default function BlogForm({ post }: BlogFormProps) {
 
         setLoading(true);
         const res = post
-            ? await updateBlogPost(post.id, { ...formData, status: formData.status as "DRAFT" | "PUBLISHED" })
-            : await createBlogPost({ ...formData, status: formData.status as "DRAFT" | "PUBLISHED" });
+            ? await updateBlogPost(post.id, formData as unknown as Parameters<typeof updateBlogPost>[1])
+            : await createBlogPost(formData as unknown as Parameters<typeof createBlogPost>[0]);
 
         if (res.success) {
             toast.success(post ? "Article mis à jour" : "Article créé");
@@ -73,86 +172,114 @@ export default function BlogForm({ post }: BlogFormProps) {
                         <ArrowLeft size={20} />
                     </Link>
                     <div>
-                        <h1 className="text-xl font-bold">{post ? "Modifier l&apos;article" : "Nouvel Article"}</h1>
-                        <p className="text-xs text-gray-500">Rédigez du contenu de qualité pour vos clients.</p>
+                        <h1 className="text-xl font-bold">{post ? "Modifier l'article" : "Nouvel Article"}</h1>
+                        <p className="text-xs text-gray-500">Rédigez du contenu de qualité en plusieurs langues.</p>
                     </div>
                 </div>
+
                 <div className="flex items-center gap-3">
+                    <div className="flex bg-gray-100 dark:bg-zinc-800 p-1 rounded-lg mr-4">
+                        {languages.map(lang => (
+                            <button
+                                key={lang.code}
+                                type="button"
+                                onClick={() => setActiveLang(lang.code)}
+                                className={`px-3 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all ${activeLang === lang.code
+                                    ? "bg-white dark:bg-zinc-700 text-black dark:text-white shadow-sm"
+                                    : "text-gray-400 hover:text-gray-600"
+                                    }`}
+                            >
+                                {lang.code}
+                            </button>
+                        ))}
+                    </div>
+
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || uploading}
                         className="flex items-center gap-2 bg-[var(--coffee-brown)] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#5a4635] transition-all disabled:opacity-50"
                     >
-                        {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                        {(loading || uploading) ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                         Enregistrer
                     </button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4">
+                        {activeLang !== 'en' && (
+                            <button
+                                type="button"
+                                onClick={handleAutoTranslate}
+                                disabled={loading}
+                                className="w-full py-2 bg-purple-50 dark:bg-purple-900/10 text-purple-700 dark:text-purple-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-purple-100 dark:border-purple-900/30 flex items-center justify-center gap-2"
+                            >
+                                {loading ? <Loader2 size={14} className="animate-spin" /> : '✨'} Traduire automatiquement depuis l&apos;anglais
+                            </button>
+                        )}
+
                         <div>
-                            <label className="block text-sm font-bold mb-2">Titre de l&apos;article</label>
+                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                                Titre de l&apos;article ({activeLang.toUpperCase()})
+                            </label>
                             <input
+                                required={activeLang === 'en'}
                                 type="text"
-                                value={formData.title}
-                                onChange={(e) => {
-                                    const title = e.target.value;
-                                    setFormData({
-                                        ...formData,
-                                        title,
-                                        slug: !post ? title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '') : formData.slug
-                                    });
-                                }}
-                                className="w-full bg-gray-50 dark:bg-zinc-800 border border-transparent focus:border-[var(--honey-gold)] rounded-lg px-4 py-3 outline-none transition-all text-lg font-serif"
+                                value={getValue('title')}
+                                onChange={(e) => setValue('title', e.target.value)}
+                                className="w-full bg-gray-50 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-[var(--coffee-brown)]/20 rounded-lg px-4 py-3 outline-none transition-all text-xl font-bold"
                                 placeholder="Ex: Les bienfaits du miel de Sidr..."
+                                dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-bold mb-2">Slug (URL)</label>
-                            <div className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-800 rounded-lg px-4 py-2 border border-transparent">
-                                <span className="text-gray-400 text-sm">/blog/</span>
-                                <input
-                                    type="text"
-                                    value={formData.slug}
-                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                    className="bg-transparent outline-none w-full text-sm font-mono"
-                                />
+                        {activeLang === 'en' && (
+                            <div>
+                                <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Slug (URL)</label>
+                                <div className="flex items-center gap-2 bg-gray-50 dark:bg-zinc-800 rounded-lg px-4 py-2 border border-transparent">
+                                    <span className="text-gray-400 text-sm">/blog/</span>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={formData.slug}
+                                        onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                        className="bg-transparent outline-none w-full text-sm font-mono"
+                                    />
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div>
-                            <label className="block text-sm font-bold mb-2">Contenu</label>
+                            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                                Contenu ({activeLang.toUpperCase()})
+                            </label>
                             <textarea
-                                value={formData.content}
-                                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                className="w-full bg-gray-50 dark:bg-zinc-800 border border-transparent focus:border-[var(--honey-gold)] rounded-lg px-4 py-3 outline-none transition-all min-h-[400px] font-sans leading-relaxed"
+                                value={getValue('content')}
+                                onChange={(e) => setValue('content', e.target.value)}
+                                className="w-full bg-gray-50 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-[var(--coffee-brown)]/20 rounded-lg px-4 py-3 outline-none transition-all min-h-[500px] leading-relaxed"
                                 placeholder="Écrivez votre article ici... (Supporte le HTML)"
+                                dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Sidebar Settings */}
                 <div className="space-y-6">
-                    {/* Status & Category */}
                     <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4">
-                        <h3 className="font-bold flex items-center gap-2">
-                            <Settings size={18} className="text-[var(--honey-gold)]" />
-                            Paramètres
+                        <h3 className="font-bold flex items-center gap-2 pb-2 border-b dark:border-zinc-800">
+                            <Settings size={18} className="text-[var(--coffee-brown)]" />
+                            Publication
                         </h3>
 
                         <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Statut</label>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Statut</label>
                             <div className="grid grid-cols-2 gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, status: "DRAFT" })}
-                                    className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all border ${formData.status === "DRAFT"
-                                        ? "bg-gray-100 border-gray-200 text-gray-900"
+                                    className={`flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border ${formData.status === "DRAFT"
+                                        ? "bg-zinc-100 border-zinc-200 text-zinc-900"
                                         : "bg-transparent border-gray-100 text-gray-400"
                                         }`}
                                 >
@@ -161,8 +288,8 @@ export default function BlogForm({ post }: BlogFormProps) {
                                 <button
                                     type="button"
                                     onClick={() => setFormData({ ...formData, status: "PUBLISHED" })}
-                                    className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all border ${formData.status === "PUBLISHED"
-                                        ? "bg-green-50 border-green-200 text-green-700"
+                                    className={`flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all border ${formData.status === "PUBLISHED"
+                                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                                         : "bg-transparent border-gray-100 text-gray-400"
                                         }`}
                                 >
@@ -172,11 +299,11 @@ export default function BlogForm({ post }: BlogFormProps) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Catégorie</label>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">Catégorie</label>
                             <select
                                 value={formData.category}
                                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className="w-full bg-gray-50 dark:bg-zinc-800 border-none rounded-lg px-3 py-2 text-sm outline-none"
+                                className="w-full bg-gray-50 dark:bg-zinc-800 border-none rounded-lg px-3 py-2 text-sm font-bold outline-none ring-1 ring-gray-100 dark:ring-zinc-700"
                             >
                                 <option value="General">Général</option>
                                 <option value="Sante">Santé & Bien-être</option>
@@ -186,17 +313,16 @@ export default function BlogForm({ post }: BlogFormProps) {
                         </div>
                     </div>
 
-                    {/* Featured Image */}
                     <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4">
-                        <h3 className="font-bold flex items-center gap-2">
-                            <ImageIcon size={18} className="text-[var(--honey-gold)]" />
+                        <h3 className="font-bold flex items-center gap-2 pb-2 border-b dark:border-zinc-800">
+                            <ImageIcon size={18} className="text-[var(--coffee-brown)]" />
                             Image à la une
                         </h3>
 
                         <div className="relative aspect-video bg-gray-50 dark:bg-zinc-800 rounded-lg overflow-hidden border-2 border-dashed border-gray-200 dark:border-zinc-700 flex flex-col items-center justify-center group">
                             {formData.image ? (
                                 <>
-                                    <Image src={formData.image} alt="Featured" fill className="object-cover" />
+                                    <Image src={formData.image} alt="Featured" fill className="object-cover" sizes="300px" />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                         <label className="cursor-pointer bg-white text-black p-2 rounded-full hover:scale-110 transition-transform">
                                             <Upload size={18} />
@@ -212,24 +338,25 @@ export default function BlogForm({ post }: BlogFormProps) {
                                     </div>
                                 </>
                             ) : (
-                                <label className="cursor-pointer flex flex-col items-center gap-2 text-gray-400 hover:text-[var(--honey-gold)] transition-colors">
+                                <label className="cursor-pointer flex flex-col items-center gap-2 text-gray-400 hover:text-[var(--coffee-brown)] transition-colors">
                                     <Upload size={32} />
-                                    <span className="text-xs font-bold uppercase tracking-widest">Télécharger</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Télécharger</span>
                                     <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                                 </label>
                             )}
-                            {/* Upload overlay removed as part of Firebase removal */}
                         </div>
                     </div>
 
-                    {/* Excerpt */}
                     <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4">
-                        <label className="block text-sm font-bold">Extrait / Résumé</label>
+                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+                            Extrait / Résumé ({activeLang.toUpperCase()})
+                        </label>
                         <textarea
-                            value={formData.excerpt}
-                            onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                            className="w-full bg-gray-50 dark:bg-zinc-800 border border-transparent focus:border-[var(--honey-gold)] rounded-lg px-4 py-3 outline-none transition-all text-xs h-24 resize-none"
+                            value={getValue('excerpt')}
+                            onChange={(e) => setValue('excerpt', e.target.value)}
+                            className="w-full bg-gray-50 dark:bg-zinc-800 border-none focus:ring-2 focus:ring-[var(--coffee-brown)]/20 rounded-lg px-4 py-3 outline-none transition-all text-sm h-32 resize-none"
                             placeholder="Un court résumé pour les cartes d'articles..."
+                            dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                         />
                     </div>
                 </div>

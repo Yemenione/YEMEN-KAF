@@ -28,7 +28,8 @@ export default async function Home() {
     date: new Date(p.publishedAt || p.createdAt).toLocaleDateString(),
     slug: p.slug,
     readTime: `${Math.ceil((p.content.split(' ').length || 0) / 200)} min read`,
-    category: p.category || "General"
+    category: p.category || "General",
+    translations: p.translations
   }));
 
   return <HomeClient reviews={formattedReviews} posts={formattedPosts} categories={categories} />;

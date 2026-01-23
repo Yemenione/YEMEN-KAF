@@ -13,6 +13,7 @@ import FlashSale from "@/components/shop/FlashSale";
 import RecentlyViewed from "@/components/shop/RecentlyViewed";
 import PromoGrid from "@/components/shop/PromoGrid";
 import RamadanSection from "@/components/shop/RamadanSection";
+import BlogSection from "@/components/shop/BlogSection";
 import { Truck, ShieldCheck, Star } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
@@ -30,8 +31,10 @@ interface Article {
     image: string;
     date: string;
     slug: string;
-    readTime: string;
-    category: string;
+    readTime?: string;
+    category?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    translations?: any;
 }
 
 interface Category {
@@ -48,7 +51,7 @@ interface HomeClientProps {
     categories: Category[];
 }
 
-export default function HomeClient({ reviews, categories }: HomeClientProps) {
+export default function HomeClient({ reviews, posts, categories }: HomeClientProps) {
     const { t } = useLanguage();
 
     return (
@@ -119,6 +122,9 @@ export default function HomeClient({ reviews, categories }: HomeClientProps) {
 
             {/* Testimonials - NEW */}
             <Testimonials reviews={reviews} />
+
+            {/* Blog Section */}
+            <BlogSection articles={posts} />
 
             {/* Recently Viewed - Global Standard v3 */}
             <RecentlyViewed />

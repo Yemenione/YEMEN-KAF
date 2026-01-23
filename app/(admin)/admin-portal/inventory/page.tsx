@@ -6,7 +6,7 @@ import { Package, History, Search, ArrowUp, ArrowDown, Hash, X } from 'lucide-re
 import { useLanguage } from '@/context/LanguageContext';
 import { toast } from 'sonner';
 import { clsx } from "clsx";
-import { useUI } from '@/context/UIContext';
+// import { useUI } from '@/context/UIContext';
 
 interface StockMovement {
     quantity: number;
@@ -39,6 +39,7 @@ export default function InventoryPage() {
 
     useEffect(() => {
         fetchInventory();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchInventory = async () => {

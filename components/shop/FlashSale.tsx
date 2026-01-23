@@ -2,7 +2,6 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Clock, Zap, ArrowRight } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
@@ -20,6 +19,7 @@ interface Product {
     images?: string | string[];
     slug: string;
     category_name?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     category_translations?: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: any;

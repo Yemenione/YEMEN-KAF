@@ -26,25 +26,23 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing email or password' }, { status: 400 });
         }
 
-        // 1. Try finding in CUSTOMERS first
-        const [rows] = await pool.execute<UserRow[]>(
-            'SELECT * FROM customers WHERE email = ? LIMIT 1',
+        // 1. Try finding in ADMINS first
+        const [adminRows] = await pool.execute<UserRow[]>(
+            'SELECT * FROM admins WHERE email = ? LIMIT 1',
             [email]
         );
 
-        let user = rows[0];
-        let isAdmin = false;
+        let user = adminRows[0];
+        let isAdmin = !!user;
 
-        // 2. If not found in customers, try ADMINS table
+        // 2. If not found in admins, try CUSTOMERS table
         if (!user) {
-            const [adminRows] = await pool.execute<UserRow[]>(
-                'SELECT * FROM admins WHERE email = ? LIMIT 1',
+            const [customerRows] = await pool.execute<UserRow[]>(
+                'SELECT * FROM customers WHERE email = ? LIMIT 1',
                 [email]
             );
-            user = adminRows[0];
-            if (user) {
-                isAdmin = true;
-            }
+            user = customerRows[0];
+            isAdmin = false;
         }
 
         if (!user) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,7 +14,7 @@ interface Product {
     name: string;
     description: string;
     slug: string;
-    images?: string | string[]; // Can be JSON string or array of URLs
+    images?: string | string[];
     image_url: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     translations?: Record<string, any>;
@@ -25,27 +26,18 @@ export default function HeroSlider() {
     const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
 
-    // Helper to extract main image from JSON or Array
     const getMainImage = (product: Product): string => {
         try {
             if (!product.images) return product.image_url || '/images/honey-jar.jpg';
-
-            // If it's already an array, return the first item
             if (Array.isArray(product.images)) {
                 return product.images.length > 0 ? product.images[0] : (product.image_url || '/images/honey-jar.jpg');
             }
-
-            // Check if it's already a clean URL (legacy/csv import support)
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
-
             const parsed = JSON.parse(product.images as string);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                return parsed[0];
-            }
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
         } catch {
-            // Fallback for non-JSON strings
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
             }
@@ -57,117 +49,130 @@ export default function HeroSlider() {
         const fetchProducts = async () => {
             try {
                 let url = '/api/products?limit=4';
-
                 if (settings.homepage_hero_products) {
                     const ids = JSON.parse(settings.homepage_hero_products);
                     if (Array.isArray(ids) && ids.length > 0) {
                         url = `/api/products?ids=${ids.join(',')}`;
                     }
                 }
-
-                // Fetch featured/newest products for the slider
                 const separator = url.includes('?') ? '&' : '?';
                 const res = await fetch(`${url}${separator}lang=${locale || 'en'}`);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.products && data.products.length > 0) {
-                        setSlides(data.products);
-                    }
+                    if (data.products && data.products.length > 0) setSlides(data.products);
                 }
             } catch (error) {
                 console.error("Failed to fetch hero products:", error);
             }
         };
-
         fetchProducts();
     }, [settings.homepage_hero_products, locale]);
 
-    // Auto-advance
     useEffect(() => {
         if (slides.length === 0) return;
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 6000);
+        }, 10000); // 10s
         return () => clearInterval(timer);
     }, [slides.length]);
 
-    if (slides.length === 0) return null; // Or a loading skeleton/default static slide
+    if (slides.length === 0) return (
+        <div className="w-full h-[60vh] lg:h-[500px] bg-gray-50 flex items-center justify-center">
+            <span className="text-gray-300 font-serif italic text-sm tracking-widest">YEM KAF PREMIUM...</span>
+        </div>
+    );
 
     return (
-        <section className="relative w-full min-h-[90vh] bg-[var(--cream-white)] overflow-hidden flex flex-col lg:flex-row">
-
-            {/* Left Column: Content */}
-            <div className="absolute inset-0 lg:relative lg:w-1/2 flex flex-col justify-end lg:justify-center items-center lg:items-start text-center lg:text-start px-8 md:px-20 pb-20 md:pb-32 lg:py-20 z-20 lg:min-h-full">
-                <div className="max-w-xl space-y-6 md:space-y-8 animate-fade-in-up">
-                    <div key={currentSlide} className="animate-fade-in space-y-3 md:space-y-6">
-                        <span className="text-[var(--honey-gold)] lg:text-[var(--coffee-brown)]/60 text-[10px] md:text-sm font-bold uppercase tracking-[0.3em] block lg:border-l-2 border-[var(--honey-gold)] lg:border-[var(--coffee-brown)] lg:pl-4">
-                            {t("home.hero.tagline")}
-                        </span>
-                        <h1 className="text-3xl md:text-7xl lg:text-8xl font-serif text-white lg:text-[var(--coffee-brown)] leading-[1.2] lg:leading-[0.9] tracking-tight drop-shadow-sm">
-                            {getLocalizedValue(slides[currentSlide], 'name')}
-                        </h1>
-                        <p className="text-xs md:text-xl text-white/80 lg:text-[var(--coffee-brown)]/80 font-light leading-relaxed max-w-[280px] md:max-w-md line-clamp-2 lg:line-clamp-5 mx-auto lg:mx-0">
-                            {getLocalizedValue(slides[currentSlide], 'description')}
-                        </p>
+        <section className="relative w-full lg:h-[500px] bg-white overflow-hidden border-b border-gray-100/50">
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={currentSlide}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1 }}
+                    className="absolute inset-0 flex flex-col lg:flex-row"
+                >
+                    {/* Background Overlay for mobile */}
+                    <div className="absolute inset-0 lg:hidden z-0">
+                        <Image
+                            src={getMainImage(slides[currentSlide])}
+                            alt={getLocalizedValue(slides[currentSlide], 'name')}
+                            fill
+                            className="object-cover opacity-20"
+                        />
                     </div>
 
-                    <div className="flex flex-col lg:flex-row items-center gap-5 md:gap-6 pt-2 md:pt-4">
-                        <Link href={`/shop/${slides[currentSlide].slug}`}>
-                            <button className="group flex items-center gap-3 md:gap-4 px-6 md:px-10 py-3 md:py-4 bg-[var(--honey-gold)] lg:bg-[var(--coffee-brown)] text-white font-bold uppercase tracking-widest hover:brightness-110 transition-all shadow-xl rounded-full text-[10px] md:text-base">
-                                {t("home.hero.cta")}
-                                <ArrowRight className="w-3.5 h-3.5 md:w-5 md:h-5 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform" />
-                            </button>
-                        </Link>
+                    {/* Content Column - More compact */}
+                    <div className="relative flex-1 flex flex-col justify-center px-8 lg:px-24 z-20 py-12 lg:py-0">
+                        <div className="max-w-xl space-y-6 lg:space-y-8">
+                            <motion.div
+                                initial={{ x: -20, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.2, duration: 0.8 }}
+                                className="space-y-4"
+                            >
+                                <span className="inline-block text-[var(--coffee-brown)]/40 text-[10px] font-bold uppercase tracking-[0.4em] border-l-2 border-[var(--coffee-brown)]/20 pl-3">
+                                    {t("home.hero.tagline")}
+                                </span>
+                                <h1 className="text-3xl md:text-5xl lg:text-5xl font-serif text-[var(--coffee-brown)] leading-tight tracking-tight line-clamp-2">
+                                    {getLocalizedValue(slides[currentSlide], 'name')}
+                                </h1>
+                            </motion.div>
 
-                        {/* Pagination */}
-                        <div className="flex items-center gap-3 lg:ml-4">
-                            <span className="text-[10px] md:text-xs font-bold text-white/60 lg:text-[var(--coffee-brown)]">0{currentSlide + 1}</span>
-                            <div className="flex gap-2">
-                                {slides.map((_, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setCurrentSlide(index)}
-                                        className={clsx(
-                                            "h-[2px] transition-all duration-500",
-                                            index === currentSlide ? "w-8 md:w-12 bg-[var(--honey-gold)] lg:bg-[var(--coffee-brown)]" : "w-3 md:w-4 bg-white/20 lg:bg-[var(--coffee-brown)]/20 hover:bg-white/40 lg:hover:bg-[var(--coffee-brown)]/40"
-                                        )}
-                                    />
-                                ))}
-                            </div>
+                            <motion.div
+                                initial={{ y: 15, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.5, duration: 0.5 }}
+                                className="flex items-center gap-8"
+                            >
+                                <Link href={`/shop/${slides[currentSlide].slug}`}>
+                                    <button className="group flex items-center gap-3 px-8 py-3 bg-black text-white font-bold uppercase tracking-[0.15em] hover:bg-[var(--coffee-brown)] transition-all rounded-xl text-[10px] shadow-lg hover:shadow-xl">
+                                        {t("home.hero.cta")}
+                                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                </Link>
+
+                                <div className="flex gap-2">
+                                    {slides.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setCurrentSlide(index)}
+                                            className={clsx(
+                                                "w-1.5 h-1.5 rounded-full transition-all duration-300",
+                                                index === currentSlide ? "bg-[var(--coffee-brown)] scale-125" : "bg-gray-200 hover:bg-gray-300"
+                                            )}
+                                        />
+                                    ))}
+                                </div>
+                            </motion.div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Image Slider */}
-            <div className="absolute inset-0 lg:relative lg:w-1/2 h-full order-1 lg:order-2">
-                {slides.map((slide, index) => (
-                    <div
-                        key={slide.id}
-                        className={clsx(
-                            "absolute inset-0 transition-opacity duration-1000 ease-in-out flex flex-col items-center justify-center lg:justify-start lg:pt-32",
-                            index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-                        )}
-                    >
-                        {/* Overlay Gradient for readability on mobile */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent lg:hidden z-10" />
+                    {/* Image Column (Desktop) - 'TV' Look with Crystal Clear Image */}
+                    <div className="hidden lg:flex flex-1 h-full items-center justify-center p-8 lg:pr-16 lg:pl-0">
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.8 }}
+                            className="relative w-full max-w-[650px] aspect-video rounded-[2.5rem] shadow-2xl overflow-hidden group border-[8px] border-white ring-1 ring-gray-100"
+                        >
+                            <Image
+                                src={getMainImage(slides[currentSlide])}
+                                alt={getLocalizedValue(slides[currentSlide], 'name')}
+                                fill
+                                className="object-cover transition-transform duration-[10s] ease-linear group-hover:scale-105"
+                                priority
+                                sizes="(max-width: 1200px) 50vw, 800px"
+                                quality={95}
+                            />
 
-                        <div className="relative w-full h-full lg:h-auto lg:max-w-2xl px-0 lg:px-8">
-                            <div className="relative w-full h-full lg:aspect-square lg:shadow-2xl lg:rounded-[3rem] overflow-hidden lg:border lg:border-gray-100">
-                                <Image
-                                    src={getMainImage(slide)}
-                                    alt={slide.name}
-                                    fill
-                                    className="object-cover"
-                                    priority={index === 0}
-                                    sizes="100vw, (min-width: 1024px) 50vw"
-                                />
-                            </div>
-                        </div>
+                            {/* Cinematic Gradient - Subtle bottom only */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-10 pointer-events-none" />
+                        </motion.div>
                     </div>
-                ))}
-            </div>
-
+                </motion.div>
+            </AnimatePresence>
         </section>
     );
 }

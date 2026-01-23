@@ -147,6 +147,26 @@ export default function Navbar() {
         }
     };
 
+    // Parse Dynamic Menu
+    let mainMenu = [
+        { label: "nav.home", href: "/" },
+        { label: "nav.shop", href: "/shop" },
+        { label: "nav.ourStory", href: "/our-story" },
+        { label: "nav.farms", href: "/the-farms" },
+        { label: "nav.contact", href: "/contact" },
+    ];
+
+    try {
+        if (settings.menu_main) {
+            const parsed = JSON.parse(settings.menu_main);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                mainMenu = parsed;
+            }
+        }
+    } catch {
+        // Fallback to default
+    }
+
     const listVariants = {
         closed: {
             x: -20,
@@ -237,30 +257,39 @@ export default function Navbar() {
                                     </div>
                                 </Link>
 
-                                {/* DESKTOP NAV LINKS */}
+                                {/* DESKTOP NAV LINKS (Dynamic) */}
                                 <div className="hidden md:flex items-center gap-6 lg:gap-8">
-                                    <NavLink href="/" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.home") || "Home"}</NavLink>
+                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                    {mainMenu.map((link: any, i: number) => {
+                                        // Special Handling for "Shop" to show MegaMenu
+                                        if (link.href === '/shop') {
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    className="group relative h-full flex items-center"
+                                                    onMouseEnter={() => setIsMegaMenuOpen(true)}
+                                                    onMouseLeave={() => setIsMegaMenuOpen(false)}
+                                                >
+                                                    <Link
+                                                        href="/shop"
+                                                        className={clsx(
+                                                            "flex items-center gap-1 text-[11px] uppercase tracking-[0.2em] font-medium transition-colors py-2",
+                                                            isScrolled ? "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)]" : "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] md:text-black md:hover:text-[var(--honey-gold)]"
+                                                        )}
+                                                    >
+                                                        {t(link.label) || link.label}
+                                                        <ChevronDown className={clsx("w-3 h-3 transition-transform duration-300", isMegaMenuOpen ? "rotate-180" : "")} />
+                                                    </Link>
+                                                </div>
+                                            );
+                                        }
 
-                                    <div
-                                        className="group relative h-full flex items-center"
-                                        onMouseEnter={() => setIsMegaMenuOpen(true)}
-                                        onMouseLeave={() => setIsMegaMenuOpen(false)}
-                                    >
-                                        <Link
-                                            href="/shop"
-                                            className={clsx(
-                                                "flex items-center gap-1 text-[11px] uppercase tracking-[0.2em] font-medium transition-colors py-2",
-                                                isScrolled ? "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)]" : "text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] md:text-black md:hover:text-[var(--honey-gold)]"
-                                            )}
-                                        >
-                                            {t("nav.shop")}
-                                            <ChevronDown className={clsx("w-3 h-3 transition-transform duration-300", isMegaMenuOpen ? "rotate-180" : "")} />
-                                        </Link>
-                                    </div>
-
-                                    <NavLink href="/our-story" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.ourStory")}</NavLink>
-                                    <NavLink href="/the-farms" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.farms")}</NavLink>
-                                    <NavLink href="/contact" isScrolled={isScrolled} isRTL={isRTL}>{t("nav.contact") || "Contact"}</NavLink>
+                                        return (
+                                            <NavLink key={i} href={link.href} isScrolled={isScrolled} isRTL={isRTL}>
+                                                {t(link.label) || link.label}
+                                            </NavLink>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -432,13 +461,8 @@ export default function Navbar() {
                                     </div>
 
                                     <nav className="flex flex-col space-y-1">
-                                        {[
-                                            { href: "/", label: t("nav.home") },
-                                            { href: "/shop", label: t("nav.shop") },
-                                            { href: "/our-story", label: t("nav.ourStory") },
-                                            { href: "/the-farms", label: t("nav.farms") },
-                                            { href: "/contact", label: t("nav.contact") || "Contact" }
-                                        ].map((item, i) => (
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                        {mainMenu.map((item: any, i: number) => (
                                             <motion.div
                                                 key={item.href}
                                                 custom={i}
@@ -449,7 +473,7 @@ export default function Navbar() {
                                                     onClick={() => setIsMobileMenuOpen(false)}
                                                     className="block py-3 text-2xl font-serif text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors"
                                                 >
-                                                    {item.label}
+                                                    {t(item.label) || item.label}
                                                 </Link>
                                             </motion.div>
                                         ))}
@@ -488,7 +512,7 @@ export default function Navbar() {
                                                     <button
                                                         key={lang.id}
                                                         onClick={() => {
-                                                            setLocale(lang.id as any);
+                                                            setLocale(lang.id as 'en' | 'fr' | 'ar');
                                                             // Maybe don't close menu automatically if they want to see the change
                                                         }}
                                                         className={clsx(

@@ -13,11 +13,14 @@ export interface AdminSession {
     role: string;
 }
 
+import { cache } from 'react';
+
 /**
  * Verify if the current request is from an authenticated administrator.
  * Returns the admin session data or null if not authorized.
+ * Cached at the request level to avoid multiple DB lookups.
  */
-export async function getAdminSession(): Promise<AdminSession | null> {
+export const getAdminSession = cache(async (): Promise<AdminSession | null> => {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get('auth_token')?.value;
@@ -34,9 +37,6 @@ export async function getAdminSession(): Promise<AdminSession | null> {
         );
 
         if (rows.length === 0) {
-            // Secondary check: If they are a super-admin by email (emergency fallback)
-            // This is useful if the ID mapping isn't 1:1 between customers/admins 
-            // but the payload contains the email.
             if (payload.email) {
                 const [emailRows] = await pool.execute<RowDataPacket[]>(
                     'SELECT id, email, role FROM admins WHERE email = ? LIMIT 1',
@@ -48,10 +48,11 @@ export async function getAdminSession(): Promise<AdminSession | null> {
         }
 
         return rows[0] as AdminSession;
-    } catch {
+    } catch (error) {
+        console.error("Session verification error:", error);
         return null;
     }
-}
+});
 
 import { Permission, hasPermission } from './rbac';
 

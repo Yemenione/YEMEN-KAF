@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Edit, Trash2, ChevronLeft, ChevronRight, Package, Loader2, MoreVertical, Filter, Download } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, Package, ChevronLeft, ChevronRight, Loader2, Download } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { canAccessModule, hasPermission, Permission, AdminRole } from "@/lib/rbac";
+import { hasPermission, Permission, AdminRole } from "@/lib/rbac";
 import { toast } from "sonner";
 
 interface Product {
@@ -33,6 +33,7 @@ export default function AdminProductsPage() {
 
     useEffect(() => {
         fetchProducts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, searchTerm]);
 
     const fetchProducts = async () => {

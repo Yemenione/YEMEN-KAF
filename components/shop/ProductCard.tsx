@@ -30,7 +30,6 @@ export default function ProductCard({
     category,
     colors = [],
     hasVariants = false,
-    variantCount = 0,
     layout = 'grid'
 }: ProductCardProps) {
     const { isAuthenticated } = useAuth();

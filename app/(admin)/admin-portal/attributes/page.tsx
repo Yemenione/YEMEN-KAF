@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Edit, Trash2, X, GripVertical, Search, Save, Languages } from "lucide-react";
+import { Plus, Edit, Trash2, X, GripVertical, Search, Save } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { hasPermission, Permission, AdminRole } from "@/lib/rbac";
@@ -40,7 +40,7 @@ export default function AttributesPage() {
         publicName: string;
         type: string;
         values: AttributeValue[];
-        translations?: Record<string, any>;
+        translations?: Record<string, Record<string, string>>;
     }>({
         name: "",
         publicName: "",
@@ -107,8 +107,11 @@ export default function AttributesPage() {
         setIsModalOpen(true);
     };
 
-    const getValue = (field: string) => {
-        if (activeLang === 'en') return (formData as any)[field] || '';
+    const getValue = (field: keyof typeof formData | string) => {
+        if (activeLang === 'en') {
+            // Access strictly safely if possible, or fallback to known fields used in creating
+            return (formData as unknown as Record<string, unknown>)[field] as string || '';
+        }
         return formData.translations?.[activeLang]?.[field] || '';
     };
 
@@ -133,14 +136,14 @@ export default function AttributesPage() {
         const val = formData.values[index];
         if (!val) return '';
         if (activeLang === 'en') return (val[field] as string) || '';
-        return val.translations?.[activeLang]?.[field] || '';
+        return formData.values[index].translations?.[activeLang]?.[field as string] || '';
     };
 
     const handleValueChange = (index: number, field: keyof AttributeValue, val: string) => {
         setFormData(prev => {
             const newValues = [...prev.values];
             if (activeLang === 'en') {
-                (newValues[index] as any)[field] = val;
+                newValues[index] = { ...newValues[index], [field]: val };
             } else {
                 newValues[index] = {
                     ...newValues[index],

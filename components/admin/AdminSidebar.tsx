@@ -1,8 +1,8 @@
-
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard,
     ShoppingBag,
@@ -25,7 +25,9 @@ import {
     ScrollText,
     User,
     Newspaper,
-    Key
+    Key,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '@/context/AuthContext';
@@ -38,6 +40,7 @@ export default function AdminSidebar() {
     const { logout, user } = useAuth();
     const { t, locale } = useLanguage();
     const role = (user?.role || 'EDITOR') as AdminRole;
+    const { isSidebarOpen, isSidebarCollapsed, closeSidebar, toggleSidebarCollapse } = useUI();
 
     const groups = [
         {
@@ -62,9 +65,9 @@ export default function AdminSidebar() {
             module: 'ORDERS',
             items: [
                 { name: t('admin.sidebar.items.orders'), href: '/admin-portal/orders', icon: ShoppingCart },
-                { name: t('admin.sidebar.items.customers'), href: '/admin-portal/customers', icon: Users, permission: 'CUSTOMERS' },
+                { name: t('admin.sidebar.items.customers'), href: '/admin-portal/customers', icon: Users },
                 { name: t('admin.sidebar.items.inventory'), href: '/admin-portal/inventory', icon: Package },
-                { name: t('admin.sidebar.items.support'), href: '/admin-portal/support/tickets', icon: LifeBuoy, permission: 'SUPPORT' },
+                { name: t('admin.sidebar.items.support'), href: '/admin-portal/support/tickets', icon: LifeBuoy },
             ]
         },
         {
@@ -75,8 +78,8 @@ export default function AdminSidebar() {
                 { name: t('admin.sidebar.items.navigation'), href: '/admin-portal/design/menus', icon: Menu },
                 { name: t('admin.sidebar.items.contentCms'), href: '/admin-portal/cms/pages', icon: FileText },
                 { name: t('admin.sidebar.items.blog'), href: '/admin-portal/cms/blog', icon: Newspaper },
-                { name: t('admin.sidebar.items.coupons'), href: '/admin-portal/marketing/coupons', icon: TicketPercent, permission: 'MARKETING' },
-                { name: 'Newsletter', href: '/admin-portal/marketing/newsletter', icon: Users, permission: 'MARKETING' },
+                { name: t('admin.sidebar.items.coupons'), href: '/admin-portal/marketing/coupons', icon: TicketPercent },
+                { name: 'Newsletter', href: '/admin-portal/marketing/newsletter', icon: Users },
             ]
         },
         {
@@ -94,109 +97,172 @@ export default function AdminSidebar() {
         }
     ];
 
-    const { isSidebarOpen, closeSidebar } = useUI();
-
     return (
         <>
             {/* Mobile Overlay */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
-                    onClick={closeSidebar}
-                />
-            )}
+            <AnimatePresence>
+                {isSidebarOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 z-[60] lg:hidden backdrop-blur-md"
+                        onClick={closeSidebar}
+                    />
+                )}
+            </AnimatePresence>
 
-            <aside className={clsx(
-                "fixed lg:sticky top-0 start-0 h-screen bg-[#1d2327] border-e border-zinc-800 flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 w-64 shadow-2xl lg:shadow-none",
-                isSidebarOpen ? "translate-x-0" : (locale === 'ar' ? "translate-x-full" : "-translate-x-full")
-            )}>
-                {/* Logo Area (WordPress style top bar segment) */}
-                <div className="h-14 flex items-center px-4 border-b border-zinc-700/50 shrink-0 justify-between bg-[#1d2327]">
-                    <Link href="/admin-portal/dashboard" className="flex items-center gap-2 group">
-                        <div className="w-8 h-8 rounded bg-zinc-700 flex items-center justify-center text-white font-black text-lg group-hover:bg-[#2271b1] transition-colors">
+            <motion.aside
+                initial={false}
+                animate={{
+                    width: isSidebarCollapsed ? '80px' : '280px',
+                    x: (!isSidebarOpen && typeof window !== 'undefined' && window.innerWidth < 1024)
+                        ? (locale === 'ar' ? '100%' : '-100%')
+                        : 0
+                }}
+                className={clsx(
+                    "fixed lg:sticky top-0 start-0 h-screen bg-[#0f1115] border-e border-white/5 flex flex-col z-[70] transition-colors duration-500",
+                    isSidebarOpen ? "translate-x-0" : ""
+                )}
+            >
+                {/* Logo Area */}
+                <div className="h-16 flex items-center px-6 border-b border-white/5 shrink-0 justify-between">
+                    <Link href="/admin-portal/dashboard" className="flex items-center gap-3 group overflow-hidden">
+                        <div className="w-9 h-9 min-w-[36px] rounded-xl bg-gradient-to-br from-[var(--honey-gold)] to-amber-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-amber-600/20 group-hover:scale-105 transition-transform duration-300">
                             Y
                         </div>
-                        <span className="text-sm font-bold text-zinc-100 tracking-tight group-hover:text-white transition-colors">
-                            Yem Kaf <span className="text-zinc-500 font-normal ml-1 italic opacity-80">Admin</span>
-                        </span>
+                        {!isSidebarCollapsed && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="flex flex-col"
+                            >
+                                <span className="text-sm font-bold text-white tracking-tight">Yem Kaf</span>
+                                <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-widest opacity-80">Portal Admin</span>
+                            </motion.div>
+                        )}
                     </Link>
-                    <button onClick={closeSidebar} className="lg:hidden text-zinc-400 hover:text-white">
-                        <LogOut className={clsx("rotate-180", locale === 'ar' && "rotate-0")} size={18} />
-                    </button>
+                    {!isSidebarCollapsed && (
+                        <button onClick={closeSidebar} className="lg:hidden text-zinc-400 hover:text-white transition-colors">
+                            <LogOut className={clsx("rotate-180", locale === 'ar' && "rotate-0")} size={18} />
+                        </button>
+                    )}
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto py-2 space-y-4 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
-                    {groups.map((group) => (
-                        <div key={group.title} className="space-y-0.5">
-                            <h4 className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-zinc-500 bg-zinc-800/10 mb-1">
-                                {group.title}
-                            </h4>
-                            <div className="space-y-0">
-                                {group.items.map((item) => {
-                                    const isActive = pathname === item.href || (item.href !== '/admin-portal/dashboard' && pathname.startsWith(item.href));
-                                    const Icon = item.icon;
+                <nav className="flex-1 overflow-y-auto py-6 space-y-8 scrollbar-none hover:scrollbar-thin scrollbar-thumb-zinc-800 transition-all">
+                    {groups.map((group) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const hasAccess = canAccessModule(role, group.module as any);
+                        if (!hasAccess) return null;
 
-                                    return (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            onClick={() => closeSidebar()}
-                                            className={clsx(
-                                                "flex items-center gap-3 px-4 py-2 text-[13px] font-medium transition-all duration-150 relative group/link",
-                                                isActive
-                                                    ? "bg-[#2271b1] text-white"
-                                                    : "text-zinc-400 hover:bg-[#2c3338] hover:text-[#72aee6]"
-                                            )}
-                                        >
-                                            {/* WordPress Blue strip for active item */}
-                                            {isActive && (
-                                                <div className="absolute start-0 top-0 bottom-0 w-[4px] bg-[#72aee6]" />
-                                            )}
+                        return (
+                            <div key={group.title} className="space-y-1 px-3">
+                                {!isSidebarCollapsed ? (
+                                    <h4 className="px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500/80 mb-2">
+                                        {group.title}
+                                    </h4>
+                                ) : (
+                                    <div className="h-px bg-white/5 mx-2 mb-4" />
+                                )}
 
-                                            <Icon size={18} className={clsx(
-                                                "shrink-0 transition-colors",
-                                                isActive ? "text-white" : "text-zinc-500 group-hover/link:text-[#72aee6]"
-                                            )} />
-                                            <span className="truncate">{item.name}</span>
-                                        </Link>
-                                    );
-                                })}
+                                <div className="space-y-1">
+                                    {group.items.map((item) => {
+                                        const isActive = pathname === item.href || (item.href !== '/admin-portal/dashboard' && pathname.startsWith(item.href));
+                                        const Icon = item.icon;
+
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                title={isSidebarCollapsed ? item.name : ''}
+                                                onClick={() => {
+                                                    if (typeof window !== 'undefined' && window.innerWidth < 1024) closeSidebar();
+                                                }}
+                                                className={clsx(
+                                                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 relative group/link",
+                                                    isActive
+                                                        ? "bg-white/10 text-white shadow-xl shadow-black/20"
+                                                        : "text-zinc-400 hover:bg-white/5 hover:text-white"
+                                                )}
+                                            >
+                                                <div className={clsx(
+                                                    "shrink-0 transition-all duration-300 p-1 rounded-lg",
+                                                    isActive ? "bg-[var(--honey-gold)] text-white shadow-lg shadow-amber-500/20" : "group-hover/link:text-[var(--honey-gold)]"
+                                                )}>
+                                                    <Icon size={20} />
+                                                </div>
+
+                                                {!isSidebarCollapsed && (
+                                                    <motion.span
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        className="truncate"
+                                                    >
+                                                        {item.name}
+                                                    </motion.span>
+                                                )}
+
+                                                {isActive && !isSidebarCollapsed && (
+                                                    <motion.div
+                                                        layoutId="active-indicator"
+                                                        className="absolute start-0 w-1 h-6 bg-[var(--honey-gold)] rounded-e-full"
+                                                    />
+                                                )}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </nav>
 
-                {/* Bottom Section (Profile & Sign Out) */}
-                <div className="mt-auto border-t border-zinc-800 bg-[#1d2327]/80 backdrop-blur-sm">
+                {/* Desktop Collapse Toggle */}
+                <div className="hidden lg:flex items-center justify-center p-4 border-t border-white/5">
+                    <button
+                        onClick={toggleSidebarCollapse}
+                        className="w-full py-2 flex items-center justify-center gap-2 text-zinc-500 hover:text-white bg-white/5 rounded-xl transition-all hover:bg-white/10"
+                    >
+                        {isSidebarCollapsed ? (
+                            <ChevronRight size={18} className={locale === 'ar' ? "rotate-180" : ""} />
+                        ) : (
+                            <>
+                                <ChevronLeft size={18} className={locale === 'ar' ? "rotate-180" : ""} />
+                                <span className="text-xs font-bold uppercase tracking-widest">Collapse View</span>
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {/* Bottom Section */}
+                <div className="border-t border-white/5 bg-black/20 p-3 space-y-1">
                     <Link
                         href="/admin-portal/profile"
-                        onClick={() => closeSidebar()}
+                        title={isSidebarCollapsed ? t('admin.sidebar.items.profile') : ''}
                         className={clsx(
-                            "flex items-center gap-3 px-4 py-3 text-[13px] font-medium transition-all duration-150 relative group/profile",
+                            "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group/profile",
                             pathname === '/admin-portal/profile'
-                                ? "bg-[#2271b1] text-white"
-                                : "text-zinc-400 hover:bg-[#2c3338] hover:text-[#72aee6]"
+                                ? "bg-zinc-800 text-white"
+                                : "text-zinc-500 hover:bg-white/5 hover:text-white"
                         )}
                     >
-                        {pathname === '/admin-portal/profile' && (
-                            <div className="absolute start-0 top-0 bottom-0 w-[4px] bg-[#72aee6]" />
-                        )}
-                        <User size={18} className={clsx(
+                        <User size={20} className={clsx(
                             "shrink-0",
-                            pathname === '/admin-portal/profile' ? "text-white" : "text-zinc-500 group-hover/profile:text-[#72aee6]"
+                            pathname === '/admin-portal/profile' ? "text-[var(--honey-gold)]" : "group-hover/profile:text-[var(--honey-gold)]"
                         )} />
-                        {t('admin.sidebar.items.profile')}
+                        {!isSidebarCollapsed && t('admin.sidebar.items.profile')}
                     </Link>
                     <button
                         onClick={logout}
-                        className="flex items-center gap-3 w-full px-4 py-3 text-[13px] font-medium text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all group/logout"
+                        title={isSidebarCollapsed ? t('admin.sidebar.items.signOut') : ''}
+                        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-rose-500/70 hover:bg-rose-500/10 hover:text-rose-400 transition-all group/logout"
                     >
-                        <LogOut size={18} className="shrink-0 group-hover:-translate-x-1 transition-transform" />
-                        {t('admin.sidebar.items.signOut')}
+                        <LogOut size={20} className="shrink-0 group-hover:-translate-x-1 transition-transform" />
+                        {!isSidebarCollapsed && t('admin.sidebar.items.signOut')}
                     </button>
                 </div>
-            </aside>
+            </motion.aside>
         </>
     );
 }

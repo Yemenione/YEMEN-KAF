@@ -1,20 +1,24 @@
 'use server';
 
 import { prisma } from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_cache } from "next/cache";
 
-export async function getBlogPosts(limit = 3) {
-    try {
-        return await prisma.blogPost.findMany({
-            where: { status: 'PUBLISHED' },
-            orderBy: { publishedAt: 'desc' },
-            take: limit
-        });
-    } catch (error) {
-        console.error("Error fetching blog posts:", error);
-        return [];
-    }
-}
+export const getBlogPosts = unstable_cache(
+    async (limit = 3) => {
+        try {
+            return await prisma.blogPost.findMany({
+                where: { status: 'PUBLISHED' },
+                orderBy: { publishedAt: 'desc' },
+                take: limit
+            });
+        } catch (error) {
+            console.error("Error fetching blog posts:", error);
+            return [];
+        }
+    },
+    ['home-blog-posts'],
+    { revalidate: 3600, tags: ['blog'] }
+);
 
 export async function getAllBlogPosts() {
     try {
@@ -47,9 +51,9 @@ interface BlogPostInput {
     status: 'DRAFT' | 'PUBLISHED';
     slug: string;
     author?: string;
-    readTime?: string;
-    tags?: string; // JSON string or array
-    categoryId?: number;
+    category?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    translations?: any;
     publishedAt?: Date | string | null;
 }
 
@@ -62,7 +66,8 @@ export async function createBlogPost(data: BlogPostInput) {
             }
         });
         revalidatePath('/admin-portal/cms/blog');
-        revalidatePath('/'); // Revalidate home blog section
+        revalidatePath('/blog');
+        revalidatePath('/');
         return { success: true, post };
     } catch (error) {
         console.error("Error creating blog post:", error);
@@ -80,6 +85,8 @@ export async function updateBlogPost(id: number, data: Partial<BlogPostInput>) {
             }
         });
         revalidatePath('/admin-portal/cms/blog');
+        revalidatePath(`/blog/${post.slug}`);
+        revalidatePath('/blog');
         revalidatePath('/');
         return { success: true, post };
     } catch (error) {
@@ -97,5 +104,16 @@ export async function deleteBlogPost(id: number) {
     } catch (error) {
         console.error("Error deleting blog post:", error);
         return { success: false, error: "Failed to delete post" };
+    }
+}
+
+export async function getBlogPostBySlug(slug: string) {
+    try {
+        return await prisma.blogPost.findUnique({
+            where: { slug }
+        });
+    } catch (error) {
+        console.error("Error fetching blog post by slug:", error);
+        return null;
     }
 }

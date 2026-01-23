@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Plus, Search, Edit, Trash2, Save, X, Eye, EyeOff, UploadCloud } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
-import { canAccessModule, hasPermission, Permission, AdminRole } from "@/lib/rbac";
+import { hasPermission, Permission, AdminRole } from "@/lib/rbac";
 import { toast } from "sonner";
 
 interface LocalizedString {
@@ -199,20 +199,25 @@ export default function CategoriesPage() {
     };
 
     const getValue = (field: 'name' | 'description' | 'meta_title' | 'meta_description') => {
-        const translations = (formData as any)[`${field}_translations`];
-        return (translations as any)[activeLang] || '';
+        const translations = formData[`${field}_translations` as keyof typeof formData] as LocalizedString;
+        return translations[activeLang as keyof LocalizedString] || '';
     };
 
     const setValue = (field: 'name' | 'description' | 'meta_title' | 'meta_description', val: string) => {
-        setFormData(prev => ({
-            ...prev,
-            [`${field}_translations`]: {
-                ...(prev as any)[`${field}_translations`],
-                [activeLang]: val
-            },
-            // Update root field if it's English
-            ...(activeLang === 'en' ? { [field]: val } : {})
-        }));
+        setFormData(prev => {
+            const translationKey = `${field}_translations` as keyof typeof prev;
+            const currentTranslations = prev[translationKey] as LocalizedString;
+
+            return {
+                ...prev,
+                [translationKey]: {
+                    ...currentTranslations,
+                    [activeLang]: val
+                },
+                // Update root field if it's English
+                ...(activeLang === 'en' ? { [field]: val } : {})
+            };
+        });
     };
 
     const filteredCategories = categories.filter(c =>
@@ -477,7 +482,7 @@ export default function CategoriesPage() {
                                         <input
                                             type="text"
                                             className="flex-1 px-4 py-2.5 rounded-xl border-none bg-gray-50 dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--coffee-brown)]/20 transition-all outline-none text-sm font-bold"
-                                            value={formData.image_url}
+                                            value={formData.image_url || ''}
                                             onChange={e => setFormData({ ...formData, image_url: e.target.value })}
                                         />
                                         <label className="p-2.5 bg-gray-100 dark:bg-zinc-800 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors">

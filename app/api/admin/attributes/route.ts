@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
                 name,
                 publicName,
                 type,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 translations: (translations || {}) as any,
                 values: {
                     create: (values || []).map((v: AttributeValueInput) => ({

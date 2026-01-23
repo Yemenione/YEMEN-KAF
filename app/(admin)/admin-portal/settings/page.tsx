@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, Store, Mail, Phone, Facebook, Instagram, Image as ImageIcon, CreditCard, ShieldCheck, Calendar, List } from 'lucide-react';
-import Image from 'next/image';
+import { Save, Store, Mail, Phone, Facebook, Instagram, Image as ImageIcon, CreditCard, ShieldCheck, Calendar, List, Truck, DollarSign } from 'lucide-react';
+import ImageUploader from '@/components/admin/ImageUploader';
+import CarriersManager from '@/components/admin/CarriersManager';
+import MenuEditor from '@/components/admin/MenuEditor';
 
 interface ConfigMap {
     [key: string]: string;
@@ -62,6 +64,8 @@ export default function SettingsPage() {
         { id: 'social', label: 'Social Media', icon: Facebook },
         { id: 'theme', label: 'Theme & Logo', icon: ImageIcon },
         { id: 'payment', label: 'Payments', icon: CreditCard },
+        { id: 'shipping', label: 'Shipping & Delivery', icon: Truck },
+        { id: 'taxes', label: 'Taxes & VAT', icon: DollarSign },
         { id: 'email', label: 'Email (Resend)', icon: ShieldCheck },
         { id: 'seasonal', label: 'Seasonal / Ramadan', icon: Calendar },
         { id: 'menus', label: 'Menus & Navigation', icon: List },
@@ -105,24 +109,163 @@ export default function SettingsPage() {
                 <div className="flex-1 bg-white dark:bg-zinc-900 p-6 rounded-lg border border-gray-100 dark:border-zinc-800 shadow-sm">
 
                     {activeTab === 'general' && (
-                        <div className="space-y-4 animate-in fade-in duration-300">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Name</label>
-                                <input
-                                    type="text"
-                                    value={settings['site_name'] || ''}
-                                    onChange={(e) => handleChange('site_name', e.target.value)}
-                                    className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
-                                />
+                        <div className="space-y-6 animate-in fade-in duration-300">
+                            {/* Store Identity */}
+                            <div className="border-b border-gray-100 dark:border-zinc-800 pb-6 mb-6">
+                                <h3 className="text-lg font-medium mb-4">Store Identity</h3>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Name</label>
+                                        <input
+                                            type="text"
+                                            value={settings['store_name'] || settings['site_name'] || ''}
+                                            onChange={(e) => {
+                                                handleChange('store_name', e.target.value);
+                                                handleChange('site_name', e.target.value);
+                                            }}
+                                            className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Official VAT / Tax Number</label>
+                                        <input
+                                            type="text"
+                                            value={settings['vat_number'] || ''}
+                                            onChange={(e) => handleChange('vat_number', e.target.value)}
+                                            className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                            placeholder="FR12345678901"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Email (Public)</label>
+                                            <input
+                                                type="email"
+                                                value={settings['store_email'] || ''}
+                                                onChange={(e) => handleChange('store_email', e.target.value)}
+                                                className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Phone (Public)</label>
+                                            <input
+                                                type="text"
+                                                value={settings['store_phone'] || ''}
+                                                onChange={(e) => handleChange('store_phone', e.target.value)}
+                                                className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Official Address (Invoices)</label>
+                                        <textarea
+                                            rows={3}
+                                            value={settings['store_address'] || ''}
+                                            onChange={(e) => handleChange('store_address', e.target.value)}
+                                            className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                            placeholder="123 Avenue..."
+                                        />
+                                    </div>
+                                </div>
                             </div>
+
+                            {/* SEO & Meta */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Description (SEO)</label>
-                                <textarea
-                                    rows={3}
-                                    value={settings['site_description'] || ''}
-                                    onChange={(e) => handleChange('site_description', e.target.value)}
-                                    className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
-                                />
+                                <h3 className="text-lg font-medium mb-4">SEO & Metadata</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Homepage Meta Description</label>
+                                        <textarea
+                                            rows={2}
+                                            value={settings['site_description'] || ''}
+                                            onChange={(e) => handleChange('site_description', e.target.value)}
+                                            className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'shipping' && (
+                        <div className="space-y-6 animate-in fade-in duration-300">
+                            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+                                <p className="text-yellow-800 text-sm">
+                                    <strong>Note:</strong> Advanced Shipping Rates (Colissimo/Mondial Relay tables) are managed via the Database Seed for now to ensure free calculation.
+                                    Use this section for global shipping settings.
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Free Shipping Threshold (€)</label>
+                                <div className="relative max-w-xs">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+                                    <input
+                                        type="number"
+                                        value={settings['free_shipping_threshold'] || '100'}
+                                        onChange={(e) => handleChange('free_shipping_threshold', e.target.value)}
+                                        className="w-full pl-8 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Orders above this amount will technically be eligible for free shipping if the carrier supports it.</p>
+                            </div>
+
+                            <div className="border-t border-gray-100 dark:border-zinc-800 pt-6">
+                                <h3 className="font-medium mb-4">Carrier Management</h3>
+                                <CarriersManager />
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'taxes' && (
+                        <div className="space-y-6 animate-in fade-in duration-300">
+                            <div>
+                                <h3 className="text-lg font-medium mb-4">Tax Configuration</h3>
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors bg-[var(--coffee-brown)]">
+                                            <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6" />
+                                        </div>
+                                        <span className="text-sm font-medium">Enable Tax Calculation (Global)</span>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Invoice Prefix</label>
+                                        <input
+                                            type="text"
+                                            value={settings['invoice_prefix'] || 'INV-2025-'}
+                                            onChange={(e) => handleChange('invoice_prefix', e.target.value)}
+                                            className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)] font-mono"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Standard VAT Rate (%)</label>
+                                        <div className="relative max-w-xs">
+                                            <input
+                                                type="number"
+                                                value={settings['tax_rate_standard'] || '20'}
+                                                onChange={(e) => handleChange('tax_rate_standard', e.target.value)}
+                                                className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                            />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reduced VAT Rate (%)</label>
+                                        <div className="relative max-w-xs">
+                                            <input
+                                                type="number"
+                                                value={settings['tax_rate_reduced'] || '5.5'}
+                                                onChange={(e) => handleChange('tax_rate_reduced', e.target.value)}
+                                                className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                            />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">Applies to food items like Honey (Miel).</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -190,29 +333,24 @@ export default function SettingsPage() {
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Logo</label>
                                 <div className="flex items-start gap-4">
-                                    <div className="w-32 h-32 relative bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border">
-                                        {settings['logo_url'] ? (
-                                            <Image
-                                                src={settings['logo_url']}
-                                                alt="Site Logo"
-                                                fill
-                                                className="object-contain p-2"
-                                            />
-                                        ) : (
-                                            <ImageIcon className="w-8 h-8 text-gray-300" />
-                                        )}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <input
-                                            type="text"
+                                    <div className="flex items-start gap-4">
+                                        <ImageUploader
                                             value={settings['logo_url'] || ''}
-                                            onChange={(e) => handleChange('logo_url', e.target.value)}
-                                            placeholder="/images/logo.png"
-                                            className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 text-sm"
+                                            onChange={(url) => handleChange('logo_url', url)}
+                                            folder="branding"
                                         />
-                                        <p className="text-xs text-gray-500">
-                                            Enter path or allow selection in future updates.
-                                        </p>
+                                        <div className="space-y-2 flex-1">
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                Upload your store logo. Recommended size: 200x200px or larger. PNG or SVG preferred within transparency.
+                                            </p>
+                                            <input
+                                                type="text"
+                                                value={settings['logo_url'] || ''}
+                                                onChange={(e) => handleChange('logo_url', e.target.value)}
+                                                placeholder="https://..."
+                                                className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 text-sm font-mono text-gray-500"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -372,27 +510,31 @@ export default function SettingsPage() {
 
                     {activeTab === 'menus' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
-                            <div className="flex items-center justify-between border-b pb-4">
-                                <div>
-                                    <h3 className="text-lg font-medium">Footer Menu Links</h3>
-                                    <p className="text-sm text-gray-500">Manage the &quot;Quick Links&quot; section in the footer.</p>
+
+                            {/* Main Menu */}
+                            <div>
+                                <div className="mb-4">
+                                    <h3 className="text-lg font-medium">Main Navigation</h3>
+                                    <p className="text-sm text-gray-500">Links shown in the top header.</p>
                                 </div>
+                                <MenuEditor
+                                    value={settings['menu_main'] || '[]'}
+                                    onChange={(json) => handleChange('menu_main', json)}
+                                />
                             </div>
 
-                            <div className="space-y-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Links JSON (Label, Href)
-                                </label>
-                                <textarea
-                                    rows={10}
+                            <hr className="border-gray-100 dark:border-zinc-800" />
+
+                            {/* Footer Menu */}
+                            <div>
+                                <div className="mb-4">
+                                    <h3 className="text-lg font-medium">Footer &quot;Quick Links&quot;</h3>
+                                    <p className="text-sm text-gray-500">Links shown in the footer column.</p>
+                                </div>
+                                <MenuEditor
                                     value={settings['menu_footer_links'] || '[]'}
-                                    onChange={(e) => handleChange('menu_footer_links', e.target.value)}
-                                    className="w-full px-4 py-2 border rounded-md font-mono text-sm dark:bg-zinc-800 dark:border-zinc-700"
-                                    placeholder='[{"label": "My Blog", "href": "/blog"}, {"label": "Shop", "href": "/shop"}]'
+                                    onChange={(json) => handleChange('menu_footer_links', json)}
                                 />
-                                <p className="text-xs text-gray-500">
-                                    Format: <code className="bg-gray-100 px-1 rounded">[{`{"label": "Name", "href": "/url"}`}]</code>
-                                </p>
                             </div>
                         </div>
                     )}

@@ -7,6 +7,7 @@ import { RowDataPacket } from 'mysql2';
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface UserRow extends RowDataPacket {
     id: number;
     email: string;
@@ -27,7 +28,8 @@ export async function GET() {
         const isAdminPayload = payload.isAdmin as boolean;
 
         let user = null;
-        let role = null;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const role = null;
 
         if (isAdminPayload) {
             // Fetch from admins table

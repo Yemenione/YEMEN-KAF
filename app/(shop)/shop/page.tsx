@@ -1,7 +1,6 @@
 "use client";
 
 import { useLanguage } from "@/context/LanguageContext";
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { ShoppingBag, Filter, Grid, List } from "lucide-react";
@@ -48,6 +47,7 @@ import { Suspense } from "react";
 
 function ShopContent() {
     const { t, locale, getLocalizedValue } = useLanguage();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { addToCart } = useCart();
     const searchParams = useSearchParams();
     const [products, setProducts] = useState<Product[]>([]);

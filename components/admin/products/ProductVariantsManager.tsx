@@ -155,7 +155,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
 
     const updateVariant = (index: number, field: keyof Variant, value: unknown) => {
         const updated = [...variants];
-        (updated[index] as any)[field] = value;
+        (updated[index] as Variant)[field] = value as never;
         setVariants(updated);
     };
 

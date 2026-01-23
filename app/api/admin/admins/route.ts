@@ -56,6 +56,7 @@ export async function POST(request: Request) {
             }
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { passwordHash: _, ...adminWithoutPassword } = newAdmin;
         return NextResponse.json(adminWithoutPassword);
     } catch (error) {
@@ -78,6 +79,7 @@ export async function PUT(request: Request) {
                 ...rest
             }
         });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { passwordHash: _, ...adminWithoutPassword } = updated;
         return NextResponse.json(adminWithoutPassword);
     } catch {

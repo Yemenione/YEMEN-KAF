@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from 'next/link';
-import { User, ChevronLeft, ChevronRight, Search, Users, Filter, Download, Mail, Phone, Calendar, ShieldCheck } from 'lucide-react';
+import { User, ChevronLeft, ChevronRight, Search, Users, Download, ShieldCheck } from 'lucide-react';
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { hasPermission, Permission, AdminRole, canAccessModule } from "@/lib/rbac";
 import { toast } from "sonner";
-import { clsx } from "clsx";
+
 
 interface Customer {
     id: number;
@@ -35,6 +35,7 @@ export default function AdminCustomersPage() {
 
     useEffect(() => {
         fetchCustomers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, searchTerm]);
 
     const fetchCustomers = async () => {

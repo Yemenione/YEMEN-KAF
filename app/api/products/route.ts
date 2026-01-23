@@ -207,6 +207,7 @@ export async function POST(req: Request) {
                     relatedIds: related_ids || "[]",
                     hsCode: hs_code,
                     originCountry: origin_country || "Yemen",
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     translations: (translations || Prisma.JsonNull) as any,
                     carriers: body.carriers && Array.isArray(body.carriers) ? {
                         connect: body.carriers.map((id: number) => ({ id: parseInt(id.toString()) }))
