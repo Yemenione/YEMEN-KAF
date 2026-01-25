@@ -79,6 +79,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({
             success: true,
+            token, // Return token for mobile apps
             user: {
                 id: user.id,
                 email: user.email,
