@@ -2,41 +2,41 @@ import nodemailer from 'nodemailer';
 
 // Create a reusable transporter object using the default SMTP transport
 const createTransporter = async () => {
-    // Generate test SMTP service account from ethereal.email
-    const testAccount = await nodemailer.createTestAccount();
+  // Generate test SMTP service account from ethereal.email
+  const testAccount = await nodemailer.createTestAccount();
 
-    const transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: {
-            user: testAccount.user,
-            pass: testAccount.pass,
-        },
-    });
+  const transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
 
-    return transporter;
+  return transporter;
 };
 
 // Define interface for the data passed from route.ts
 interface OrderEmailData {
-    orderNumber: string;
-    customerName: string;
-    customerEmail: string;
-    items: Array<{ title: string; quantity: number; price: number }>;
-    subtotal: number;
-    shipping: number;
-    total: number;
-    shippingAddress: string;
-    paymentMethod: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{ title: string; quantity: number; price: number }>;
+  subtotal: number;
+  shipping: number;
+  total: number;
+  shippingAddress: string;
+  paymentMethod: string;
 }
 
 export const sendOrderConfirmationEmail = async (data: OrderEmailData) => {
-    try {
-        const transporter = await createTransporter();
+  try {
+    const transporter = await createTransporter();
 
-        // Construct HTML Items Table
-        const itemsHtml = data.items.map(item => `
+    // Construct HTML Items Table
+    const itemsHtml = data.items.map(item => `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.title}</td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${item.quantity}</td>
@@ -44,7 +44,7 @@ export const sendOrderConfirmationEmail = async (data: OrderEmailData) => {
       </tr>
     `).join('');
 
-        const htmlContent = `
+    const htmlContent = `
       <div style="font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
         <div style="background-color: #1a1a1a; padding: 20px; text-align: center;">
           <h1 style="color: #D4AF37; margin: 0; font-size: 24px;">YEMEN KAF</h1>
@@ -95,19 +95,39 @@ export const sendOrderConfirmationEmail = async (data: OrderEmailData) => {
       </div>
     `;
 
-        const info = await transporter.sendMail({
-            from: '"Yemen Kaf Support" <support@yemenkaf.com>',
-            to: data.customerEmail,
-            subject: `Order Confirmation #${data.orderNumber}`,
-            text: `Your order #${data.orderNumber} is confirmed. Total: ${data.total} €`,
-            html: htmlContent,
-        });
+    const info = await transporter.sendMail({
+      from: '"Yemen Kaf Support" <support@yemenkaf.com>',
+      to: data.customerEmail,
+      subject: `Order Confirmation #${data.orderNumber}`,
+      text: `Your order #${data.orderNumber} is confirmed. Total: ${data.total} €`,
+      html: htmlContent,
+    });
 
-        console.log("Message sent: %s", info.messageId);
-        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-        return info;
-    } catch (error) {
-        console.error("Error sending email:", error);
-        return null;
-    }
+    console.log("Message sent: %s", info.messageId);
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    return info;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return null;
+  }
+};
+
+export const sendEmail = async (data: { to: string; subject: string; html: string; text?: string }) => {
+  try {
+    const transporter = await createTransporter();
+
+    const info = await transporter.sendMail({
+      from: '"Yemen Kaf Support" <support@yemenkaf.com>',
+      to: data.to,
+      subject: data.subject,
+      text: data.text || 'Yemen Kaf Test Email',
+      html: data.html,
+    });
+
+    console.log("Message sent: %s", info.messageId);
+    return info;
+  } catch (error) {
+    console.error("Error sending generic email:", error);
+    throw error;
+  }
 };
