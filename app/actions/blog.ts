@@ -17,6 +17,7 @@ interface BlogPost extends RowDataPacket {
     author: string;
     category: string;
     translations: unknown;
+    views: number;
 }
 
 export const getBlogPosts = unstable_cache(
@@ -189,6 +190,7 @@ function mapPost(row: BlogPost) {
         author: row.author,
         status: row.status,
         translations: row.translations,
+        views: row.views || 0,
         publishedAt: row.published_at,
         createdAt: row.created_at,
         updatedAt: row.updated_at
