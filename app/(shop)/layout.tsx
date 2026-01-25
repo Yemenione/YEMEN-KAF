@@ -13,6 +13,7 @@ import Navbar from "@/components/layout/Navbar";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import NewsletterPopup from "@/components/NewsletterPopup";
 import ScrollToTop from "@/components/ScrollToTop";
+import { AddressProvider } from "@/context/AddressContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import "../globals.css";
 
@@ -34,8 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-    title: settings['site_name'] || "Yemeni Market - Authentic Goods",
-    description: settings['site_description'] || "Premium Yemeni products including Sidr Honey and Coffee.",
+    title: settings['site_name'] || "Yemen Kaf - Luxury Yemeni Gourmet",
+    description: settings['site_description'] || "Authentic Yemeni products: Premium Sidr Honey, Organic Coffee, and Traditional Spices.",
     icons: {
       icon: settings['logo_url'] || '/icon.png'
     }
@@ -54,19 +55,21 @@ export default function ShopLayout({
           <LanguageProvider>
             <ToastProvider>
               <AuthProvider>
-                <CartProvider>
-                  <WishlistProvider>
-                    <Navbar />
-                    {children}
-                    <Footer />
-                    <CartDrawer />
-                    <WishlistDrawer />
-                    <MobileBottomNav />
-                    <ScrollToTop />
-                    <CookieBanner />
-                    <NewsletterPopup />
-                  </WishlistProvider>
-                </CartProvider>
+                <AddressProvider>
+                  <CartProvider>
+                    <WishlistProvider>
+                      <Navbar />
+                      {children}
+                      <Footer />
+                      <CartDrawer />
+                      <WishlistDrawer />
+                      <MobileBottomNav />
+                      <ScrollToTop />
+                      <CookieBanner />
+                      <NewsletterPopup />
+                    </WishlistProvider>
+                  </CartProvider>
+                </AddressProvider>
               </AuthProvider>
             </ToastProvider>
           </LanguageProvider>

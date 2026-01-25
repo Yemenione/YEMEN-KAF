@@ -67,26 +67,42 @@ export async function POST(req: Request) {
         const { payload } = await jwtVerify(token, JWT_SECRET);
         const userId = payload.userId as number;
 
-        const { productId, quantity } = await req.json();
+        const body = await req.json();
+
+        // Check if it's a batch sync (array of items)
+        if (body.items && Array.isArray(body.items)) {
+            // Simple approach: Clear and re-populate, or merge
+            // For robustness, let's clear current cart and replace with synced one
+            // (Standard behavior for many e-commerce syncs)
+            await pool.execute('DELETE FROM cart_items WHERE customer_id = ?', [userId]);
+
+            for (const item of body.items) {
+                await pool.execute(
+                    'INSERT INTO cart_items (customer_id, product_id, quantity) VALUES (?, ?, ?)',
+                    [userId, item.id || item.productId, item.quantity]
+                );
+            }
+            return NextResponse.json({ success: true, message: 'Cart synced' });
+        }
+
+        // Single item addition logic (existing)
+        const { productId, quantity } = body;
 
         if (!productId || !quantity) {
             return NextResponse.json({ error: 'Product ID and quantity required' }, { status: 400 });
         }
 
-        // Check if item already in cart
         const [existing] = await pool.execute<ExistingItemRow[]>(
             'SELECT id, quantity FROM cart_items WHERE customer_id = ? AND product_id = ?',
             [userId, productId]
         );
 
         if (existing.length > 0) {
-            // Update quantity
             await pool.execute<ResultSetHeader>(
                 'UPDATE cart_items SET quantity = quantity + ? WHERE id = ?',
                 [quantity, existing[0].id]
             );
         } else {
-            // Add new item
             await pool.execute<ResultSetHeader>(
                 'INSERT INTO cart_items (customer_id, product_id, quantity) VALUES (?, ?, ?)',
                 [userId, productId, quantity]

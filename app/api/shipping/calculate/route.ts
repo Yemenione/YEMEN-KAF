@@ -1,45 +1,24 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/mysql';
-import { calculateShipping, calculateTotalWeight } from '@/lib/shipping/colissimo';
-import { RowDataPacket } from 'mysql2';
-
-interface ShippingProductRow extends RowDataPacket {
-    id: number;
-    weight: string;
-    width: string;
-    height: string;
-    depth: string;
-}
-
-interface ShippingItem {
-    id: number;
-    quantity: number;
-}
-
-interface DimensionAccumulator {
-    width: number;
-    height: number;
-    depth: number;
-}
+import { prisma } from '@/lib/prisma';
+import { calculateTotalWeight } from '@/lib/shipping/colissimo';
 
 /**
  * POST /api/shipping/calculate
  * 
- * Calculate shipping rates for cart items using Colissimo API
- * 
- * Request body:
- * {
- *   items: [{ id: number, quantity: number }],  // Product IDs and quantities
- *   destination: { country: string, postalCode: string, city?: string, address?: string, name?: string }
- * }
+ * Calculate shipping rates based on Database Rules (Prisma)
+ * with DB-first approach, falling back to static logic only if needed.
  */
 export async function POST(req: Request) {
     try {
         const body = await req.json();
         const { items, destination, country } = body;
 
-        // Support both old format (country only) and new format (full destination)
-        const dest = destination || { country: country || 'FR', postalCode: '75001', city: 'Paris', address: '', name: 'Customer' };
+        // Normalize destination
+        const dest = destination || {
+            country: country || 'FR',
+            postalCode: '75001',
+            city: 'Paris'
+        };
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return NextResponse.json({ rates: [] });
@@ -49,76 +28,105 @@ export async function POST(req: Request) {
             return NextResponse.json({ rates: [] });
         }
 
-        // Fetch product details (weight, dimensions) from database
-        const productIds = items.map((item: ShippingItem) => item.id);
-        const placeholders = productIds.map(() => '?').join(',');
+        // 1. Fetch Product Weights using Prisma
+        const productIds = items.map((item: any) => item.id);
+        const products = await prisma.product.findMany({
+            where: { id: { in: productIds } },
+            select: {
+                id: true,
+                weight: true,
+                width: true,
+                height: true,
+                depth: true
+            }
+        });
 
-        const [products] = await pool.execute<ShippingProductRow[]>(
-            `SELECT id, weight, width, height, depth FROM products WHERE id IN(${placeholders})`,
-            productIds
-        );
-
-        // Build items with weight data
-        const itemsWithWeight = items.map((item: ShippingItem) => {
+        // 2. Calculate Total Weight
+        const itemsWithWeight = items.map((item: any) => {
             const product = products.find((p) => p.id === item.id);
             return {
-                weight: product?.weight ? parseFloat(product.weight) : 0.5,
+                weight: product?.weight ? Number(product.weight) : 0.5,
                 quantity: item.quantity
             };
         });
 
-        // Calculate total weight
-        const totalWeight = calculateTotalWeight(itemsWithWeight);
+        const totalWeight = calculateTotalWeight(itemsWithWeight); // in kg
+        const weightInGrams = Math.ceil(totalWeight * 1000); // DB usually stores in grams or checks ranges
 
-        // Get largest dimensions (for multi-item shipments, use largest product dimensions)
-        const maxDimensions = products.reduce<DimensionAccumulator>((max, product) => {
-            const width = parseFloat(product.width) || 10;
-            const height = parseFloat(product.height) || 10;
-            const depth = parseFloat(product.depth) || 10;
+        // 3. Find Matching Shipping Zone
+        // Logic: Find a zone that includes the destination country
+        // The country list is stored as a stringified JSON array in DB (e.g. '["FR", "MC"]')
+        const zones = await prisma.shippingZone.findMany({
+            where: { isActive: true },
+            include: { rates: { include: { carrier: true } } }
+        });
 
-            return {
-                width: Math.max(max.width, width),
-                height: Math.max(max.height, height),
-                depth: Math.max(max.depth, depth)
-            };
-        }, { width: 10, height: 10, depth: 10 });
-
-        // Calculate shipping rates using Colissimo
-        const rates = await calculateShipping({
-            weight: totalWeight,
-            dimensions: maxDimensions,
-            destination: {
-                country: dest.country,
-                postalCode: dest.postalCode || '75001',
-                city: dest.city || '',
-                address: dest.address || '',
-                name: dest.name || 'Customer'
+        const matchedZone = zones.find(z => {
+            try {
+                const countries = JSON.parse(z.countries);
+                return countries.includes(dest.country);
+            } catch (e) {
+                return false;
             }
         });
+
+        const rates = [];
+
+        if (matchedZone) {
+            // 4. Find Rates for this Zone and Weight
+            // We need to query rates for this zone where weight is within range
+            const applicableRates = await prisma.shippingRate.findMany({
+                where: {
+                    zoneId: matchedZone.id,
+                    minWeight: { lte: weightInGrams },
+                    maxWeight: { gte: weightInGrams },
+                    carrier: { isActive: true }
+                },
+                include: { carrier: true }
+            });
+
+            // Map DB rates to API response format
+            rates.push(...applicableRates.map(rate => ({
+                cost: Number(rate.price),
+                deliveryDays: rate.carrier.code === 'colissimo' ? 2 : 4, // Estimate based on carrier
+                serviceCode: rate.carrier.code || 'STANDARD',
+                serviceName: rate.carrier.name,
+                carrierId: rate.carrier.id
+            })));
+        }
+
+        // 5. Fallback for France if no DB rates found (Safety Net)
+        if (rates.length === 0 && dest.country === 'FR') {
+            // Hardcoded fallback solely to prevent checkout blocking
+            let cost = 4.95;
+            if (totalWeight > 0.25) cost = 5.95;
+            if (totalWeight > 0.5) cost = 7.35;
+            if (totalWeight > 1) cost = 8.55;
+            if (totalWeight > 2) cost = 12.55;
+
+            rates.push({
+                cost: cost,
+                deliveryDays: 2,
+                serviceCode: 'DOM',
+                serviceName: 'Colissimo Domicile (Standard)'
+            });
+        }
 
         return NextResponse.json({
             success: true,
             rates,
             totalWeight,
-            dimensions: maxDimensions
+            zoneFound: matchedZone?.name
         });
 
     } catch (error: unknown) {
         console.error('Shipping calculation error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown shipping error';
 
-        // Fallback to static rate if Colissimo fails
         return NextResponse.json({
-            success: true,
-            rates: [{
-                cost: 5.00,
-                deliveryDays: 3,
-                serviceCode: 'STANDARD',
-                serviceName: 'Standard Shipping (Estimated)'
-            }],
-            fallback: true,
-            totalWeight: 0.5,
+            success: false,
+            rates: [],
             error: errorMessage
-        });
+        }, { status: 500 });
     }
 }

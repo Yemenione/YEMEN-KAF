@@ -64,7 +64,8 @@ export async function POST(req: Request) {
                 id: userId,
                 email: email,
                 firstName,
-                lastName
+                lastName,
+                loyaltyPoints: 0
             }
         });
 

@@ -272,12 +272,12 @@ export default function AdminDashboard() {
                     <div className="bg-zinc-900 text-white p-8 rounded-[2.5rem] border border-zinc-800 shadow-2xl relative overflow-hidden group">
                         <div className="relative z-10">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-bold text-white">{t('admin.dashboard.support.title')}</h3>
+                                <h3 className="text-lg font-bold text-white">{t('admin.support.title')}</h3>
                                 <Ticket className="w-5 h-5 text-[var(--honey-gold)] opacity-50" />
                             </div>
                             <div className="space-y-4">
                                 {data.recentTickets?.length === 0 ? (
-                                    <p className="text-xs text-zinc-500 font-medium">{t('admin.dashboard.support.queueClear')}</p>
+                                    <p className="text-xs text-zinc-500 font-medium">{t('admin.support.queueClear')}</p>
                                 ) : (
                                     data.recentTickets?.map((ticket) => (
                                         <div key={ticket.id} className="bg-zinc-800/50 p-4 rounded-2xl border border-zinc-700/50 hover:bg-zinc-800 transition-colors">
@@ -295,7 +295,7 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                             <button className="w-full mt-6 py-3 bg-[var(--coffee-brown)] hover:bg-[var(--coffee-light)] text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all">
-                                {t('admin.dashboard.support.goToHelpDesk')}
+                                {t('admin.support.goToHelpDesk')}
                             </button>
                         </div>
                         {/* Decorative circles */}

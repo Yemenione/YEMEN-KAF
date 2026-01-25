@@ -51,6 +51,13 @@ export async function GET(
         // The existing frontend expects "product.category_name". Prisma returns "product.category.name".
         // I need to shim this.
 
+        // Fetch review aggregations
+        const aggregations = await prisma.review.aggregate({
+            where: { productId: product.id, isActive: true },
+            _avg: { rating: true },
+            _count: { rating: true }
+        });
+
         const responseProduct = {
             ...product,
             price: product.price.toNumber(), // Decimal to Number
@@ -59,7 +66,8 @@ export async function GET(
             category_slug: product.category?.slug,
             image_url: product.images ? JSON.parse(product.images)[0] : null, // Helper
             carriers: product.carriers,
-            // Flatten variants for easier usage
+            average_rating: aggregations._avg.rating || 0,
+            rating_count: aggregations._count.rating || 0,
             // Flatten variants for easier usage
             variants: product.variants.map((v) => ({
                 ...v,

@@ -57,7 +57,9 @@ export async function POST(req: NextRequest) {
                 'homepage_special_offers_ids', 'homepage_best_sellers_ids',
                 'ramadan_mode_enabled', 'ramadan_title', 'ramadan_subtitle', 'ramadan_product_ids',
                 'menu_main', 'menu_footer_links',
-                'marquee_text_en', 'marquee_text_fr', 'marquee_text_ar', 'marquee_enabled'
+                'marquee_text_en', 'marquee_text_fr', 'marquee_text_ar', 'marquee_enabled',
+                'support_faq_json', 'live_chat_url', 'terms_url', 'privacy_url', 'about_url',
+                'app_splash_url', 'app_banner_honey_url', 'app_banner_coffee_url'
             ].includes(key);
 
             return prisma.storeConfig.upsert({

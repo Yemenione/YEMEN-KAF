@@ -27,13 +27,16 @@ import {
     Newspaper,
     Key,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Smartphone
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useUI } from '@/context/UIContext';
 import { canAccessModule, AdminRole } from '@/lib/rbac';
+import { useSettings } from '@/context/SettingsContext';
+import Image from 'next/image';
 
 export default function AdminSidebar() {
     const pathname = usePathname();
@@ -41,6 +44,7 @@ export default function AdminSidebar() {
     const { t, locale } = useLanguage();
     const role = (user?.role || 'EDITOR') as AdminRole;
     const { isSidebarOpen, isSidebarCollapsed, closeSidebar, toggleSidebarCollapse } = useUI();
+    const { settings } = useSettings();
 
     const groups = [
         {
@@ -81,6 +85,7 @@ export default function AdminSidebar() {
                 { name: t('admin.sidebar.items.blog'), href: '/admin-portal/cms/blog', icon: Newspaper },
                 { name: t('admin.sidebar.items.coupons'), href: '/admin-portal/marketing/coupons', icon: TicketPercent },
                 { name: 'Newsletter', href: '/admin-portal/marketing/newsletter', icon: Users },
+                { name: 'App Mobile', href: '/admin-portal/mobile-app', icon: Smartphone },
             ]
         },
         {
@@ -129,8 +134,20 @@ export default function AdminSidebar() {
                 {/* Logo Area */}
                 <div className="h-16 flex items-center px-6 border-b border-white/5 shrink-0 justify-between">
                     <Link href="/admin-portal/dashboard" className="flex items-center gap-3 group overflow-hidden">
-                        <div className="w-9 h-9 min-w-[36px] rounded-xl bg-gradient-to-br from-[var(--honey-gold)] to-amber-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-amber-600/20 group-hover:scale-105 transition-transform duration-300">
-                            Y
+                        <div className="w-9 h-9 min-w-[36px] rounded-xl bg-zinc-800 flex items-center justify-center overflow-hidden shadow-lg group-hover:scale-105 transition-transform duration-300">
+                            {settings.logo_url ? (
+                                <Image
+                                    src={settings.logo_url}
+                                    alt="Logo"
+                                    width={36}
+                                    height={36}
+                                    className="object-contain p-1"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-[var(--honey-gold)] to-amber-600 flex items-center justify-center text-white font-black">
+                                    Y
+                                </div>
+                            )}
                         </div>
                         {!isSidebarCollapsed && (
                             <motion.div

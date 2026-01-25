@@ -20,7 +20,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         if (path.includes('/categories') || path.includes('/products') || path.includes('/attributes') || path.includes('/brands')) return 'CATALOG';
         if (path.includes('/orders') || path.includes('/inventory')) return 'ORDERS';
         if (path.includes('/customers')) return 'CUSTOMERS';
-        if (path.includes('/cms') || path.includes('/design')) return 'CMS';
+        if (path.includes('/cms') || path.includes('/design') || path.includes('/mobile-app')) return 'CMS';
         if (path.includes('/marketing')) return 'MARKETING';
         if (path.includes('/support')) return 'SUPPORT';
         if (path.includes('/settings') || path.includes('/translations')) return 'SETTINGS';

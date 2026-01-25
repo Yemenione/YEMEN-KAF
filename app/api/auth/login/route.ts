@@ -86,7 +86,8 @@ export async function POST(req: Request) {
                 firstName: isAdmin ? (user.name?.split(' ')[0] || 'Admin') : user.first_name,
                 lastName: isAdmin ? (user.name?.split(' ').slice(1).join(' ') || 'User') : user.last_name,
                 isAdmin,
-                role: isAdmin ? (user.role || 'ADMIN') : 'CUSTOMER'
+                role: isAdmin ? (user.role || 'ADMIN') : 'CUSTOMER',
+                loyalty_points: isAdmin ? 0 : (user.loyalty_points || 0)
             }
         });
 

@@ -1,59 +1,29 @@
 import nodemailer from 'nodemailer';
-import pool from './mysql';
-import { RowDataPacket } from 'mysql2';
 
-interface StoreConfigRow extends RowDataPacket {
-    key: string;
-    value: string;
-}
+// Create a reusable transporter object using the default SMTP transport
+const createTransporter = async () => {
+    // Generate test SMTP service account from ethereal.email
+    const testAccount = await nodemailer.createTestAccount();
 
-interface EmailOptions {
-    to: string;
-    subject: string;
-    html: string;
-}
-
-export async function sendEmail({ to, subject, html }: EmailOptions) {
-    // 1. Fetch SMTP Config from DB
-    const [rows] = await pool.execute<StoreConfigRow[]>(
-        "SELECT `key`, `value` FROM store_config WHERE `key` LIKE 'smtp_%'"
-    );
-
-    const config: Record<string, string> = {};
-    rows.forEach((row) => { config[row.key] = row.value; });
-
-    if (!config.smtp_host || !config.smtp_user) {
-        throw new Error("SMTP settings not configured.");
-    }
-
-    // 2. Create Transporter
     const transporter = nodemailer.createTransport({
-        host: config.smtp_host,
-        port: parseInt(config.smtp_port || '587'),
-        secure: config.smtp_port === '465', // true for 465, false for 587
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false,
         auth: {
-            user: config.smtp_user,
-            pass: config.smtp_password,
+            user: testAccount.user,
+            pass: testAccount.pass,
         },
     });
 
-    // 3. Send Email
-    const info = await transporter.sendMail({
-        from: `"${config.smtp_from_name || 'Yem Kaf'}" <${config.smtp_from_email || config.smtp_user}>`,
-        to,
-        subject,
-        html,
-    });
+    return transporter;
+};
 
-    return info;
-}
-
-// 4. Send Order Confirmation
-interface OrderConfirmationDetails {
+// Define interface for the data passed from route.ts
+interface OrderEmailData {
     orderNumber: string;
     customerName: string;
     customerEmail: string;
-    items: { title: string; quantity: number; price: number }[];
+    items: Array<{ title: string; quantity: number; price: number }>;
     subtotal: number;
     shipping: number;
     total: number;
@@ -61,147 +31,83 @@ interface OrderConfirmationDetails {
     paymentMethod: string;
 }
 
-export async function sendOrderConfirmationEmail(details: OrderConfirmationDetails) {
-    const html = `
-    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
-        <div style="background-color: #0f1115; padding: 20px; text-align: center;">
-            <h1 style="color: #cfb160; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px;">Order Confirmation</h1>
+export const sendOrderConfirmationEmail = async (data: OrderEmailData) => {
+    try {
+        const transporter = await createTransporter();
+
+        // Construct HTML Items Table
+        const itemsHtml = data.items.map(item => `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.title}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${item.quantity}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">${item.price.toFixed(2)} €</td>
+      </tr>
+    `).join('');
+
+        const htmlContent = `
+      <div style="font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
+        <div style="background-color: #1a1a1a; padding: 20px; text-align: center;">
+          <h1 style="color: #D4AF37; margin: 0; font-size: 24px;">YEMEN KAF</h1>
+          <p style="color: #888; margin: 5px 0 0; font-size: 12px;">LUXURY YEMENI PRODUCTS</p>
         </div>
         
-        <div style="padding: 30px; border: 1px solid #eee; border-top: none;">
-            <p>Dear <strong>${details.customerName}</strong>,</p>
-            <p>Thank you for shopping with YEM KAF. Your order has been received and is being processed.</p>
-            
-            <div style="background-color: #f9f9f9; padding: 15px; margin: 25px 0; border-radius: 5px;">
-                <p style="margin: 0 0 5px;"><strong>Order Number:</strong> ${details.orderNumber}</p>
-                <p style="margin: 0 0 5px;"><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-                <p style="margin: 0;"><strong>Payment Method:</strong> ${details.paymentMethod}</p>
-            </div>
+        <div style="padding: 20px;">
+          <h2 style="color: #1a1a1a; margin-top: 0;">Order Confirmed</h2>
+          <p>Dear ${data.customerName},</p>
+          <p>Thank you for choosing Yemen Kaf. Your order <strong>#${data.orderNumber}</strong> has been received.</p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+              <tr style="background-color: #f9f9f9;">
+                <th style="padding: 8px; text-align: left;">Item</th>
+                <th style="padding: 8px; text-align: center;">Qty</th>
+                <th style="padding: 8px; text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2" style="padding: 8px; text-align: right;">Subtotal:</td>
+                <td style="padding: 8px; text-align: right;">${data.subtotal.toFixed(2)} €</td>
+              </tr>
+               <tr>
+                <td colspan="2" style="padding: 8px; text-align: right;">Shipping:</td>
+                <td style="padding: 8px; text-align: right;">${data.shipping.toFixed(2)} €</td>
+              </tr>
+              <tr style="font-weight: bold; font-size: 16px;">
+                <td colspan="2" style="padding: 8px; text-align: right;">Total:</td>
+                <td style="padding: 8px; text-align: right; color: #D4AF37;">${data.total.toFixed(2)} €</td>
+              </tr>
+            </tfoot>
+          </table>
 
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
-                <thead>
-                    <tr style="border-bottom: 2px solid #eee;">
-                        <th style="text-align: left; padding: 10px 0; color: #666; font-size: 12px; text-transform: uppercase;">Product</th>
-                        <th style="text-align: center; padding: 10px 0; color: #666; font-size: 12px; text-transform: uppercase;">Qty</th>
-                        <th style="text-align: right; padding: 10px 0; color: #666; font-size: 12px; text-transform: uppercase;">Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${details.items.map(item => `
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 15px 0;">${item.title}</td>
-                            <td style="text-align: center; padding: 15px 0;">${item.quantity}</td>
-                            <td style="text-align: right; padding: 15px 0;">${item.price.toFixed(2)}€</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2" style="padding: 10px 0; text-align: right; color: #666;">Subtotal</td>
-                        <td style="padding: 10px 0; text-align: right;">${details.subtotal.toFixed(2)}€</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="padding: 10px 0; text-align: right; color: #666;">Shipping</td>
-                        <td style="padding: 10px 0; text-align: right;">${details.shipping.toFixed(2)}€</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="padding: 15px 0; text-align: right; font-weight: bold; font-size: 18px; border-top: 2px solid #cfb160;">Total</td>
-                        <td style="padding: 15px 0; text-align: right; font-weight: bold; font-size: 18px; border-top: 2px solid #cfb160;">${details.total.toFixed(2)}€</td>
-                    </tr>
-                </tfoot>
-            </table>
-
-            <div style="margin-top: 30px;">
-                <h3 style="font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">Shipping Address</h3>
-                <p style="white-space: pre-line; color: #555;">${details.shippingAddress}</p>
-            </div>
-
-            <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px;">
-                <p>If you have any questions, reply to this email or contact us at support@yemenimarket.com</p>
-                <p>&copy; ${new Date().getFullYear()} YEM KAF. All rights reserved.</p>
-            </div>
+          <div style="margin-top: 30px; background-color: #f9f9f9; padding: 15px; border-radius: 4px;">
+            <p style="margin: 0; font-weight: bold;">Shipping Address:</p>
+            <p style="margin: 5px 0 0; white-space: pre-line;">${data.shippingAddress}</p>
+          </div>
         </div>
-    </div>
+
+        <div style="background-color: #f4f4f4; padding: 15px; text-align: center; font-size: 12px; color: #888;">
+          <p>&copy; ${new Date().getFullYear()} Yemen Kaf. All rights reserved.</p>
+        </div>
+      </div>
     `;
 
-    return sendEmail({
-        to: details.customerEmail,
-        subject: `Order Confirmation #${details.orderNumber}`,
-        html
-    });
-}
-
-// 5. Send Contact Form Email
-interface ContactEmailDetails {
-    name: string;
-    email: string;
-    phone?: string;
-    subject: string;
-    message: string;
-}
-
-export async function sendContactEmail(details: ContactEmailDetails) {
-    const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <h2 style="color: #cfb160;">New Contact Message</h2>
-        <div style="background: #f9f9f9; padding: 20px; border-radius: 5px;">
-            <p><strong>Name:</strong> ${details.name}</p>
-            <p><strong>Email:</strong> ${details.email}</p>
-            ${details.phone ? `<p><strong>Phone:</strong> ${details.phone}</p>` : ''}
-            <p><strong>Subject:</strong> ${details.subject}</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="white-space: pre-wrap;">${details.message}</p>
-        </div>
-    </div>
-    `;
-
-    try {
-        // Send to admin
-        await sendEmail({
-            to: process.env.ADMIN_EMAIL || 'support@yemenimarket.com', // Fallback or env var
-            subject: `[Contact Form] ${details.subject}`,
-            html
+        const info = await transporter.sendMail({
+            from: '"Yemen Kaf Support" <support@yemenkaf.com>',
+            to: data.customerEmail,
+            subject: `Order Confirmation #${data.orderNumber}`,
+            text: `Your order #${data.orderNumber} is confirmed. Total: ${data.total} €`,
+            html: htmlContent,
         });
 
-        return { success: true };
+        console.log("Message sent: %s", info.messageId);
+        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+        return info;
     } catch (error) {
-        console.error("Failed to send contact email:", error);
-        return { success: false, error };
+        console.error("Error sending email:", error);
+        return null;
     }
-}
-
-// 6. Send Welcome Email (Newsletter)
-export async function sendWelcomeEmail(to: string) {
-    const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-        <div style="background-color: #0f1115; padding: 20px; text-align: center;">
-            <h1 style="color: #cfb160; margin: 0; font-size: 24px; text-transform: uppercase;">Welcome to YEM KAF</h1>
-        </div>
-        <div style="padding: 30px; border: 1px solid #eee; border-top: none;">
-            <p>Thank you for subscribing to our newsletter!</p>
-            <p>You will now receive updates on our latest products, exclusive offers, and the finest selection from Yemen.</p>
-            
-            <div style="margin: 30px 0; text-align: center;">
-                <a href="https://yemenimarket.com/shop" style="background-color: #cfb160; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Start Shopping</a>
-            </div>
-
-            <p style="font-size: 12px; color: #999; margin-top: 30px; text-align: center;">
-                If you did not sign up for this newsletter, you can ignore this email.
-            </p>
-        </div>
-    </div>
-    `;
-
-    try {
-        await sendEmail({
-            to,
-            subject: 'Welcome to YEM KAF',
-            html
-        });
-        return { success: true };
-    } catch (error) {
-        console.error("Failed to send welcome email:", error);
-        return { success: false, error };
-    }
-}
-
+};

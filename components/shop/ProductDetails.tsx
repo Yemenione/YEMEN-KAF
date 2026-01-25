@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft, ChevronDown, Clock, Flame, Share2, Facebook, Copy, MapPin, Camera, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import BestSellers from "./BestSellers";
@@ -86,7 +87,10 @@ function Accordion({ title, children, defaultOpen = false }: { title: string, ch
 
 export default function ProductDetails({ product, carriers = [] }: { product: Product, carriers?: Carrier[] }) {
     const { addToCart } = useCart();
+    const { isInWishlist, toggleWishlist } = useWishlist();
     const { t, language, getLocalizedValue } = useLanguage();
+
+    const isWishlisted = isInWishlist(product.id);
 
     // Localized Strings
     const localizedName = getLocalizedValue(product, 'name');
@@ -357,8 +361,11 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                     <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-black">
                         {t('product.details') || "DÉTAILS DU PRODUIT"}
                     </span>
-                    <button className="p-2 -mr-2 text-black">
-                        <Heart size={20} />
+                    <button
+                        onClick={() => toggleWishlist(product.id)}
+                        className="p-2 -mr-2 text-black"
+                    >
+                        <Heart size={20} className={isWishlisted ? "fill-black" : ""} />
                     </button>
                 </div>
 
@@ -664,8 +671,11 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             >
                                 <ShoppingBag className="w-4 h-4" /> {canAddToCart ? (t('product.addToBag') || 'Ajouter au Panier') : (t('product.outOfStock') || 'RUPTURE DE STOCK')}
                             </button>
-                            <button className="hidden lg:block p-5 border border-gray-100 rounded-full hover:border-black transition-all bg-white shadow-sm group">
-                                <Heart className="w-5 h-5 text-gray-300 group-hover:text-red-500 transition-colors" />
+                            <button
+                                onClick={() => toggleWishlist(product.id)}
+                                className="hidden lg:block p-5 border border-gray-100 rounded-full hover:border-black transition-all bg-white shadow-sm group"
+                            >
+                                <Heart className={`w-5 h-5 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-300 group-hover:text-red-500"}`} />
                             </button>
                         </div>
 

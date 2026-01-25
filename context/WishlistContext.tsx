@@ -27,22 +27,53 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     const closeWishlist = () => setIsOpen(false);
 
     useEffect(() => {
-        if (isAuthenticated) {
-            fetchWishlistIds();
-        } else {
-            // Load from local storage
-            const stored = localStorage.getItem('guest_wishlist');
-            if (stored) {
-                try {
-                    setWishlistIds(JSON.parse(stored));
-                } catch (e) {
-                    console.error("Failed to parse guest wishlist", e);
-                    setWishlistIds([]);
+        const syncWishlist = async () => {
+            if (isAuthenticated) {
+                // 1. Fetch server wishlist
+                await fetchWishlistIds();
+
+                // 2. Merge guest wishlist into server
+                const storedGuest = localStorage.getItem('guest_wishlist');
+                if (storedGuest) {
+                    try {
+                        const guestIds: number[] = JSON.parse(storedGuest);
+                        // Filter for items not already in server wishlist
+                        const toAdd = guestIds.filter(id => !wishlistIds.includes(id));
+
+                        for (const productId of toAdd) {
+                            await fetch('/api/wishlist', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ productId })
+                            });
+                        }
+
+                        if (toAdd.length > 0) {
+                            fetchWishlistIds(); // Refresh again
+                        }
+
+                        // Clear guest wishlist after sync
+                        localStorage.removeItem('guest_wishlist');
+                    } catch (e) {
+                        console.error("Failed to merge guest wishlist", e);
+                    }
                 }
             } else {
-                setWishlistIds([]);
+                // Load from local storage for guests
+                const stored = localStorage.getItem('guest_wishlist');
+                if (stored) {
+                    try {
+                        setWishlistIds(JSON.parse(stored));
+                    } catch (e) {
+                        setWishlistIds([]);
+                    }
+                } else {
+                    setWishlistIds([]);
+                }
             }
-        }
+        };
+
+        syncWishlist();
     }, [isAuthenticated]);
 
     const fetchWishlistIds = async () => {

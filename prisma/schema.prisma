@@ -47,6 +47,8 @@ model Customer {
   passwordHash    String?        @map("password_hash")
   phone           String?
   avatar          String?
+  loyaltyPoints   Int            @default(0) @map("loyalty_points")
+  newsletter      Boolean        @default(true)
   firebaseUid     String?        @map("firebase_uid")
   createdAt       DateTime       @default(now()) @map("created_at")
   customerGroupId Int?           @map("customer_group_id")
@@ -684,4 +686,50 @@ enum BlogPostStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+model ChatSession {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status    String   @default("OPEN")
+  userId    String?  @map("user_id")
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  createdAt DateTime    @default(now())
+  text      String      @db.LongText
+  isUser    Boolean     @map("is_user")
+  sessionId String      @map("session_id")
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("chat_messages")
+}
+
+model AppConfig {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt @map("updated_at") @default(now())
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("app_configs")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  title     String
+  body      String   @db.Text
+  imageUrl  String?  @map("image_url")
+  target    String?  // Target link/screen
+  sentAt    DateTime @default(now()) @map("sent_at")
+  sentBy    Int?     @map("sent_by")
+
+  @@map("notifications")
 }

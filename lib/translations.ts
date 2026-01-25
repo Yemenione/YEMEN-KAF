@@ -851,6 +851,29 @@ export const translations = {
                 loading: "Loading inventory...",
                 noResults: "No products found."
             },
+            logs: {
+                title: "System Logs & Audits",
+                subtitle: "Detailed history of all administrative actions in the system.",
+                searchPlaceholder: "Search logs, admins...",
+                timestamp: "Timestamp",
+                admin: "Admin",
+                action: "Action",
+                entity: "Entity",
+                details: "Details",
+                ip: "IP Address",
+                actions: {
+                    create: "CREATE",
+                    update: "UPDATE",
+                    delete: "DELETE",
+                    login: "LOGIN",
+                    other: "ACTION"
+                },
+                empty: "No activity logs found matches your criteria.",
+                showing: "Showing {count} of {total} entries",
+                prev: "Previous",
+                next: "Next",
+                noDetails: "No details"
+            },
             settings: {
                 title: "Settings",
                 general: "General Settings",
@@ -1751,6 +1774,29 @@ export const translations = {
                 loading: "Chargement du stock...",
                 noResults: "Aucun produit trouvé."
             },
+            logs: {
+                title: "Journaux Système & Audits",
+                subtitle: "Historique détaillé de toutes les actions administratives dans le système.",
+                searchPlaceholder: "Rechercher logs, administrateurs...",
+                timestamp: "Horodatage",
+                admin: "Admin",
+                action: "Action",
+                entity: "Entité",
+                details: "Détails",
+                ip: "Adresse IP",
+                actions: {
+                    create: "CRÉATION",
+                    update: "MISE À JOUR",
+                    delete: "SUPPRESSION",
+                    login: "CONNEXION",
+                    other: "ACTION"
+                },
+                empty: "Aucun journal d'activité ne correspond à vos critères.",
+                showing: "Affichage de {count} sur {total} entrées",
+                prev: "Précédent",
+                next: "Suivant",
+                noDetails: "Pas de détails"
+            },
             settings: {
                 title: "Paramètres",
                 general: "Paramètres Généraux",
@@ -2650,6 +2696,29 @@ export const translations = {
                 },
                 loading: "جاري تحميل المخزون...",
                 noResults: "لم يتم العثور على منتجات."
+            },
+            logs: {
+                title: "سجلات النظام والتدقيق",
+                subtitle: "سجل مفصل لجميع الإجراءات الإدارية في النظام.",
+                searchPlaceholder: "البحث في السجلات، المشرفين...",
+                timestamp: "الطابع الزمني",
+                admin: "المشرف",
+                action: "الإجراء",
+                entity: "الكيان",
+                details: "التفاصيل",
+                ip: "عنوان IP",
+                actions: {
+                    create: "إنشاء",
+                    update: "تحديث",
+                    delete: "حذف",
+                    login: "تسجيل دخول",
+                    other: "إجراء"
+                },
+                empty: "لم يتم العثور على سجلات نشاط تطابق معاييرك.",
+                showing: "عرض {count} من أصل {total} مدخلات",
+                prev: "السابق",
+                next: "التالي",
+                noDetails: "لا توجد تفاصيل"
             },
             settings: {
                 title: "الإعدادات",

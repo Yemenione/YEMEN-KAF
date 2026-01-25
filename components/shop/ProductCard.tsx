@@ -3,6 +3,8 @@ import Image from "next/image";
 import { Plus, Heart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { useWishlist } from "@/context/WishlistContext";
+import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 
@@ -34,9 +36,12 @@ export default function ProductCard({
 }: ProductCardProps) {
     const { isAuthenticated } = useAuth();
     const { t, locale } = useLanguage();
+    const { isInWishlist, toggleWishlist } = useWishlist();
+    const { addToCart } = useCart();
     const router = useRouter();
-    const [isWishlisted, setIsWishlisted] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    const isWishlisted = id ? isInWishlist(id) : false;
 
     // Calculate Discount
     const numericPrice = parseFloat(price.replace(/[^\d.]/g, ''));
@@ -46,35 +51,37 @@ export default function ProductCard({
         ? Math.round(((numericComparePrice! - numericPrice) / numericComparePrice!) * 100)
         : null;
 
-    const toggleWishlist = async (e: React.MouseEvent) => {
+    const handleWishlistToggle = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-
-        if (!isAuthenticated) {
-            router.push('/login');
-            return;
-        }
 
         if (!id) return;
 
         setLoading(true);
         try {
-            if (isWishlisted) {
-                await fetch(`/api/wishlist?productId=${id}`, { method: 'DELETE' });
-                setIsWishlisted(false);
-            } else {
-                await fetch('/api/wishlist', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId: id })
-                });
-                setIsWishlisted(true);
-            }
+            await toggleWishlist(id);
         } catch (error) {
             console.error("Failed to toggle wishlist", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleQuickAdd = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (hasVariants || !id) {
+            router.push(`/shop/${id}`);
+            return;
+        }
+
+        addToCart({
+            id,
+            title,
+            price: numericPrice,
+            image,
+        });
     };
 
     if (layout === 'list') {
@@ -103,7 +110,7 @@ export default function ProductCard({
                                 {category}
                             </span>
                             <button
-                                onClick={toggleWishlist}
+                                onClick={handleWishlistToggle}
                                 className="text-gray-400 hover:text-red-500 transition-colors"
                             >
                                 <Heart size={18} className={isWishlisted ? "fill-red-500 text-red-500" : ""} />
@@ -145,7 +152,10 @@ export default function ProductCard({
                                 )}
                             </div>
                         </div>
-                        <button className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[var(--coffee-brown)] transition-all shadow-lg hover:shadow-black/20">
+                        <button
+                            onClick={handleQuickAdd}
+                            className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[var(--coffee-brown)] transition-all shadow-lg hover:shadow-black/20"
+                        >
                             <Plus size={16} /> {t('shop.addToCart')}
                         </button>
                     </div>
@@ -180,7 +190,7 @@ export default function ProductCard({
 
                 {/* Wishlist Button */}
                 <button
-                    onClick={toggleWishlist}
+                    onClick={handleWishlistToggle}
                     disabled={loading}
                     className="absolute top-2 end-2 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-all shadow-sm group/wish"
                 >
@@ -194,7 +204,10 @@ export default function ProductCard({
                 </button>
 
                 {/* 'Quick Add' Button */}
-                <button className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-8 h-8 md:w-10 md:h-10 bg-black text-white flex items-center justify-center rounded-full shadow-lg z-20 hover:scale-110 transition-transform duration-300">
+                <button
+                    onClick={handleQuickAdd}
+                    className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-8 h-8 md:w-10 md:h-10 bg-black text-white flex items-center justify-center rounded-full shadow-lg z-20 hover:scale-110 transition-transform duration-300"
+                >
                     <Plus size={16} className="md:w-[20px] md:h-[20px]" />
                 </button>
             </div>
