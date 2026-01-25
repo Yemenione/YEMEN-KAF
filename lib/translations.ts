@@ -945,10 +945,10 @@ export const translations = {
         // Home
         home: {
             hero: {
-                title: "Découvrez Notre Collection",
-                subtitle: "Produits yéménites authentiques de qualité supérieure",
-                tagline: "Qualité Premium",
-                cta: "Acheter Maintenant",
+                title: "L'Excellence du Yémen à Votre Portée",
+                subtitle: "Découvrez nos trésors gastronomiques : Miel de Sidr Royal et Cafés d'Exception",
+                tagline: "Qualité Rare & Certifiée",
+                cta: "Explorer la Collection",
             },
             categories: {
                 discover: "Découvrir",
@@ -1005,9 +1005,9 @@ export const translations = {
             },
             ourStory: {
                 badge: "Notre Histoire",
-                title: "Du Cœur du Yémen à Votre Maison",
-                description: "Nous vous apportons les meilleurs produits traditionnels yéménites, du miel naturel à l'encens authentique. Chaque produit porte une histoire et un riche patrimoine de la terre du Yémen.",
-                button: "Lire Notre Histoire Complète"
+                title: "Du Cœur du Yémen aux Plus Belles Tables d'Europe",
+                description: "Yemen Kaf est le pont entre les vallées ancestrales du Yémen et les fins gourmets européens. Nous importons pour vous le Miel de Sidr le plus pur et le café Mocha originel, récoltés selon des traditions millénaires.",
+                button: "Découvrir Notre Héritage"
             },
             flashSale: {
                 title: "Offres Flash du Jour",
@@ -1030,8 +1030,8 @@ export const translations = {
         },
         // Shop
         shop: {
-            title: "Notre Collection",
-            subtitle: "Miel et café yéménites sélectionnés de fermes traditionnelles",
+            title: "Épicerie Fine Yéménite",
+            subtitle: "Sélection exclusive de miels rares et cafés de terroir direct producteur",
             categories: "Catégories",
             allProducts: "Tous les produits",
             sortBy: "Trier par",

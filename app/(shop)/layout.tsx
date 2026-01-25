@@ -34,11 +34,46 @@ export async function generateMetadata(): Promise<Metadata> {
   }), {} as Record<string, string>);
 
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-    title: settings['site_name'] || "Yemen Kaf - Luxury Yemeni Gourmet",
-    description: settings['site_description'] || "Authentic Yemeni products: Premium Sidr Honey, Organic Coffee, and Traditional Spices.",
-    icons: {
-      icon: settings['logo_url'] || '/icon.png'
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://yemen-kaf.vercel.app'),
+    title: {
+      default: settings['site_name'] || "Yemen Kaf - Luxury Yemeni Gourmet & Sidr Honey Europe",
+      template: `%s | ${settings['site_name'] || "Yemen Kaf"}`
+    },
+    description: settings['site_description'] || "The premier destination for authentic Yemeni luxury: Premium Sidr Honey, Organic Qishr Coffee, and Traditional Spices delivered across France and Europe.",
+    keywords: [
+      "Yemen Kaf", "Yemeni Market France", "Sidr Honey Europe", "Miel de Sidr France",
+      "Café du Yémen", "Yemeni Coffee Europe", "Produits Yéménites", "Luxury Gourmet Yemen",
+      "Epicerie Fine Yéménite", "Bakhoor Europe", "Yemen Gourmet Marketplace"
+    ],
+    authors: [{ name: "Yemen Kaf" }],
+    openGraph: {
+      type: 'website',
+      locale: 'fr_FR',
+      alternateLocale: ['en_US', 'ar_YE'],
+      url: 'https://yemen-kaf.vercel.app',
+      siteName: 'Yemen Kaf',
+      images: [
+        {
+          url: '/images/logo.png',
+          width: 1200,
+          height: 630,
+          alt: 'Yemen Kaf - Luxury Yemeni Gourmet',
+        }
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Yemen Kaf - Luxury Yemeni Gourmet',
+      description: 'Authentic Yemeni treasures delivered across Europe.',
+      images: ['/images/logo.png'],
+    },
+    alternates: {
+      canonical: '/',
+      languages: {
+        'fr-FR': '/fr',
+        'en-US': '/en',
+        'ar-YE': '/ar',
+      },
     }
   };
 }
