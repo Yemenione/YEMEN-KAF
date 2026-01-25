@@ -131,3 +131,45 @@ export const sendEmail = async (data: { to: string; subject: string; html: strin
     throw error;
   }
 };
+
+interface ContactEmailData {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+}
+
+export const sendContactEmail = async (data: ContactEmailData) => {
+  try {
+    const transporter = await createTransporter();
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
+        <h2 style="color: #1a1a1a;">New Contact Form Submission</h2>
+        <p><strong>Name:</strong> ${data.name}</p>
+        <p><strong>Email:</strong> ${data.email}</p>
+        ${data.phone ? `<p><strong>Phone:</strong> ${data.phone}</p>` : ''}
+        <p><strong>Subject:</strong> ${data.subject}</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-wrap;">${data.message}</p>
+      </div>
+    `;
+
+    const info = await transporter.sendMail({
+      from: '"Yemen Kaf Contact" <support@yemenkaf.com>',
+      to: 'support@yemenkaf.com', // Admin receives the contact form
+      replyTo: data.email,
+      subject: `Contact Form: ${data.subject}`,
+      text: `Contact from ${data.name} (${data.email}): ${data.message}`,
+      html: htmlContent,
+    });
+
+    console.log("Contact email sent: %s", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending contact email:", error);
+    return { success: false, error };
+  }
+};
