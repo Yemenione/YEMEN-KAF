@@ -66,7 +66,7 @@ export default function AdminDashboard() {
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
             <RefreshCw className="w-10 h-10 animate-spin text-[var(--coffee-brown)]" />
-            <p className="text-gray-400 font-medium animate-pulse">Syncing real-time records...</p>
+            <p className="text-gray-400 font-medium animate-pulse">{t('admin.dashboard.syncing')}</p>
         </div>
     );
 
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
                 <div>
                     <div className="flex items-center gap-3 mb-1">
                         <LayoutDashboard className="w-6 h-6 text-[var(--coffee-brown)]" />
-                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Control Panel</span>
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">{t('admin.dashboard.controlPanel')}</span>
                     </div>
                     <h2 className="text-4xl font-black tracking-tight text-gray-900 dark:text-white">
                         {t('admin.dashboard.title')}
@@ -119,31 +119,31 @@ export default function AdminDashboard() {
             {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KPICard
-                    title="Gross Revenue"
+                    title={t('admin.dashboard.kpi.revenue')}
                     value={`€${Number(data.kpi?.revenue || 0).toLocaleString()}`}
                     icon={<DollarSign className="w-6 h-6" />}
                     trend="+12.5%"
                     color="brown"
                 />
                 <KPICard
-                    title="Total Orders"
+                    title={t('admin.dashboard.kpi.orders')}
                     value={data.kpi?.orders || 0}
                     icon={<ShoppingBag className="w-6 h-6" />}
                     trend="+8.2%"
                     color="zinc"
                 />
                 <KPICard
-                    title="New Customers"
+                    title={t('admin.dashboard.kpi.customers')}
                     value={data.kpi?.customers || 0}
                     icon={<Users className="w-6 h-6" />}
                     trend="+5.4%"
                     color="brown"
                 />
                 <KPICard
-                    title="Low Stock"
+                    title={t('admin.dashboard.kpi.lowStock')}
                     value={data.kpi?.lowStock || 0}
                     icon={<AlertTriangle className="w-6 h-6" />}
-                    trend={data.kpi?.lowStock > 0 ? "Check now" : "All set"}
+                    trend={data.kpi?.lowStock > 0 ? t('admin.dashboard.kpi.checkNow') : t('admin.dashboard.kpi.allSet')}
                     color={data.kpi?.lowStock > 0 ? "red" : "green"}
                     negative={data.kpi?.lowStock > 0}
                 />
@@ -156,13 +156,13 @@ export default function AdminDashboard() {
                         <div>
                             <h3 className="text-xl font-bold flex items-center gap-2">
                                 <TrendingUp className="w-5 h-5 text-green-500" />
-                                Sales Performance
+                                {t('admin.dashboard.sales.title')}
                             </h3>
-                            <p className="text-sm text-gray-500 mt-1">Daily revenue overview for the last 30 days</p>
+                            <p className="text-sm text-gray-500 mt-1">{t('admin.dashboard.sales.subtitle')}</p>
                         </div>
                         <select className="bg-gray-50 dark:bg-zinc-800 border-none rounded-xl px-4 py-2 text-xs font-bold focus:ring-2 focus:ring-[var(--coffee-brown)]/20">
-                            <option>Last 30 Days</option>
-                            <option>Last 7 Days</option>
+                            <option>{t('admin.dashboard.sales.last30Days')}</option>
+                            <option>{t('admin.dashboard.sales.last7Days')}</option>
                         </select>
                     </div>
 
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
                             </ResponsiveContainer>
                         ) : (
                             <div className="flex items-center justify-center h-full text-gray-400 text-sm">
-                                No sales data available for this period
+                                {t('admin.dashboard.sales.noData')}
                             </div>
                         )}
                     </div>
@@ -236,14 +236,14 @@ export default function AdminDashboard() {
                     {/* Recent Orders */}
                     <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800 shadow-xl shadow-gray-200/30 dark:shadow-none">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold">Recent Orders</h3>
-                            <button className="text-[10px] font-bold uppercase tracking-widest text-[var(--coffee-brown)] hover:opacity-70 transition-opacity">View All</button>
+                            <h3 className="text-lg font-bold">{t('admin.dashboard.recentOrders.title')}</h3>
+                            <button className="text-[10px] font-bold uppercase tracking-widest text-[var(--coffee-brown)] hover:opacity-70 transition-opacity">{t('admin.dashboard.recentOrders.viewAll')}</button>
                         </div>
                         <div className="space-y-4">
                             {data.recentOrders?.length === 0 ? (
                                 <div className="py-10 text-center opacity-40">
                                     <ShoppingBag className="w-8 h-8 mx-auto mb-2" />
-                                    <p className="text-xs font-bold">No orders found</p>
+                                    <p className="text-xs font-bold">{t('admin.dashboard.recentOrders.noOrders')}</p>
                                 </div>
                             ) : (
                                 data.recentOrders?.map((order) => (
@@ -272,12 +272,12 @@ export default function AdminDashboard() {
                     <div className="bg-zinc-900 text-white p-8 rounded-[2.5rem] border border-zinc-800 shadow-2xl relative overflow-hidden group">
                         <div className="relative z-10">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-bold text-white">Support Queue</h3>
+                                <h3 className="text-lg font-bold text-white">{t('admin.dashboard.support.title')}</h3>
                                 <Ticket className="w-5 h-5 text-[var(--honey-gold)] opacity-50" />
                             </div>
                             <div className="space-y-4">
                                 {data.recentTickets?.length === 0 ? (
-                                    <p className="text-xs text-zinc-500 font-medium">Clear inbox! All tickets resolved.</p>
+                                    <p className="text-xs text-zinc-500 font-medium">{t('admin.dashboard.support.queueClear')}</p>
                                 ) : (
                                     data.recentTickets?.map((ticket) => (
                                         <div key={ticket.id} className="bg-zinc-800/50 p-4 rounded-2xl border border-zinc-700/50 hover:bg-zinc-800 transition-colors">
@@ -295,7 +295,7 @@ export default function AdminDashboard() {
                                 )}
                             </div>
                             <button className="w-full mt-6 py-3 bg-[var(--coffee-brown)] hover:bg-[var(--coffee-light)] text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all">
-                                Go to Help Desk
+                                {t('admin.dashboard.support.goToHelpDesk')}
                             </button>
                         </div>
                         {/* Decorative circles */}

@@ -41,7 +41,7 @@ export default function ProductCard({
     // Calculate Discount
     const numericPrice = parseFloat(price.replace(/[^\d.]/g, ''));
     const numericComparePrice = compareAtPrice ? parseFloat(compareAtPrice.replace(/[^\d.]/g, '')) : null;
-    const hasDiscount = numericComparePrice && numericComparePrice > numericPrice;
+    const hasDiscount = !!(numericComparePrice && numericComparePrice > numericPrice);
     const discountPercentage = hasDiscount
         ? Math.round(((numericComparePrice! - numericPrice) / numericComparePrice!) * 100)
         : null;
@@ -157,22 +157,22 @@ export default function ProductCard({
     return (
         <div className="group relative w-full cursor-pointer overflow-hidden animate-in fade-in duration-700">
             {/* Image Container */}
-            <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F9F6F1] rounded-2xl mb-4">
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F9F6F1] rounded-xl md:rounded-2xl mb-2 md:mb-4">
                 <Image
                     src={image}
                     alt={title}
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                 />
 
                 {/* Badges */}
-                <div className="absolute top-3 start-3 flex flex-col gap-2 z-10">
-                    <span className="inline-block px-2.5 py-1 text-[9px] uppercase tracking-[0.2em] bg-white text-black font-black rounded-lg shadow-sm border border-black/5">
-                        {category}
+                <div className="absolute top-2 start-2 flex flex-col gap-1.5 z-10">
+                    <span className="inline-block px-2 py-1 text-[8px] uppercase tracking-widest bg-[#E3C069] text-black font-black rounded-md shadow-sm">
+                        {hasVariants ? 'RARE' : (String(category) !== '0' ? category : '')}
                     </span>
-                    {hasDiscount && (
-                        <span className="inline-block px-2.5 py-1 text-[9px] uppercase tracking-[0.2em] bg-red-600 text-white font-black rounded-lg shadow-md self-start">
+                    {hasDiscount && (discountPercentage ?? 0) > 0 && (
+                        <span className="inline-block px-1.5 py-0.5 text-[8px] uppercase tracking-widest bg-red-600 text-white font-bold rounded-md shadow-sm self-start">
                             -{discountPercentage}%
                         </span>
                     )}
@@ -182,28 +182,50 @@ export default function ProductCard({
                 <button
                     onClick={toggleWishlist}
                     disabled={loading}
-                    className="absolute top-3 end-3 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all shadow-sm group/wish"
+                    className="absolute top-2 end-2 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-all shadow-sm group/wish"
                 >
                     <Heart
-                        size={14}
+                        size={16}
                         className={clsx(
                             "transition-all duration-300",
-                            isWishlisted ? "fill-red-500 text-red-500 scale-110" : "text-black group-hover/wish:text-red-500"
+                            isWishlisted ? "fill-black text-black scale-110" : "text-black group-hover/wish:text-gray-600"
                         )}
                     />
                 </button>
 
-                {/* 'Quick Add' Button - Appears on hover */}
-                <button className="absolute bottom-3 end-3 w-9 h-9 bg-white text-black flex items-center justify-center rounded-full translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 hover:bg-black hover:text-white shadow-xl z-20 overflow-hidden">
-                    <Plus size={18} />
+                {/* 'Quick Add' Button */}
+                <button className="absolute bottom-2 right-2 md:bottom-3 md:right-3 w-8 h-8 md:w-10 md:h-10 bg-black text-white flex items-center justify-center rounded-full shadow-lg z-20 hover:scale-110 transition-transform duration-300">
+                    <Plus size={16} className="md:w-[20px] md:h-[20px]" />
                 </button>
             </div>
 
-            {/* Content */}
-            <div className="px-1 space-y-2 text-center">
-                {/* Color Swatches */}
+            {/* Content - Compact for Mobile */}
+            <div className="px-1 space-y-1 md:space-y-2 text-start md:text-center">
+
+                <h3 className="text-sm md:text-lg font-bold text-black leading-tight line-clamp-1 group-hover:text-[var(--coffee-brown)] transition-colors">
+                    {title}
+                </h3>
+                {/* Subtitle / Notes mock */}
+                <p className="text-[9px] text-gray-400 uppercase tracking-wider font-medium line-clamp-1">
+                    {category} • Excellence
+                </p>
+
+                <div className="flex flex-row md:flex-col items-start md:items-center justify-between md:justify-center gap-1 mt-1">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm md:text-lg font-bold text-[#E3C069] tracking-tight">
+                            {startingPrice ? `€${Number(startingPrice).toFixed(2)}` : price}
+                        </span>
+                        {hasDiscount && !hasVariants && compareAtPrice && (
+                            <span className="text-[10px] md:text-sm text-gray-300 line-through tracking-tight">
+                                {compareAtPrice}
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Color Swatches - Hide on mobile if too many, or keep small */}
                 {colors.length > 0 && (
-                    <div className="flex items-center justify-center gap-1.5 mb-2.5">
+                    <div className="hidden md:flex items-center justify-center gap-1.5 mb-2.5">
                         {colors.slice(0, 4).map((color, idx) => (
                             <div
                                 key={idx}
@@ -212,33 +234,8 @@ export default function ProductCard({
                                 title={color}
                             />
                         ))}
-                        {colors.length > 4 && (
-                            <span className="text-[10px] font-bold text-gray-400">+{colors.length - 4}</span>
-                        )}
                     </div>
                 )}
-
-                <h3 className="text-sm md:text-base font-medium text-gray-900 tracking-tight line-clamp-1 leading-snug group-hover:text-[var(--coffee-brown)] transition-colors uppercase">
-                    {title}
-                </h3>
-
-                <div className="flex flex-col items-center gap-0.5">
-                    {hasVariants && (
-                        <span className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black">
-                            {t('product.startingAt') || (locale === 'fr' ? 'À partir de' : 'From')}
-                        </span>
-                    )}
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm md:text-lg font-black text-black tracking-tighter">
-                            {startingPrice ? `€${Number(startingPrice).toFixed(2)}` : price}
-                        </span>
-                        {hasDiscount && !hasVariants && (
-                            <span className="text-xs md:text-sm text-gray-400 line-through tracking-tighter decoration-red-400/30">
-                                {compareAtPrice}
-                            </span>
-                        )}
-                    </div>
-                </div>
             </div>
         </div>
     );

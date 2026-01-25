@@ -2,7 +2,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import React from "react";
 import { useSettings } from "@/context/SettingsContext";
 
 interface Category {
@@ -19,6 +20,14 @@ export default function CategoriesSection() {
     const [categories, setCategories] = useState<Category[]>([]);
     const { t, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
+    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+    const scroll = (direction: 'left' | 'right') => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = direction === 'left' ? -200 : 200;
+            scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -48,58 +57,68 @@ export default function CategoriesSection() {
     if (categories.length === 0) return null;
 
     return (
-        <section className="py-24 bg-white overflow-hidden">
+        <section className="py-24 bg-white overflow-hidden relative group/section">
+            {/* Desktop Navigation Arrows */}
+            <div className="hidden md:block">
+                <button
+                    onClick={() => scroll('left')}
+                    className="absolute left-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/90 backdrop-blur-md rounded-full shadow-xl flex items-center justify-center text-black hover:bg-black hover:text-white transition-all duration-300 opacity-0 group-hover/section:opacity-100 -translate-x-4 group-hover/section:translate-x-0"
+                >
+                    <ChevronLeft size={24} />
+                </button>
+                <button
+                    onClick={() => scroll('right')}
+                    className="absolute right-8 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/90 backdrop-blur-md rounded-full shadow-xl flex items-center justify-center text-black hover:bg-black hover:text-white transition-all duration-300 opacity-0 group-hover/section:opacity-100 translate-x-4 group-hover/section:translate-x-0"
+                >
+                    <ChevronRight size={24} />
+                </button>
+            </div>
+
             <div className="max-w-7xl mx-auto px-6 mb-12 flex justify-between items-end">
                 <div>
                     <span className="text-gray-400 uppercase tracking-[0.4em] text-xs font-semibold block mb-4">{t('home.categories.discover')}</span>
                     <h2 className="text-4xl md:text-5xl font-serif text-black leading-tight">{t('home.categories.title')}</h2>
                 </div>
-                {/* Scroll Indicators (Visual only, native scroll used) */}
-                <div className="hidden md:flex gap-2">
-                    <span className="text-sm font-medium text-gray-400">{t('home.categories.scroll')}</span>
-                    <ArrowUpRight className="w-5 h-5 text-gray-400 rotate-90" />
+
+                {/* Mobile Navigation Arrows */}
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => scroll('left')}
+                        className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-black hover:text-black transition-colors"
+                    >
+                        <ChevronLeft size={18} />
+                    </button>
+                    <button
+                        onClick={() => scroll('right')}
+                        className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-black hover:text-black transition-colors"
+                    >
+                        <ChevronRight size={18} />
+                    </button>
                 </div>
             </div>
 
             {/* Horizontal Scroll Container */}
-            <div className="w-full overflow-x-auto pb-12 hide-scrollbar">
+            <div ref={scrollContainerRef} className="w-full overflow-x-auto pb-12 hide-scrollbar snap-x snap-mandatory scroll-smooth">
                 <div className="flex gap-6 px-6 md:px-0 max-w-7xl mx-auto min-w-max">
                     {categories.map((cat) => (
                         <Link
                             key={cat.id}
                             href={`/shop?category=${cat.slug}`}
-                            className="group block relative w-[280px] md:w-[350px] aspect-[3/4] flex-shrink-0 overflow-hidden bg-gray-100 rounded-lg"
+                            className="group flex flex-col items-center gap-3 flex-shrink-0 snap-center"
                         >
-                            <Image
-                                src={cat.image_url || '/images/honey-jar.jpg'}
-                                alt={cat.name}
-                                fill
-                                className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                                sizes="(max-width: 768px) 70vw, 25vw"
-                            />
-
-                            {/* Overlay Gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-
-                            {/* Content */}
-                            <div className="absolute inset-0 flex flex-col justify-end p-8 text-white z-10">
-                                <span className="transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--honey-gold)] mb-2">
-                                    {t('home.categories.explore')}
-                                </span>
-                                <h3 className="text-2xl font-serif mb-2 transform translate-y-0 group-hover:-translate-y-1 transition-transform duration-500">
-                                    {getLocalizedValue(cat, 'name')}
-                                </h3>
-                                <p className="text-white/70 text-sm font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 line-clamp-2">
-                                    {getLocalizedValue(cat, 'description')}
-                                </p>
+                            <div className="relative w-[80px] md:w-[140px] aspect-square rounded-full overflow-hidden bg-gray-100 border-2 border-transparent group-hover:border-[var(--honey-gold)] transition-all duration-300 shadow-md">
+                                <Image
+                                    src={cat.image_url || '/images/honey-jar.jpg'}
+                                    alt={cat.name}
+                                    fill
+                                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                                    sizes="(max-width: 768px) 100px, 150px"
+                                />
                             </div>
 
-                            {/* Arrow Icon */}
-                            <div className="absolute top-6 right-6 z-20">
-                                <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center backdrop-blur-sm group-hover:bg-white group-hover:text-black transition-all duration-500">
-                                    <ArrowUpRight size={18} />
-                                </div>
-                            </div>
+                            <h3 className="text-xs md:text-sm font-bold uppercase tracking-wider text-center text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors max-w-[90px] md:max-w-[140px]">
+                                {getLocalizedValue(cat, 'name')}
+                            </h3>
                         </Link>
                     ))}
                 </div>

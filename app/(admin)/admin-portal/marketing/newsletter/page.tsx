@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Mail, Calendar, CheckCircle, XCircle } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Subscriber {
     id: number;
@@ -11,6 +12,7 @@ interface Subscriber {
 }
 
 export default function NewsletterPage() {
+    const { t } = useLanguage();
     const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -31,17 +33,17 @@ export default function NewsletterPage() {
             });
     }, []);
 
-    if (loading) return <div className="p-8">Loading...</div>;
+    if (loading) return <div className="p-8">{t('admin.marketing.newsletter.loading')}</div>;
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold mb-2">Newsletter Subscribers</h1>
-                    <p className="text-gray-500">Manage your email audience.</p>
+                    <h1 className="text-2xl font-bold mb-2">{t('admin.marketing.newsletter.title')}</h1>
+                    <p className="text-gray-500">{t('admin.marketing.newsletter.subtitle')}</p>
                 </div>
                 <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg font-bold">
-                    Total: {subscribers.length}
+                    {t('admin.marketing.newsletter.total')}: {subscribers.length}
                 </div>
             </div>
 
@@ -49,9 +51,9 @@ export default function NewsletterPage() {
                 <table className="w-full text-left">
                     <thead className="bg-gray-50 border-b border-gray-100 text-xs uppercase text-gray-500 font-semibold">
                         <tr>
-                            <th className="px-6 py-4">Email</th>
-                            <th className="px-6 py-4">Status</th>
-                            <th className="px-6 py-4">Joined Date</th>
+                            <th className="px-6 py-4">{t('admin.marketing.newsletter.email')}</th>
+                            <th className="px-6 py-4">{t('admin.marketing.newsletter.status')}</th>
+                            <th className="px-6 py-4">{t('admin.marketing.newsletter.joinedDate')}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -68,11 +70,11 @@ export default function NewsletterPage() {
                                 <td className="px-6 py-4">
                                     {sub.is_active ? (
                                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
-                                            <CheckCircle size={10} /> Active
+                                            <CheckCircle size={10} /> {t('admin.marketing.newsletter.active')}
                                         </span>
                                     ) : (
                                         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">
-                                            <XCircle size={10} /> Unsubscribed
+                                            <XCircle size={10} /> {t('admin.marketing.newsletter.unsubscribed')}
                                         </span>
                                     )}
                                 </td>
@@ -88,7 +90,7 @@ export default function NewsletterPage() {
                 </table>
                 {subscribers.length === 0 && (
                     <div className="text-center py-12 text-gray-400">
-                        No subscribers yet.
+                        {t('admin.marketing.newsletter.noSubscribers')}
                     </div>
                 )}
             </div>

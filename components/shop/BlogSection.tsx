@@ -119,11 +119,11 @@ export default function BlogSection({ articles = [] }: { articles?: Article[] })
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="flex overflow-x-auto md:grid md:grid-cols-3 gap-6 pb-6 md:pb-0 hide-scrollbar -mx-6 px-6 md:mx-0 md:px-0">
                     {displayArticles.map((article: Article, index: number) => (
                         <article
                             key={index}
-                            className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-gray-100"
+                            className="flex-shrink-0 w-[280px] md:w-auto bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-gray-100"
                         >
                             <div className="relative aspect-video overflow-hidden bg-gray-100">
                                 <Image
@@ -131,18 +131,18 @@ export default function BlogSection({ articles = [] }: { articles?: Article[] })
                                     alt={article.title}
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                    sizes="(max-width: 768px) 100vw, 33vw"
+                                    sizes="(max-width: 768px) 280px, 33vw"
                                 />
                             </div>
-                            <div className="p-6 space-y-4">
+                            <div className="p-6 space-y-3 md:space-y-4">
                                 <div className="flex items-center gap-2 text-xs text-gray-500">
                                     <Calendar className="w-4 h-4" />
                                     <time>{article.date}</time>
                                 </div>
-                                <h3 className="text-xl font-serif text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-2">
+                                <h3 className="text-lg md:text-xl font-serif text-[var(--coffee-brown)] group-hover:text-[var(--honey-gold)] transition-colors line-clamp-2">
                                     {article.title}
                                 </h3>
-                                <p className="text-sm text-gray-600 line-clamp-3 leading-relaxed">
+                                <p className="text-sm text-gray-600 line-clamp-2 md:line-clamp-3 leading-relaxed">
                                     {article.excerpt}
                                 </p>
                                 <Link

@@ -74,7 +74,7 @@ export default function RecentlyViewed() {
                         <Link
                             key={product.id}
                             href={`/shop/${product.slug}`}
-                            className="flex-shrink-0 w-[200px] group"
+                            className="flex-shrink-0 w-[140px] md:w-[200px] group"
                         >
                             <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100 group-hover:border-[var(--honey-gold)] transition-all">
                                 <Image

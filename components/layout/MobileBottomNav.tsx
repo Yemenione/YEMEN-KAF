@@ -25,7 +25,7 @@ export default function MobileBottomNav() {
         {
             name: t('nav.shop') || 'Shop',
             href: '/shop',
-            icon: Search // Using Search icon for Shop/Discover as is common
+            icon: Search
         },
         {
             name: t('nav.wishlist') || 'Wishlist',
@@ -35,7 +35,7 @@ export default function MobileBottomNav() {
         },
         {
             name: t('nav.cart') || 'Cart',
-            action: openCart, // Custom action for cart
+            action: openCart,
             icon: ShoppingBag,
             count: itemCount
         },
@@ -47,8 +47,8 @@ export default function MobileBottomNav() {
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200 z-[9999] lg:hidden pb-safe">
-            <div className="flex justify-around items-center h-16">
+        <div className="fixed bottom-6 left-4 right-4 z-[99999] lg:hidden animate-in slide-in-from-bottom-4 duration-700">
+            <div className="bg-[#1A1A1A] backdrop-blur-md rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-white/10 px-6 h-[72px] flex items-center justify-between">
                 {navItems.map((item, idx) => {
                     const isActive = item.href ? pathname === item.href : false;
                     const Icon = item.icon;
@@ -57,55 +57,50 @@ export default function MobileBottomNav() {
                         <button
                             key={idx}
                             onClick={item.action ? item.action : undefined}
-                            className="relative flex-1 h-full flex flex-col items-center justify-center gap-1 active:scale-95 transition-transform"
+                            className="relative flex flex-col items-center justify-center group"
                         >
-                            {/* Link Wrapper if it's a link */}
+                            {/* Glow Effect for Active */}
+                            {isActive && (
+                                <div className="absolute inset-0 bg-[var(--honey-gold)] opacity-20 blur-xl rounded-full" />
+                            )}
+
                             {item.href ? (
-                                <Link href={item.href} className="flex flex-col items-center w-full h-full justify-center">
-                                    <div className="relative">
-                                        <Icon
-                                            size={20}
-                                            className={clsx(
-                                                "transition-colors",
-                                                isActive ? "text-[var(--honey-gold)] fill-current" : "text-gray-400"
-                                            )}
-                                        />
-                                        {item.count ? (
-                                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full border border-white">
-                                                {item.count}
-                                            </span>
-                                        ) : null}
-                                    </div>
-                                    <span className={clsx(
-                                        "text-[9px] font-medium tracking-wide uppercase transition-colors",
-                                        isActive ? "text-[var(--honey-gold)]" : "text-gray-500"
-                                    )}>
-                                        {item.name}
-                                    </span>
+                                <Link href={item.href} className="flex flex-col items-center justify-center w-12 h-12">
+                                    <Icon
+                                        size={24}
+                                        fill={isActive ? "currentColor" : "none"}
+                                        className={clsx(
+                                            "transition-all duration-300",
+                                            isActive ? "text-[var(--honey-gold)] scale-110" : "text-gray-400 group-hover:text-white"
+                                        )}
+                                    />
+                                    {item.count ? (
+                                        <span className="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full border border-[#1A1A1A]">
+                                            {item.count}
+                                        </span>
+                                    ) : null}
                                 </Link>
                             ) : (
-                                <>
-                                    <div className="relative">
-                                        <Icon
-                                            size={20}
-                                            className={clsx(
-                                                "transition-colors",
-                                                isActive ? "text-[var(--honey-gold)]" : "text-gray-400"
-                                            )}
-                                        />
-                                        {item.count ? (
-                                            <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full border border-white">
-                                                {item.count}
-                                            </span>
-                                        ) : null}
-                                    </div>
-                                    <span className={clsx(
-                                        "text-[9px] font-medium tracking-wide uppercase transition-colors",
-                                        isActive ? "text-[var(--honey-gold)]" : "text-gray-500"
-                                    )}>
-                                        {item.name}
-                                    </span>
-                                </>
+                                <div className="flex flex-col items-center justify-center w-12 h-12">
+                                    <Icon
+                                        size={24}
+                                        fill={isActive ? "currentColor" : "none"}
+                                        className={clsx(
+                                            "transition-all duration-300",
+                                            isActive ? "text-[var(--honey-gold)] scale-110" : "text-gray-400 group-hover:text-white"
+                                        )}
+                                    />
+                                    {item.count ? (
+                                        <span className="absolute top-2 right-2 bg-red-500 text-white text-[9px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full border border-[#1A1A1A]">
+                                            {item.count}
+                                        </span>
+                                    ) : null}
+                                </div>
+                            )}
+
+                            {/* Small dot below active item */}
+                            {isActive && (
+                                <span className="absolute -bottom-1 w-1 h-1 bg-[var(--honey-gold)] rounded-full"></span>
                             )}
                         </button>
                     );

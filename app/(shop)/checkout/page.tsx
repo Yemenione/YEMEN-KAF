@@ -1,6 +1,7 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -54,6 +55,7 @@ export default function CheckoutPage() {
     const stripePromise = getStripe(settings.stripe_publishable_key);
 
     const { items, total, subtotal, taxTotal } = useCart();
+    const { user } = useAuth();
     const { t } = useLanguage();
     const router = useRouter();
     const [selectedShippingMethod, setSelectedShippingMethod] = useState("standard");
@@ -117,7 +119,7 @@ export default function CheckoutPage() {
 
     const {
         register,
-        // handleSubmit removed (unused)
+        setValue, // Added setValue
         formState: { errors, isValid },
         getValues,
         trigger,
@@ -208,23 +210,26 @@ export default function CheckoutPage() {
 
     // Fill form with selected address
     const fillFormWithAddress = (address: Address) => {
-        const names = (address.label || '').split(' ');
-        const formData = {
-            firstName: names[0] || '',
-            lastName: names.slice(1).join(' ') || '',
-            email: '', // Keep existing email
-            phone: address.phone || '',
-            address: address.street_address || '',
-            city: address.city || '',
-            state: address.state || '',
-            zip: address.postal_code || '',
-            country: address.country || 'France'
-        };
-        Object.entries(formData).forEach(([key, value]) => {
-            if (value) {
-                (document.querySelector(`[name="${key}"]`) as HTMLInputElement)?.setAttribute('value', value);
-            }
-        });
+        let firstName = '';
+        let lastName = '';
+
+        if (address.label) {
+            const names = address.label.split(' ');
+            firstName = names[0];
+            lastName = names.slice(1).join(' ');
+        } else if (user) {
+            firstName = user.firstName || '';
+            lastName = user.lastName || '';
+        }
+
+        setValue("firstName", firstName, { shouldValidate: true });
+        setValue("lastName", lastName, { shouldValidate: true });
+        setValue("phone", address.phone || user?.phone || '', { shouldValidate: true });
+        setValue("address", address.street_address || '', { shouldValidate: true });
+        setValue("city", address.city || '', { shouldValidate: true });
+        setValue("state", address.state || '', { shouldValidate: true });
+        setValue("zip", address.postal_code || '', { shouldValidate: true });
+        setValue("country", address.country || 'France', { shouldValidate: true });
     };
 
     // Handle address selection
@@ -391,12 +396,13 @@ export default function CheckoutPage() {
                             </h2>
                             <button
                                 onClick={() => {
-                                    if (navigator.geolocation) {
-                                        navigator.geolocation.getCurrentPosition(() => {
-                                            alert("Location Found! (Mock: Filled City/Country)");
-                                            // In a real app, use Google Maps API or similar here
-                                        }, () => alert("Location access denied."));
-                                    }
+                                    // Mock Location functionality
+                                    setValue("city", "Paris", { shouldValidate: true });
+                                    setValue("country", "France", { shouldValidate: true });
+                                    setValue("zip", "75008", { shouldValidate: true });
+                                    setValue("address", "10 Avenue des Champs-Élysées", { shouldValidate: true });
+                                    setValue("state", "Île-de-France", { shouldValidate: true });
+                                    // In a real app, use Google Maps API or Geolocation API here
                                 }}
                                 className="text-xs uppercase tracking-wider font-bold text-black border-b border-black pb-0.5 hover:text-gray-600 transition-colors flex items-center gap-1"
                             >
@@ -644,7 +650,7 @@ export default function CheckoutPage() {
                                 items.map((item) => (
                                     <div key={item.id} className="flex gap-4 items-start pb-6 border-b border-black/5 last:border-0">
                                         <div className="relative w-20 h-24 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-black/5">
-                                            <Image src={item.image} alt={item.title} fill className="object-cover" />
+                                            <Image src={item.image} alt={item.title} fill className="object-cover" sizes="80px" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-medium text-lg text-black truncate">{item.title}</h3>

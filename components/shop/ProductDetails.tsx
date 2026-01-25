@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft, ChevronDown, Clock, Flame, Share2, Facebook, Copy } from "lucide-react";
+import { ShoppingBag, Heart, Star, Check, Shield, ArrowLeft, ChevronDown, Clock, Flame, Share2, Facebook, Copy, MapPin, Camera, X } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
@@ -43,12 +43,14 @@ interface Product {
     translations?: any;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     category_translations?: any;
+    origin_country?: string;
 }
 
 interface Review {
     id: number;
     rating: number;
     comment: string;
+    images?: string; // JSON string of array
     createdAt: string;
     patient: {
         firstName: string;
@@ -101,9 +103,14 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
     const [reviews, setReviews] = useState<Review[]>([]);
     const [averageRating, setAverageRating] = useState(0);
     const [totalReviews, setTotalReviews] = useState(0);
+
+    // Review Form State
     const [userRating, setUserRating] = useState(5);
     const [userComment, setUserComment] = useState("");
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [reviewImages, setReviewImages] = useState<string[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
+
     const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
     const [viewingNow, setViewingNow] = useState<number | null>(null);
 
@@ -176,6 +183,40 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
         }
     }, [product]);
 
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+
+        setIsUploading(true);
+        try {
+            const files = Array.from(e.target.files);
+            const newImages: string[] = [];
+
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.url) {
+                        newImages.push(data.url);
+                    }
+                }
+            }
+
+            setReviewImages(prev => [...prev, ...newImages]);
+        } catch (error) {
+            console.error("Upload failed", error);
+            alert("Failed to upload image");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const handleSubmitReview = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmittingReview(true);
@@ -183,13 +224,14 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             const res = await fetch(`/api/products/${product.slug}/reviews`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ rating: userRating, comment: userComment })
+                body: JSON.stringify({ rating: userRating, comment: userComment, images: reviewImages })
             });
 
             if (res.ok) {
                 const newReview = await res.json();
                 setReviews([newReview, ...reviews]);
                 setUserComment("");
+                setReviewImages([]);
                 if (product.slug) {
                     const refreshStats = await fetch(`/api/products/${product.slug}/reviews`).then(r => r.json());
                     if (refreshStats.reviews) {
@@ -292,7 +334,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
     const canAddToCart = !isOutOfStock && (!hasVariants || selectedVariant);
 
     return (
-        <main className="min-h-screen bg-gray-50 pt-28">
+        <main className="min-h-screen bg-gray-50 pt-24 lg:pt-28">
             <div className="bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -305,7 +347,143 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-12">
+            {/* Mobile Layout - Luxury Mockup Style Refined */}
+            <div className="lg:hidden pb-16 bg-white">
+                {/* Custom Header from Mockup */}
+                <div className="flex items-center justify-between px-6 py-4 sticky top-0 z-50 bg-white/95 backdrop-blur-sm">
+                    <Link href="/shop" className="p-2 -ml-2">
+                        <ArrowLeft size={20} className="text-black" />
+                    </Link>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-black">
+                        {t('product.details') || "DÉTAILS DU PRODUIT"}
+                    </span>
+                    <button className="p-2 -mr-2 text-black">
+                        <Heart size={20} />
+                    </button>
+                </div>
+
+                {/* Product Image Card - Floating Style */}
+                <div className="mx-4 mb-6">
+                    <div className="relative w-full aspect-[4/5] bg-[#F9F6F1] rounded-[2.5rem] overflow-hidden shadow-sm">
+                        <Image
+                            src={mainImage}
+                            alt={localizedName}
+                            fill
+                            className="object-cover"
+                            priority
+                            sizes="90vw"
+                        />
+                        {discountPercentage && (
+                            <div className="absolute bottom-6 left-6 bg-[#D4AF37] text-white px-3 py-1 font-bold text-[10px] rounded-full shadow-md uppercase tracking-wider">
+                                -{discountPercentage}%
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="px-8">
+                    {/* Title & Origin - Tight Spacing */}
+                    <div className="mb-4">
+                        <h1 className="text-3xl font-serif text-black italic mb-1 leading-tight">
+                            {localizedName}
+                        </h1>
+                        <p className="text-[9px] font-bold text-[#D4AF37] uppercase tracking-[0.15em]">
+                            {t('product.origin') || "ORIGINE"}: {product.origin_country || "BANI MATAR, YÉMEN"}
+                        </p>
+                        <p className="text-[9px] text-gray-400 font-medium tracking-widest mt-0.5">
+                            Altitude: 2000m - 2400m
+                        </p>
+                    </div>
+
+                    {/* Description - Concise */}
+                    <div className="mb-6">
+                        <p className="text-xs text-gray-500 leading-relaxed font-medium">
+                            {localizedDescription ? localizedDescription.replace(/<[^>]*>?/gm, '').substring(0, 150) + "..." : product.description?.substring(0, 150) + "..."}
+                        </p>
+                    </div>
+
+                    {/* Tasting Notes */}
+                    <div className="mb-6">
+                        <span className="block text-[9px] font-extrabold text-gray-300 uppercase tracking-widest mb-2">
+                            {t('product.tastingNotes') || "NOTES DE DÉGUSTATION"}
+                        </span>
+                        <div className="flex gap-2 bg-[#F9F6F1] p-1 rounded-full w-max">
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full shadow-sm">
+                                <span className="text-xs">🍫</span>
+                                <span className="text-[10px] font-bold text-[var(--coffee-brown)] uppercase tracking-wide">Chocolat Noir</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full shadow-sm">
+                                <span className="text-xs">🍒</span>
+                                <span className="text-[10px] font-bold text-[var(--coffee-brown)] uppercase tracking-wide">Fruits Rouges</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Variants Control */}
+                    {hasVariants && (
+                        <div className="space-y-5 mb-6">
+                            {attributeNames.map((attrName) => (
+                                <div key={attrName}>
+                                    <label className="block text-[9px] font-extrabold text-gray-300 uppercase tracking-widest mb-2">
+                                        {attrName}
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {Array.from(attributes[attrName] as Set<string>).map((value) => {
+                                            const isSelected = selectedOptions[attrName] === value;
+                                            const strValue = String(value);
+                                            return (
+                                                <button
+                                                    key={strValue}
+                                                    onClick={() => handleOptionSelect(attrName, strValue)}
+                                                    className={`px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${isSelected
+                                                        ? 'bg-[#E3C069] text-white shadow-md'
+                                                        : 'bg-white border border-gray-100 text-gray-400'
+                                                        }`}
+                                                >
+                                                    {strValue}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Quantity Selector */}
+                    <div className="mb-4">
+                        <span className="block text-[9px] font-extrabold text-gray-300 uppercase tracking-widest mb-2">
+                            {t('product.quantity') || "QUANTITÉ"}
+                        </span>
+                        <div className="flex gap-4">
+                            <div className="flex-1 border border-gray-200 rounded-full h-12 flex items-center justify-between px-1">
+                                <button
+                                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center text-black hover:bg-gray-50 text-lg pb-1"
+                                >
+                                    -
+                                </button>
+                                <span className="font-bold text-sm">{quantity}g</span>
+                                <button
+                                    onClick={() => {
+                                        const stock = selectedVariant?.stock ?? product.stock ?? product.stock_quantity ?? product.quantity ?? 10;
+                                        setQuantity(Math.min(stock, quantity + 1));
+                                    }}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center text-black hover:bg-gray-50 text-lg pb-1"
+                                >
+                                    +
+                                </button>
+                            </div>
+                            <button className="flex-1 border border-[#E3C069] text-[#E3C069] rounded-full h-12 flex items-center justify-center text-[10px] font-bold uppercase tracking-widest">
+                                500g
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Desktop Layout (Existing) */}
+            <div className="hidden lg:block max-w-7xl mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                     {/* Product Images */}
                     <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
@@ -313,20 +491,6 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             <Image src={mainImage} alt={localizedName} fill className="object-cover" priority sizes="(min-width: 1024px) 50vw, 100vw" />
                             {discountPercentage && (
                                 <div className="absolute top-6 left-6 bg-red-600 text-white px-4 py-1.5 font-bold text-sm rounded-full shadow-xl z-10 uppercase tracking-wider">
-                                    -{discountPercentage}%
-                                </div>
-                            )}
-                        </div>
-                        <div className="lg:hidden relative aspect-square bg-white rounded-2xl overflow-hidden shadow-sm">
-                            <div className="flex overflow-x-auto snap-x snap-mandatory h-full scrollbar-hide">
-                                {displayImages.map((img: string, idx: number) => (
-                                    <div key={idx} className="flex-shrink-0 w-full h-full snap-center relative">
-                                        <Image src={img} alt={`${localizedName} ${idx + 1}`} fill className="object-cover" priority={idx === 0} sizes="100vw" />
-                                    </div>
-                                ))}
-                            </div>
-                            {discountPercentage && (
-                                <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 font-bold text-sm rounded-full shadow-md z-10">
                                     -{discountPercentage}%
                                 </div>
                             )}
@@ -456,14 +620,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             </div>
                         )}
 
-                        {/* Scarcity Alert & Delivery Promise */}
                         <div className="mb-8 space-y-3">
-                            {currentStock > 0 && currentStock < 10 && (
-                                <p className="text-[11px] font-bold text-red-600 flex items-center gap-2">
-                                    <span className="w-2 h-2 bg-red-600 rounded-full animate-ping"></span>
-                                    {t('product.onlyLeft') || "Plus que"} {currentStock} {t('product.stockScarcity') || "en stock - Commandez vite !"}
-                                </p>
-                            )}
                             <p className="text-[11px] text-gray-600 font-medium flex items-center gap-2">
                                 <Check size={14} className="text-green-500" />
                                 {t('product.deliveryPromise') || "Livraison Gratuite : Recevez-le chez vous le"} <span className="text-black font-bold uppercase">{getDeliveryDate()}</span>
@@ -550,6 +707,42 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                             </div>
                         </div>
 
+                        {/* Delivery & Warranty Section (Moved to Top) */}
+                        <div className="mb-10 space-y-6 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                            {/* Delivery Times */}
+                            <div>
+                                <h3 className="font-serif text-lg text-[var(--coffee-brown)] mb-4">Délais de Livraison</h3>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="font-medium text-gray-600 flex items-center gap-2"><MapPin size={14} /> France Métropolitaine</span>
+                                        <span className="font-bold text-black">48h - 72h</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="font-medium text-gray-600 flex items-center gap-2"><MapPin size={14} /> Europe</span>
+                                        <span className="font-bold text-black">3 - 5 Jours</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="font-medium text-gray-600 flex items-center gap-2"><MapPin size={14} /> International</span>
+                                        <span className="font-bold text-black">5 - 10 Jours</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="h-px bg-gray-200"></div>
+
+                            {/* Warranty */}
+                            <div>
+                                <h3 className="font-serif text-lg text-[var(--coffee-brown)] mb-2">Garantie Satisfait ou Remboursé</h3>
+                                <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                                    Nous nous engageons à vous offrir la meilleure qualité. Si vous n&apos;êtes pas satisfait de votre commande, vous disposez de 14 jours pour nous la retourner dans son emballage d&apos;origine.
+                                </p>
+                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#D4AF37]">
+                                    <Shield size={14} />
+                                    <span>Garantie 100% Sécurisé</span>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Accordion Sections: Description, Logistics, Security */}
                         <div className="border-t border-gray-100">
                             <Accordion title={t('product.description') || "Description"} defaultOpen={true}>
@@ -629,8 +822,8 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             </div>
 
             {/* Reviews Section */}
-            <div className="max-w-7xl mx-auto px-6 pb-32">
-                <div className="mt-32 border-t border-gray-100 pt-20">
+            <div className="max-w-7xl mx-auto px-6 pb-20">
+                <div className="mt-20 border-t border-gray-100 pt-20">
                     <div className="flex flex-col md:flex-row justify-between items-baseline mb-16 gap-4">
                         <h3 className="text-3xl font-serif text-black">{t('product.customerReviews') || 'Expériences Clients'}</h3>
                         <div className="h-[1px] flex-1 bg-gray-100 mx-8 hidden md:block"></div>
@@ -652,7 +845,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                 <form onSubmit={handleSubmitReview} className="space-y-6">
                                     <div>
                                         <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">{t('product.rating') || 'Note'}</label>
-                                        <div className="flex gap-3">
+                                        <div className="flex gap-4">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button
                                                     type="button"
@@ -674,9 +867,39 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                         <textarea
                                             value={userComment}
                                             onChange={(e) => setUserComment(e.target.value)}
-                                            className="w-full p-4 rounded-2xl border border-stone-200 bg-white focus:border-black outline-none min-h-[150px] transition-colors resize-none text-sm leading-relaxed"
+                                            className="w-full p-4 rounded-2xl border border-stone-200 bg-white focus:border-black outline-none min-h-[120px] transition-colors resize-none text-sm leading-relaxed"
                                             placeholder="Comment avez-vous trouvé ce produit ?"
-                                        ></textarea>
+                                        />
+
+                                        {/* Image Upload UI */}
+                                        <div className="mt-4">
+                                            <div className="flex gap-2 mb-2 flex-wrap">
+                                                {reviewImages.map((img, idx) => (
+                                                    <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
+                                                        <Image src={img} alt="review" fill className="object-cover" />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setReviewImages(prev => prev.filter((_, i) => i !== idx))}
+                                                            className="absolute top-0 right-0 p-1 bg-black/50 text-white hover:bg-red-500 transition-colors"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <label className={`w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-black hover:bg-white transition-colors bg-gray-50 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                                    <input
+                                                        type="file"
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        multiple
+                                                        onChange={handleImageUpload}
+                                                        disabled={isUploading}
+                                                    />
+                                                    <span className="text-gray-400"><Camera size={20} /></span>
+                                                </label>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 italic">Ajouter des photos (optionnel)</p>
+                                        </div>
                                     </div>
                                     <button
                                         type="submit"
@@ -722,7 +945,28 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                                 ))}
                                             </div>
                                         </div>
-                                        <p className="text-gray-600 leading-loose font-light text-sm italic pr-12">&quot;{review.comment}&quot;</p>
+                                        <p className="text-gray-600 leading-loose font-light text-sm italic pr-12 mb-4">&quot;{review.comment}&quot;</p>
+
+                                        {/* Display Review Images */}
+                                        {review.images && (
+                                            <div className="flex gap-2 overflow-x-auto pb-2">
+                                                {(() => {
+                                                    try {
+                                                        const imgs = JSON.parse(review.images);
+                                                        if (Array.isArray(imgs)) {
+                                                            return imgs.map((img: string, i: number) => (
+                                                                <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform">
+                                                                    <Image src={img} alt="review" fill className="object-cover" />
+                                                                </div>
+                                                            ));
+                                                        }
+                                                        return null;
+                                                    } catch {
+                                                        return null;
+                                                    }
+                                                })()}
+                                            </div>
+                                        )}
                                     </div>
                                 ))
                             )}
@@ -732,37 +976,33 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             </div>
 
             {/* Sticky Mobile Add to Bag - LUXURY VERSION */}
-            <div className="fixed bottom-16 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 p-6 lg:hidden z-40 safe-area-pb shadow-[0_-10px_30px_rgba(0,0,0,0.05)] rounded-t-[2.5rem]">
-                <div className="flex gap-6 items-center">
-                    <div className="flex flex-col">
-                        <span className="text-[9px] text-gray-400 uppercase font-black tracking-[0.2em] mb-1">{t('product.totalTTC')}</span>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-light text-black tracking-tighter">{currentPrice.toFixed(2)}€</span>
-                        </div>
-                    </div>
-                    <button
-                        disabled={!canAddToCart}
-                        onClick={() => addToCart({
-                            id: product.id,
-                            title: localizedName,
-                            price: currentPrice,
-                            image: displayImages[0],
-                            variantId: selectedVariant?.id,
-                            variantName: selectedVariant?.name,
-                            taxRate: product.taxRate || 0
-                        }, quantity)}
-                        className={`flex-1 py-4 rounded-full uppercase tracking-[0.2em] font-bold text-xs shadow-2xl flex items-center justify-center gap-3 transition-transform active:scale-95 ${canAddToCart
-                            ? 'bg-black text-white'
-                            : 'bg-gray-100 text-gray-400'
-                            }`}
-                    >
-                        {isOutOfStock ? (t('product.soldOut') || 'SOLDOUT') : (t('product.addToCart') || 'PANIER')}
-                        <ShoppingBag size={14} />
-                    </button>
+            <div className="fixed bottom-20 left-4 right-4 bg-[#1A1A1A]/90 backdrop-blur-xl border border-white/10 p-4 lg:hidden z-40 rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center justify-between gap-4 animate-in slide-in-from-bottom-2">
+                <div className="flex flex-col pl-2">
+                    <span className="text-[9px] text-gray-400 uppercase font-black tracking-[0.2em] mb-0.5">{t('product.totalTTC')}</span>
+                    <span className="text-xl font-serif text-white">{currentPrice.toFixed(2)}€</span>
                 </div>
+                <button
+                    disabled={!canAddToCart}
+                    onClick={() => addToCart({
+                        id: product.id,
+                        title: localizedName,
+                        price: currentPrice,
+                        image: displayImages[0],
+                        variantId: selectedVariant?.id,
+                        variantName: selectedVariant?.name,
+                        taxRate: product.taxRate || 0
+                    }, quantity)}
+                    className={`px-8 py-3.5 rounded-full uppercase tracking-[0.2em] font-bold text-[10px] shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 ${canAddToCart
+                        ? 'bg-[var(--honey-gold)] text-black hover:bg-[#D4AF37]'
+                        : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                        }`}
+                >
+                    {isOutOfStock ? (t('product.soldOut') || 'SOLDOUT') : (t('product.addToCart') || 'AJOUTER')}
+                    <ShoppingBag size={14} />
+                </button>
             </div>
             {/* Related Products Section */}
-            <div className="bg-stone-50/50 mt-32">
+            <div className="bg-stone-50/50 mt-20">
                 <div className="max-w-7xl mx-auto px-6 py-24">
                     <div className="mb-12">
                         <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold">{t('product.suggestions')}</span>
@@ -772,9 +1012,9 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                 </div>
             </div>
 
-            <div className="pb-32">
+            <div className="pb-16">
                 <NewArrivals />
             </div>
-        </main >
+        </main>
     );
 }

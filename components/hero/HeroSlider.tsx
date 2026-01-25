@@ -83,93 +83,80 @@ export default function HeroSlider() {
     );
 
     return (
-        <section className="relative w-full lg:h-[500px] bg-white overflow-hidden border-b border-gray-100/50">
+        <section className="relative w-full px-4 pt-32 pb-12 lg:px-8 bg-white min-h-[700px]">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentSlide}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 1 }}
-                    className="absolute inset-0 flex flex-col lg:flex-row"
+                    transition={{ duration: 0.8 }}
+                    className="relative w-full max-w-[1400px] mx-auto aspect-[4/5] lg:aspect-[21/9] bg-black rounded-[3rem] overflow-hidden shadow-2xl group border border-white/50"
                 >
-                    {/* Background Overlay for mobile */}
-                    <div className="absolute inset-0 lg:hidden z-0">
+                    {/* Background Image */}
+                    <div className="absolute inset-0">
                         <Image
                             src={getMainImage(slides[currentSlide])}
                             alt={getLocalizedValue(slides[currentSlide], 'name')}
                             fill
-                            className="object-cover opacity-20"
+                            className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-[10s] ease-linear"
+                            priority
+                            sizes="100vw"
                         />
+                        {/* Gradient Overlay for Text Readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
                     </div>
 
-                    {/* Content Column - More compact */}
-                    <div className="relative flex-1 flex flex-col justify-center px-8 lg:px-24 z-20 py-12 lg:py-0">
-                        <div className="max-w-xl space-y-6 lg:space-y-8">
+                    {/* Content */}
+                    <div className="absolute inset-0 flex flex-col justify-end p-8 lg:p-20 z-20 pb-16 lg:pb-24">
+                        <div className="max-w-xl space-y-6">
                             <motion.div
-                                initial={{ x: -20, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.2, duration: 0.8 }}
                                 className="space-y-4"
                             >
-                                <span className="inline-block text-[var(--coffee-brown)]/40 text-[10px] font-bold uppercase tracking-[0.4em] border-l-2 border-[var(--coffee-brown)]/20 pl-3">
-                                    {t("home.hero.tagline")}
+                                {/* Badge from Mockup */}
+                                <span className="inline-block px-4 py-1.5 bg-[#E3C069] text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-full mb-2 shadow-lg">
+                                    HÉRITAGE MILLÉNAIRE
                                 </span>
-                                <h1 className="text-3xl md:text-5xl lg:text-5xl font-serif text-[var(--coffee-brown)] leading-tight tracking-tight line-clamp-2">
-                                    {getLocalizedValue(slides[currentSlide], 'name')}
+
+                                <h1 className="text-4xl md:text-6xl font-serif text-white leading-tight mb-4 drop-shadow-md">
+                                    {getLocalizedValue(slides[currentSlide], 'name') || "L'excellence du café Yéménite"}
                                 </h1>
+
+                                <p className="text-white/80 line-clamp-2 text-sm md:text-lg font-light max-w-md hidden lg:block">
+                                    {getLocalizedValue(slides[currentSlide], 'description')}
+                                </p>
                             </motion.div>
 
                             <motion.div
-                                initial={{ y: 15, opacity: 0 }}
+                                initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.5, duration: 0.5 }}
-                                className="flex items-center gap-8"
+                                transition={{ delay: 0.4, duration: 0.5 }}
                             >
                                 <Link href={`/shop/${slides[currentSlide].slug}`}>
-                                    <button className="group flex items-center gap-3 px-8 py-3 bg-black text-white font-bold uppercase tracking-[0.15em] hover:bg-[var(--coffee-brown)] transition-all rounded-xl text-[10px] shadow-lg hover:shadow-xl">
-                                        {t("home.hero.cta")}
-                                        <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                    <button className="px-8 py-4 bg-[#E3C069] text-black font-bold uppercase tracking-[0.1em] hover:bg-white transition-all rounded-full text-xs shadow-[0_4px_14px_rgba(227,192,105,0.4)] hover:shadow-white/20 flex items-center gap-3">
+                                        {t("home.hero.cta") || "Découvrir la collection"}
+                                        <ArrowRight size={16} />
                                     </button>
                                 </Link>
-
-                                <div className="flex gap-2">
-                                    {slides.map((_, index) => (
-                                        <button
-                                            key={index}
-                                            onClick={() => setCurrentSlide(index)}
-                                            className={clsx(
-                                                "w-1.5 h-1.5 rounded-full transition-all duration-300",
-                                                index === currentSlide ? "bg-[var(--coffee-brown)] scale-125" : "bg-gray-200 hover:bg-gray-300"
-                                            )}
-                                        />
-                                    ))}
-                                </div>
                             </motion.div>
                         </div>
                     </div>
 
-                    {/* Image Column (Desktop) - 'TV' Look with Crystal Clear Image */}
-                    <div className="hidden lg:flex flex-1 h-full items-center justify-center p-8 lg:pr-16 lg:pl-0">
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.8 }}
-                            className="relative w-full max-w-[650px] aspect-video rounded-[2.5rem] shadow-2xl overflow-hidden group border-[8px] border-white ring-1 ring-gray-100"
-                        >
-                            <Image
-                                src={getMainImage(slides[currentSlide])}
-                                alt={getLocalizedValue(slides[currentSlide], 'name')}
-                                fill
-                                className="object-cover transition-transform duration-[10s] ease-linear group-hover:scale-105"
-                                priority
-                                sizes="(max-width: 1200px) 50vw, 800px"
-                                quality={95}
+                    {/* Slide Indicators */}
+                    <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-30">
+                        {slides.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentSlide(index)}
+                                className={clsx(
+                                    "w-2 h-2 rounded-full transition-all duration-300 backdrop-blur-sm",
+                                    index === currentSlide ? "bg-[#E3C069] w-6" : "bg-white/30 hover:bg-white/80"
+                                )}
                             />
-
-                            {/* Cinematic Gradient - Subtle bottom only */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-10 pointer-events-none" />
-                        </motion.div>
+                        ))}
                     </div>
                 </motion.div>
             </AnimatePresence>

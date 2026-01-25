@@ -186,7 +186,9 @@ export default function Navbar() {
         <>
             <header className={clsx(
                 "fixed top-0 start-0 end-0 z-50 flex flex-col transition-all duration-300",
-                isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-0 border-b border-black/5" : "bg-transparent py-2 px-0"
+                // Mobile: Always have background | Desktop: Transparent until scrolled
+                "bg-white/95 backdrop-blur-md shadow-sm border-b border-black/5 md:border-none",
+                isScrolled ? "md:bg-white/95 md:backdrop-blur-md md:shadow-sm md:py-0 md:border-b md:border-black/5" : "md:bg-transparent md:py-2 md:px-0 md:shadow-none"
             )}>
                 {/* Top Level: Marquee */}
                 <div className={clsx("transition-all duration-300 hidden md:block", isScrolled ? "h-0 opacity-0 overflow-hidden" : "h-auto opacity-100")}>
@@ -199,7 +201,7 @@ export default function Navbar() {
 
                         {/* --- MOBILE HEADER LAYOUT --- */}
                         <div className="flex md:hidden items-center justify-between h-16">
-                            {/* Left: Icons (Menu, Cart) */}
+                            {/* Left: Menu */}
                             <div className="flex items-center gap-5">
                                 <button
                                     onClick={() => setIsMobileMenuOpen(true)}
@@ -207,9 +209,22 @@ export default function Navbar() {
                                 >
                                     <Menu className="w-6 h-6 stroke-1.5" />
                                 </button>
+                            </div>
+
+                            {/* Center: Site Name */}
+                            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                <Link href="/" className="block">
+                                    <span className="text-xl font-bold uppercase tracking-[0.15em] text-black">
+                                        {settings.site_name || "YEMEN KAF"}
+                                    </span>
+                                </Link>
+                            </div>
+
+                            {/* Right: Cart */}
+                            <div className="flex items-center gap-5">
                                 <button
                                     onClick={openCart}
-                                    className="relative text-[var(--coffee-brown)] hover:text-black transition-colors"
+                                    className="relative text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors"
                                 >
                                     <ShoppingBag className="w-5 h-5 stroke-1.5" />
                                     {itemCount > 0 && (
@@ -219,27 +234,13 @@ export default function Navbar() {
                                     )}
                                 </button>
                             </div>
-
-                            {/* Right: Logo */}
-                            <Link href="/" className="relative block">
-                                <div className="relative w-28 h-8 transition-all duration-300">
-                                    <Image
-                                        src={logoSrc}
-                                        alt={`${settings.site_name} Logo`}
-                                        fill
-                                        className="object-contain object-right"
-                                        priority
-                                        sizes="120px"
-                                    />
-                                </div>
-                            </Link>
                         </div>
 
 
                         {/* --- DESKTOP HEADER LAYOUT --- */}
                         <div className={clsx(
                             "hidden md:flex items-center justify-between transition-all duration-300",
-                            isScrolled ? "h-16" : "h-20"
+                            isScrolled ? "h-14" : "h-16"
                         )}>
 
                             {/* LEFT: Logo */}

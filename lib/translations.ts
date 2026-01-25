@@ -237,6 +237,20 @@ export const translations = {
                 cancel: "Cancel",
                 delete: "Delete",
             },
+            menu: {
+                overview: "Overview",
+                orders: "Orders",
+                profile: "Profile",
+                addresses: "Addresses",
+                logout: "Logout"
+            },
+            goldMember: "Gold Member",
+            loyaltyPoints: "Yemen Kaf Loyalty Points",
+            viewRewards: "View Rewards",
+            welcomeMessage: "Welcome to your personal space.",
+            addressSecurePromise: "Your information is secure and will only be used for delivery.",
+            myAddress: "My Address",
+            addressDesc: "Manage your primary delivery address. It will be used by default for your orders.",
         },
         // Wishlist
         wishlist: {
@@ -358,14 +372,36 @@ export const translations = {
         contact: {
             title: "Contact Us",
             subtitle: "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+            sendMsgTitle: "Send us a Message",
             name: "Full Name",
             email: "Email Address",
             phone: "Phone Number",
+            address: "Address",
+            businessHours: "Business Hours",
+            openMoFr: "Monday - Friday: 9:00 AM - 6:00 PM",
+            openSa: "Saturday: 10:00 AM - 4:00 PM",
+            closedSu: "Sunday: Closed",
             subject: "Subject",
             message: "Message",
             send: "Send Message",
+            processing: "Processing...",
             success: "Message sent successfully! We'll get back to you soon.",
-            error: "Failed to send message. Please try again or email us directly."
+            error: "Failed to send message. Please try again or email us directly.",
+            placeholders: {
+                name: "John Doe",
+                email: "john@example.com",
+                phone: "+33 6 12 34 56 78",
+                message: "Tell us how we can help you..."
+            },
+            subjects: {
+                select: "Select a subject",
+                general: "General Inquiry",
+                order: "Order Question",
+                product: "Product Information",
+                shipping: "Shipping & Delivery",
+                wholesale: "Wholesale Inquiry",
+                other: "Other"
+            }
         },
         story: {
             heritage: "Our Heritage",
@@ -453,19 +489,189 @@ export const translations = {
                 tryAgain: "Try Again"
             },
             dashboard: {
-                title: "Dashboard Overview",
-                lastUpdated: "Last updated",
+                title: "Dashboard",
+                controlPanel: "Control Panel",
                 dashboardError: "Dashboard Error",
+                syncing: "Syncing real-time records...",
                 kpi: {
-                    totalRevenue: "Total Revenue",
-                    totalOrders: "Total Orders",
-                    totalCustomers: "Total Customers",
-                    lowStockItems: "Low Stock Items"
+                    revenue: "Gross Revenue",
+                    orders: "Total Orders",
+                    customers: "New Customers",
+                    lowStock: "Low Stock",
+                    checkNow: "Check now",
+                    allSet: "All set"
                 },
-                charts: {
-                    salesOverview: "Sales Overview",
-                    recentOrders: "Recent Orders",
-                    topProducts: "Top Products"
+                sales: {
+                    title: "Sales Performance",
+                    subtitle: "Daily revenue overview for the last 30 days",
+                    last30Days: "Last 30 Days",
+                    last7Days: "Last 7 Days",
+                    noData: "No sales data available for this period"
+                },
+                recentOrders: {
+                    title: "Recent Orders",
+                    viewAll: "View All",
+                    noOrders: "No orders found"
+                },
+            },
+            support: {
+                title: "Support Tickets",
+                subtitle: "Manage customer inquiries and issues.",
+                queueClear: "Clear inbox! All tickets resolved.",
+                goToHelpDesk: "Go to Help Desk",
+                loading: "Loading tickets...",
+                noTickets: "No tickets found.",
+                ticketNotFound: "Ticket not found.",
+                viewDetails: "View Details",
+                replyPlaceholder: "Type your reply...",
+                send: "Send",
+                sending: "Sending...",
+                internalNote: "Internal Note",
+                you: "You",
+                customer: "Customer",
+                noMessages: "No messages yet. Start the conversation.",
+                priorityLabel: "{priority} Priority",
+                table: {
+                    subject: "Subject",
+                    customer: "Customer",
+                    status: "Status",
+                    lastUpdate: "Last Update",
+                    messages: "{count} messages"
+                },
+                statuses: {
+                    all: "All",
+                    open: "Open",
+                    pending: "Pending",
+                    resolved: "Resolved",
+                    closed: "Closed"
+                },
+                loadFailed: "Failed to load ticket(s)",
+                sendFailed: "Failed to send message"
+            },
+            marketing: {
+                coupons: {
+                    title: "Marketing & Coupons",
+                    subtitle: "Manage promotional codes and special offers.",
+                    addNew: "Create Coupon",
+                    editCoupon: "Edit Coupon",
+                    newCoupon: "New Coupon",
+                    cancel: "Cancel",
+                    searchPlaceholder: "Search code...",
+                    tabs: {
+                        info: "Information",
+                        conditions: "Conditions",
+                        actions: "Actions"
+                    },
+                    form: {
+                        name: "Internal Name",
+                        code: "Coupon Code",
+                        description: "Description (Public)",
+                        isActive: "Active",
+                        startsAt: "Valid From",
+                        endsAt: "Valid Until",
+                        minAmount: "Minimum Order Amount",
+                        totalAvailable: "Total Available",
+                        totalPerUser: "Limit Per User",
+                        freeShipping: "Free Shipping",
+                        freeShippingDesc: "Grants free shipping if conditions are met.",
+                        percentDiscount: "Percent Discount (%)",
+                        amountDiscount: "Amount Discount",
+                        update: "Update Coupon",
+                        create: "Create Coupon"
+                    },
+                    list: {
+                        loading: "Loading rules...",
+                        noRules: "No Cart Rules Found",
+                        noRulesDesc: "Create your first coupon code to start running promotions.",
+                        draft: "DRAFT",
+                        off: "Off",
+                        now: "Now",
+                        forever: "Forever",
+                        confirmDelete: "Delete this coupon?"
+                    },
+                    messages: {
+                        created: "Coupon created",
+                        updated: "Coupon updated",
+                        deleted: "Coupon deleted",
+                        loadFailed: "Failed to load coupons",
+                        operationFailed: "Operation failed",
+                        deleteFailed: "Delete failed"
+                    }
+                },
+                newsletter: {
+                    title: "Newsletter Subscribers",
+                    subtitle: "Manage your email audience.",
+                    total: "Total",
+                    email: "Email",
+                    status: "Status",
+                    joinedDate: "Joined Date",
+                    active: "Active",
+                    unsubscribed: "Unsubscribed",
+                    noSubscribers: "No subscribers yet.",
+                    loading: "Loading..."
+                }
+            },
+            design: {
+                homepage: {
+                    title: "Homepage Content Manager",
+                    subtitle: "Design your discovery experience and conversion modules.",
+                    saveAll: "Save All Changes",
+                    saving: "Saving...",
+                    sections: {
+                        hero: "Hero Slider Products",
+                        featured: "Featured Collections",
+                        flashSale: "Flash Sale Module",
+                        bestSellers: "Best Sellers",
+                        specialOffers: "Special Offers",
+                        promoGrid: "Promo Grid (Discovery Tiles)"
+                    },
+                    form: {
+                        endDate: "End Date/Time",
+                        urgencyText: "Urgency Text",
+                        urgencyPlaceholder: "Ends soon!",
+                        tile: "Tile",
+                        title: "Title",
+                        subtitle: "Subtitle",
+                        link: "Link (e.g. /shop?cat=1)",
+                        imageSource: "Image Source",
+                        imagePlaceholder: "Image URL or Upload",
+                        upload: "Upload Image"
+                    },
+                    messages: {
+                        saved: "Homepage configuration saved!",
+                        uploadFailed: "Upload failed"
+                    },
+                    list: {
+                        noItems: "No items selected.",
+                        selectHero: "Select hero product...",
+                        selectCollection: "Select collection...",
+                        selectFlashSale: "Select flash sale product...",
+                        selectBestSeller: "Select best seller...",
+                        selectSpecialOffer: "Select special offer...",
+                        search: "Search...",
+                        noAvailable: "No items available",
+                        allSelected: "All items selected",
+                        noResults: "No results found",
+                        category: "Category",
+                        product: "Product"
+                    }
+                },
+                menus: {
+                    title: "Navigation Builder",
+                    subtitle: "Manage your site's header and footer links.",
+                    save: "Save Navigation",
+                    saving: "Saving...",
+                    mainNav: "Main Navigation (Header)",
+                    footerLinks: "Footer Links",
+                    addLink: "Add Link",
+                    noLinks: "No links added to this menu.",
+                    text: "Text",
+                    url: "URL",
+                    note: "Note",
+                    noteDesc: "Internal links should start with a slash (e.g. /shop). External links should include the full URL.",
+                    messages: {
+                        saved: "Navigation menus saved!"
+                    }
                 }
             },
             orders: {
@@ -555,6 +761,18 @@ export const translations = {
                 description: "Description",
                 confirmDelete: "Delete this brand? This might affect associated products."
             },
+            invoices: {
+                title: "Customer Invoices",
+                subtitle: "Manage and download order invoices.",
+                searchPlaceholder: "Search by # or Customer...",
+                invoiceNumber: "Invoice #",
+                customer: "Customer",
+                date: "Date",
+                amount: "Amount",
+                actions: "Action",
+                download: "Download",
+                noInvoices: "No invoices found."
+            },
             attributes: {
                 title: "Product Attributes",
                 addNew: "Add Attribute",
@@ -578,6 +796,33 @@ export const translations = {
                     addresses: "Addresses",
                     notes: "Notes"
                 }
+            },
+            categories: {
+                title: "Categories",
+                subtitle: "Organize your product hierarchy and seasonal collections.",
+                searchPlaceholder: "Explore collections...",
+                order: "Order",
+                noImg: "NO IMG",
+                hidden: "Hidden",
+                editTitle: "Edit Category",
+                newTitle: "New Category",
+                aiTranslate: "AI Translate to {lang}",
+                enterEnglishFirst: "Enter English name first",
+                topLevel: "None (Top Level)",
+                autoGenerated: "auto-generated",
+                imageUrl: "Image URL",
+                uploadFailed: "Upload failed",
+                saveChanges: "Save Changes",
+                createCategory: "Create Category",
+                updated: "Category updated",
+                created: "Category created",
+                deleteFailed: "Delete failed",
+                deleted: "Category deleted",
+                loadFailed: "Failed to load categories",
+                generated: "Translations generated!",
+                translationFailed: "Translation failed",
+                operationFailed: "Operation failed",
+                networkError: "Network error"
             },
             inventory: {
                 title: "Inventory Management",
@@ -649,7 +894,8 @@ export const translations = {
                     blog: "Blog",
                     profile: "My Profile",
                     stripe: "Stripe Config",
-                    signOut: "Sign Out"
+                    signOut: "Sign Out",
+                    invoices: "Invoices"
                 }
             }
         }
@@ -891,6 +1137,20 @@ export const translations = {
                 cancel: "Annuler",
                 delete: "Supprimer",
             },
+            menu: {
+                overview: "Aperçu",
+                orders: "Commandes",
+                profile: "Profil",
+                addresses: "Adresses",
+                logout: "Déconnexion"
+            },
+            goldMember: "Membre Gold",
+            loyaltyPoints: "Points de Fidélité Yémen Kaf",
+            viewRewards: "Voir les récompenses",
+            welcomeMessage: "Bienvenue dans votre espace personnel.",
+            addressSecurePromise: "Vos informations sont sécurisées et ne seront utilisées que pour la livraison.",
+            myAddress: "Mon Adresse",
+            addressDesc: "Gérez votre adresse de livraison principale. Elle sera utilisée par défaut pour vos commandes.",
         },
         // Wishlist
         wishlist: {
@@ -1012,14 +1272,36 @@ export const translations = {
         contact: {
             title: "Contactez-nous",
             subtitle: "Des questions? Nous serions ravis de vous entendre. Envoyez-nous un message et nous vous répondrons dès que possible.",
+            sendMsgTitle: "Envoyez-nous un message",
             name: "Nom complet",
             email: "Adresse e-mail",
             phone: "Numéro de téléphone",
+            address: "Adresse",
+            businessHours: "Horaires d'ouverture",
+            openMoFr: "Lundi - Vendredi : 9h00 - 18h00",
+            openSa: "Samedi : 10h00 - 16h00",
+            closedSu: "Dimanche : Fermé",
             subject: "Sujet",
             message: "Message",
             send: "Envoyer le message",
+            processing: "Traitement...",
             success: "Message envoyé avec succès! Nous vous répondrons bientôt.",
-            error: "Échec de l'envoi du message. Veuillez réessayer ou nous envoyer un e-mail directement."
+            error: "Échec de l'envoi du message. Veuillez réessayer ou nous envoyer un e-mail directement.",
+            placeholders: {
+                name: "Jean Dupont",
+                email: "jean@exemple.com",
+                phone: "+33 6 12 34 56 78",
+                message: "Dites-nous comment nous pouvons vous aider..."
+            },
+            subjects: {
+                select: "Sélectionnez un sujet",
+                general: "Demande générale",
+                order: "Question sur une commande",
+                product: "Information produit",
+                shipping: "Expédition & Livraison",
+                wholesale: "Demande de vente en gros",
+                other: "Autre"
+            }
         },
         story: {
             heritage: "Notre Héritage",
@@ -1108,18 +1390,188 @@ export const translations = {
             },
             dashboard: {
                 title: "Tableau de Bord",
-                lastUpdated: "Dernière mise à jour",
+                controlPanel: "Panneau de Contrôle",
                 dashboardError: "Erreur du Tableau de Bord",
+                syncing: "Synchronisation des données en temps réel...",
                 kpi: {
-                    totalRevenue: "Revenu Total",
-                    totalOrders: "Total Commandes",
-                    totalCustomers: "Total Clients",
-                    lowStockItems: "Articles en Stock Faible"
+                    revenue: "Revenus Bruts",
+                    orders: "Total Commandes",
+                    customers: "Nouveaux Clients",
+                    lowStock: "Stock Faible",
+                    checkNow: "Vérifier maintenant",
+                    allSet: "Tout est bon"
                 },
-                charts: {
-                    salesOverview: "Aperçu des Ventes",
-                    recentOrders: "Commandes Récentes",
-                    topProducts: "Meilleurs Produits"
+                sales: {
+                    title: "Performance des Ventes",
+                    subtitle: "Aperçu des revenus quotidiens sur les 30 derniers jours",
+                    last30Days: "30 Derniers Jours",
+                    last7Days: "7 Derniers Jours",
+                    noData: "Aucune donnée de vente disponible pour cette période"
+                },
+                recentOrders: {
+                    title: "Commandes Récentes",
+                    viewAll: "Voir Tout",
+                    noOrders: "Aucune commande trouvée"
+                },
+            },
+            support: {
+                title: "Tickets de Support",
+                subtitle: "Gérez les questions et les problèmes des clients.",
+                queueClear: "Boîte de réception vide ! Tous les tickets ont été résolus.",
+                goToHelpDesk: "Aller au centre d'aide",
+                loading: "Chargement des tickets...",
+                noTickets: "Aucun ticket trouvé.",
+                ticketNotFound: "Ticket non trouvé.",
+                viewDetails: "Voir les détails",
+                replyPlaceholder: "Tapez votre réponse...",
+                send: "Envoyer",
+                sending: "Envoi...",
+                internalNote: "Note interne",
+                you: "Vous",
+                customer: "Client",
+                noMessages: "Pas encore de messages. Commencez la conversation.",
+                priorityLabel: "Priorité {priority}",
+                table: {
+                    subject: "Sujet",
+                    customer: "Client",
+                    status: "Statut",
+                    lastUpdate: "Dernière mise à jour",
+                    messages: "{count} messages"
+                },
+                statuses: {
+                    all: "Tous",
+                    open: "Ouvert",
+                    pending: "En attente",
+                    resolved: "Résolu",
+                    closed: "Fermé"
+                },
+                loadFailed: "Échec du chargement du/des ticket(s)",
+                sendFailed: "Échec de l'envoi du message"
+            },
+            marketing: {
+                coupons: {
+                    title: "Marketing & Coupons",
+                    subtitle: "Gérez les codes promotionnels et les offres spéciales.",
+                    addNew: "Créer un Coupon",
+                    editCoupon: "Modifier le Coupon",
+                    newCoupon: "Nouveau Coupon",
+                    cancel: "Annuler",
+                    searchPlaceholder: "Rechercher un code...",
+                    tabs: {
+                        info: "Informations",
+                        conditions: "Conditions",
+                        actions: "Actions"
+                    },
+                    form: {
+                        name: "Nom Interne",
+                        code: "Code du Coupon",
+                        description: "Description (Publique)",
+                        isActive: "Actif",
+                        startsAt: "Valide Du",
+                        endsAt: "Valide Jusqu'au",
+                        minAmount: "Montant Minimum de Commande",
+                        totalAvailable: "Total Disponible",
+                        totalPerUser: "Limite par Utilisateur",
+                        freeShipping: "Livraison Gratuite",
+                        freeShippingDesc: "Accorde la livraison gratuite si les conditions sont remplies.",
+                        percentDiscount: "Remise en Pourcentage (%)",
+                        amountDiscount: "Montant de la Remise",
+                        update: "Mettre à jour le Coupon",
+                        create: "Créer le Coupon"
+                    },
+                    list: {
+                        loading: "Chargement des règles...",
+                        noRules: "Aucune Règle de Panier Trouvée",
+                        noRulesDesc: "Créez votre premier code coupon pour commencer vos promotions.",
+                        draft: "BROUILLON",
+                        off: "de réduction",
+                        now: "Maintenant",
+                        forever: "Toujours",
+                        confirmDelete: "Supprimer ce coupon ?"
+                    },
+                    messages: {
+                        created: "Coupon créé",
+                        updated: "Coupon mis à jour",
+                        deleted: "Coupon supprimé",
+                        loadFailed: "Échec du chargement des coupons",
+                        operationFailed: "L'opération a échoué",
+                        deleteFailed: "Échec de la suppression"
+                    }
+                },
+                newsletter: {
+                    title: "Abonnés à la Newsletter",
+                    subtitle: "Gérez votre audience par e-mail.",
+                    total: "Total",
+                    email: "E-mail",
+                    status: "Statut",
+                    joinedDate: "Date d'Adhésion",
+                    active: "Actif",
+                    unsubscribed: "Désabonné",
+                    noSubscribers: "Aucun abonné pour le moment.",
+                    loading: "Chargement..."
+                }
+            },
+            design: {
+                homepage: {
+                    title: "Gestionnaire de Contenu de la Page d'Accueil",
+                    subtitle: "Concevez votre expérience de découverte et vos modules de conversion.",
+                    saveAll: "Enregistrer Tout",
+                    saving: "Enregistrement...",
+                    sections: {
+                        hero: "Produits du Slider Hero",
+                        featured: "Collections en Vedette",
+                        flashSale: "Module de Vente Flash",
+                        bestSellers: "Meilleures Ventes",
+                        specialOffers: "Offres Spéciales",
+                        promoGrid: "Grille Promo (Tuiles Découverte)"
+                    },
+                    form: {
+                        endDate: "Date/Heure de Fin",
+                        urgencyText: "Texte d'Urgence",
+                        urgencyPlaceholder: "Se termine bientôt !",
+                        tile: "Tuile",
+                        title: "Titre",
+                        subtitle: "Sous-titre",
+                        link: "Lien (ex: /shop?cat=1)",
+                        imageSource: "Source de l'Image",
+                        imagePlaceholder: "URL de l'image ou Télécharger",
+                        upload: "Télécharger l'Image"
+                    },
+                    messages: {
+                        saved: "Configuration de la page d'accueil enregistrée !",
+                        uploadFailed: "Échec du téléchargement"
+                    },
+                    list: {
+                        noItems: "Aucun élément sélectionné.",
+                        selectHero: "Sélectionner un produit hero...",
+                        selectCollection: "Sélectionner une collection...",
+                        selectFlashSale: "Sélectionner un produit en vente flash...",
+                        selectBestSeller: "Sélectionner une meilleure vente...",
+                        selectSpecialOffer: "Sélectionner une offre spéciale...",
+                        search: "Rechercher...",
+                        noAvailable: "Aucun élément disponible",
+                        allSelected: "Tous les éléments sélectionnés",
+                        noResults: "Aucun résultat trouvé",
+                        category: "Catégorie",
+                        product: "Produit"
+                    }
+                },
+                menus: {
+                    title: "Constructeur de Navigation",
+                    subtitle: "Gérez les liens de l'en-tête et du pied de page de votre site.",
+                    save: "Enregistrer la Navigation",
+                    saving: "Enregistrement...",
+                    mainNav: "Navigation Principale (En-tête)",
+                    footerLinks: "Liens du Pied de Page",
+                    addLink: "Ajouter un Lien",
+                    noLinks: "Aucun lien ajouté à ce menu.",
+                    text: "Texte",
+                    url: "URL",
+                    note: "Note",
+                    noteDesc: "Les liens internes doivent commencer par un slash (ex: /shop). Les liens externes doivent inclure l'URL complète.",
+                    messages: {
+                        saved: "Menus de navigation enregistrés !"
+                    }
                 }
             },
             orders: {
@@ -1209,6 +1661,18 @@ export const translations = {
                 description: "Description",
                 confirmDelete: "Supprimer cette marque ? Cela pourrait affecter les produits associés."
             },
+            invoices: {
+                title: "Factures Client",
+                subtitle: "Gérez et téléchargez les factures des commandes.",
+                searchPlaceholder: "Rechercher par N° ou Client...",
+                invoiceNumber: "N° Facture",
+                customer: "Client",
+                date: "Date",
+                amount: "Montant",
+                actions: "Action",
+                download: "Télécharger",
+                noInvoices: "Aucune facture trouvée."
+            },
             attributes: {
                 title: "Attributs de Produit",
                 addNew: "Ajouter un Attribut",
@@ -1232,6 +1696,33 @@ export const translations = {
                     addresses: "Adresses",
                     notes: "Notes"
                 }
+            },
+            categories: {
+                title: "Catégories",
+                subtitle: "Organisez votre hiérarchie de produits et vos collections saisonnières.",
+                searchPlaceholder: "Explorer les collections...",
+                order: "Ordre",
+                noImg: "PAS D'IMAGE",
+                hidden: "Masqué",
+                editTitle: "Modifier la Catégorie",
+                newTitle: "Nouvelle Catégorie",
+                aiTranslate: "Traduction IA vers le {lang}",
+                enterEnglishFirst: "Entrez d'abord le nom en anglais",
+                topLevel: "Aucun (Niveau supérieur)",
+                autoGenerated: "auto-généré",
+                imageUrl: "URL de l'image",
+                uploadFailed: "Échec du téléchargement",
+                saveChanges: "Enregistrer les modifications",
+                createCategory: "Créer la Catégorie",
+                updated: "Catégorie mise à jour",
+                created: "Catégorie créée",
+                deleteFailed: "Échec de la suppression",
+                deleted: "Catégorie supprimée",
+                loadFailed: "Échec du chargement des catégories",
+                generated: "Traductions générées !",
+                translationFailed: "Échec de la traduction",
+                operationFailed: "L'opération a échoué",
+                networkError: "Erreur réseau"
             },
             inventory: {
                 title: "Gestion du Stock",
@@ -1303,7 +1794,8 @@ export const translations = {
                     blog: "Blog",
                     profile: "Mon Profil",
                     stripe: "Configuration Stripe",
-                    signOut: "Déconnexion"
+                    signOut: "Déconnexion",
+                    invoices: "Factures"
                 }
             }
         }
@@ -1545,6 +2037,20 @@ export const translations = {
                 cancel: "إلغاء",
                 delete: "حذف",
             },
+            menu: {
+                overview: "نظرة عامة",
+                orders: "الطلبات",
+                profile: "الملف الشخصي",
+                addresses: "العناوين",
+                logout: "تسجيل الخروج"
+            },
+            goldMember: "عضو ذهبي",
+            loyaltyPoints: "نقاط ولاء يمن كاف",
+            viewRewards: "عرض المكافآت",
+            welcomeMessage: "مرحباً بك في مساحتك الشخصية.",
+            addressSecurePromise: "معلوماتك آمنة وسيتم استخدامها فقط للتوصيل.",
+            myAddress: "عنواني",
+            addressDesc: "قم بإدارة عنوان التوصيل الرئيسي الخاص بك. سيتم استخدامه بشكل افتراضي لطلباتك.",
         },
         // Wishlist
         wishlist: {
@@ -1666,14 +2172,36 @@ export const translations = {
         contact: {
             title: "اتصل بنا",
             subtitle: "هل لديك أسئلة؟ نحن نحب أن نسمع منك. أرسل لنا رسالة وسنرد في أقرب وقت ممكن.",
+            sendMsgTitle: "أرسل لنا رسالة",
             name: "الاسم الكامل",
             email: "البريد الإلكتروني",
             phone: "رقم الهاتف",
+            address: "العنوان",
+            businessHours: "ساعات العمل",
+            openMoFr: "الاثنين - الجمعة: 9:00 صباحاً - 6:00 مساءً",
+            openSa: "السبت: 10:00 صباحاً - 4:00 مساءً",
+            closedSu: "الأحد: مغلق",
             subject: "الموضوع",
             message: "الرسالة",
             send: "إرسال الرسالة",
+            processing: "جاري المعالجة...",
             success: "تم إرسال الرسالة بنجاح! سنرد عليك قريباً.",
-            error: "فشل إرسال الرسالة. يرجى المحاولة مرة أخرى أو مراسلتنا مباشرة."
+            error: "فشل إرسال الرسالة. يرجى المحاولة مرة أخرى أو مراسلتنا مباشرة.",
+            placeholders: {
+                name: "محمد أحمد",
+                email: "mohamed@example.com",
+                phone: "+967 77 123 4567",
+                message: "أخبرنا كيف يمكننا مساعدتك..."
+            },
+            subjects: {
+                select: "اختر موضوعاً",
+                general: "استفسار عام",
+                order: "سؤال حول الطلب",
+                product: "معلومات المنتج",
+                shipping: "الشحن والتوصيل",
+                wholesale: "استفسار الجملة",
+                other: "آخر"
+            }
         },
         story: {
             heritage: "تراثنا",
@@ -1762,18 +2290,188 @@ export const translations = {
             },
             dashboard: {
                 title: "لوحة التحكم",
-                lastUpdated: "آخر تحديث",
+                controlPanel: "لوحة التحكم",
                 dashboardError: "خطأ في لوحة التحكم",
+                syncing: "جاري مزامنة السجلات في الوقت الفعلي...",
                 kpi: {
-                    totalRevenue: "إجمالي الإيرادات",
-                    totalOrders: "إجمالي الطلبات",
-                    totalCustomers: "إجمالي العملاء",
-                    lowStockItems: "منتجات بمخزون منخفض"
+                    revenue: "إجمالي الإيرادات",
+                    orders: "إجمالي الطلبات",
+                    customers: "عملاء جدد",
+                    lowStock: "مخزون منخفض",
+                    checkNow: "تحقق الآن",
+                    allSet: "كل شيء جاهز"
                 },
-                charts: {
-                    salesOverview: "نظرة عامة على المبيعات",
-                    recentOrders: "الطلبات الأخيرة",
-                    topProducts: "المنتجات الأكثر مبيعاً"
+                sales: {
+                    title: "أداء المبيعات",
+                    subtitle: "نظرة عامة على الإيرادات اليومية لآخر 30 يومًا",
+                    last30Days: "آخر 30 يومًا",
+                    last7Days: "آخر 7 أيام",
+                    noData: "لا توجد بيانات مبيعات متوفرة لهذه الفترة"
+                },
+                recentOrders: {
+                    title: "أحدث الطلبات",
+                    viewAll: "عرض الكل",
+                    noOrders: "لم يتم العثور على طلبات"
+                },
+            },
+            support: {
+                title: "تذاكر الدعم",
+                subtitle: "إدارة استفسارات ومشكلات العملاء.",
+                queueClear: "البريد الوارد فارغ! تم حل جميع التذاكر.",
+                goToHelpDesk: "الذهاب إلى مكتب المساعدة",
+                loading: "جاري تحميل التذاكر...",
+                noTickets: "لم يتم العثور على تذاكر.",
+                ticketNotFound: "التذكرة غير موجودة.",
+                viewDetails: "عرض التفاصيل",
+                replyPlaceholder: "اكتب ردك هنا...",
+                send: "إرسال",
+                sending: "جاري الإرسال...",
+                internalNote: "ملاحظة داخلية",
+                you: "أنت",
+                customer: "العميل",
+                noMessages: "لا توجد رسائل بعد. ابدأ المحادثة.",
+                priorityLabel: "أولوية {priority}",
+                table: {
+                    subject: "الموضوع",
+                    customer: "العميل",
+                    status: "الحالة",
+                    lastUpdate: "آخر تحديث",
+                    messages: "{count} رسائل"
+                },
+                statuses: {
+                    all: "الكل",
+                    open: "مفتوح",
+                    pending: "قيد الانتظار",
+                    resolved: "تم الحل",
+                    closed: "مغلق"
+                },
+                loadFailed: "فشل تحميل التذاكر",
+                sendFailed: "فشل إرسال الرسالة"
+            },
+            marketing: {
+                coupons: {
+                    title: "التسويق والقسائم",
+                    subtitle: "إدارة الرموز الترويجية والعروض الخاصة.",
+                    addNew: "إنشاء قسيمة",
+                    editCoupon: "تعديل القسيمة",
+                    newCoupon: "قسيمة جديدة",
+                    cancel: "إلغاء",
+                    searchPlaceholder: "بحث عن الرمز...",
+                    tabs: {
+                        info: "المعلومات",
+                        conditions: "الشروط",
+                        actions: "الإجراءات"
+                    },
+                    form: {
+                        name: "الاسم الداخلي",
+                        code: "رمز القسيمة",
+                        description: "الوصف (عام)",
+                        isActive: "نشط",
+                        startsAt: "صالح من",
+                        endsAt: "صالح حتى",
+                        minAmount: "الحد الأدنى لقيمة الطلب",
+                        totalAvailable: "الإجمالي المتاح",
+                        totalPerUser: "الحد لكل مستخدم",
+                        freeShipping: "شحن مجاني",
+                        freeShippingDesc: "يمنح شحناً مجانياً إذا تحققت الشروط.",
+                        percentDiscount: "خصم مئوي (%)",
+                        amountDiscount: "مبلغ الخصم",
+                        update: "تحديث القسيمة",
+                        create: "إنشاء قسيمة"
+                    },
+                    list: {
+                        loading: "جاري تحميل القواعد...",
+                        noRules: "لم يتم العثور على قواعد للسلة",
+                        noRulesDesc: "أنشئ أول رمز قسيمة لبدء حملاتك الترويجية.",
+                        draft: "مسودة",
+                        off: "خصم",
+                        now: "الآن",
+                        forever: "للأبد",
+                        confirmDelete: "هل تريد حذف هذه القسيمة؟"
+                    },
+                    messages: {
+                        created: "تم إنشاء القسيمة",
+                        updated: "تم تحديث القسيمة",
+                        deleted: "تم حذف القسيمة",
+                        loadFailed: "فشل تحميل القسائم",
+                        operationFailed: "فشلت العملية",
+                        deleteFailed: "فشل الحذف"
+                    }
+                },
+                newsletter: {
+                    title: "مشتركو النشرة الإخبارية",
+                    subtitle: "إدارة جمهور بريدك الإلكتروني.",
+                    total: "الإجمالي",
+                    email: "البريد الإلكتروني",
+                    status: "الحالة",
+                    joinedDate: "تاريخ الانضمام",
+                    active: "نشط",
+                    unsubscribed: "غير مشترك",
+                    noSubscribers: "لا يوجد مشتركون بعد.",
+                    loading: "جاري التحميل..."
+                }
+            },
+            design: {
+                homepage: {
+                    title: "مدير محتوى الصفحة الرئيسية",
+                    subtitle: "صمم تجربة الاكتشاف ووحدات التحويل الخاصة بك.",
+                    saveAll: "حفظ جميع التغييرات",
+                    saving: "جاري الحفظ...",
+                    sections: {
+                        hero: "منتجات سلايدر واجهة الموقع",
+                        featured: "المجموعات المميزة",
+                        flashSale: "وحدة العروض السريعة",
+                        bestSellers: "الأكثر مبيعاً",
+                        specialOffers: "عروض خاصة",
+                        promoGrid: "شبكة العروض (بلاطات الاكتشاف)"
+                    },
+                    form: {
+                        endDate: "تاريخ/وقت الانتهاء",
+                        urgencyText: "نص الاستعجال",
+                        urgencyPlaceholder: "ينتهي قريباً!",
+                        tile: "بلاطة",
+                        title: "العنوان",
+                        subtitle: "العنوان الفرعي",
+                        link: "الرابط (مثلاً /shop?cat=1)",
+                        imageSource: "مصدر الصورة",
+                        imagePlaceholder: "رابط الصورة أو رفع",
+                        upload: "رفع صورة"
+                    },
+                    messages: {
+                        saved: "تم حفظ تكوين الصفحة الرئيسية!",
+                        uploadFailed: "فشل الرفع"
+                    },
+                    list: {
+                        noItems: "لم يتم اختيار أي عناصر.",
+                        selectHero: "اختر منتج واجهة...",
+                        selectCollection: "اختر مجموعة...",
+                        selectFlashSale: "اختر منتج عرض سريع...",
+                        selectBestSeller: "اختر الأكثر مبيعاً...",
+                        selectSpecialOffer: "اختر عرضاً خاصاً...",
+                        search: "بحث...",
+                        noAvailable: "لا توجد عناصر متاحة",
+                        allSelected: "تم اختيار جميع العناصر",
+                        noResults: "لم يتم العثور على نتائج",
+                        category: "تصنيف",
+                        product: "منتج"
+                    }
+                },
+                menus: {
+                    title: "باني القوائم",
+                    subtitle: "إدارة روابط رأس وتذييل الموقع الخاص بك.",
+                    save: "حفظ القوائم",
+                    saving: "جاري الحفظ...",
+                    mainNav: "القائمة الرئيسية (الهيدر)",
+                    footerLinks: "روابط التذييل (الفوتر)",
+                    addLink: "إضافة رابط",
+                    noLinks: "لم يتم إضافة روابط لهذه القائمة.",
+                    text: "النص",
+                    url: "الرابط",
+                    note: "ملاحظة",
+                    noteDesc: "يجب أن تبدأ الروابط الداخلية بشرطة مائلة (مثلاً /shop). يجب أن تتضمن الروابط الخارجية العنوان الكامل.",
+                    messages: {
+                        saved: "تم حفظ قوائم التنقل بنجاح!"
+                    }
                 }
             },
             orders: {
@@ -1863,6 +2561,18 @@ export const translations = {
                 description: "الوصف",
                 confirmDelete: "هل تريد حذف هذه العلامة التجارية؟ قد يؤثر ذلك على المنتجات المرتبطة."
             },
+            invoices: {
+                title: "فواتير العملاء",
+                subtitle: "إدارة وتحميل فواتير الطلبات.",
+                searchPlaceholder: "البحث برقم الفاتورة أو العميل...",
+                invoiceNumber: "رقم الفاتورة",
+                customer: "العميل",
+                date: "التاريخ",
+                amount: "المبلغ",
+                actions: "الإجراء",
+                download: "تحميل",
+                noInvoices: "لم يتم العثور على فواتير."
+            },
             attributes: {
                 title: "سمات المنتجات",
                 addNew: "إضافة سمة",
@@ -1886,6 +2596,33 @@ export const translations = {
                     addresses: "العناوين",
                     notes: "ملاحظات"
                 }
+            },
+            categories: {
+                title: "الفئات",
+                subtitle: "تنظيم تسلسل المنتجات والمجموعات الموسمية.",
+                searchPlaceholder: "استكشاف المجموعات...",
+                order: "الترتيب",
+                noImg: "لا توجد صورة",
+                hidden: "مخفي",
+                editTitle: "تعديل الفئة",
+                newTitle: "فئة جديدة",
+                aiTranslate: "ترجمة ذكية إلى {lang}",
+                enterEnglishFirst: "أدخل الاسم بالإنجليزية أولاً",
+                topLevel: "بدون (مستوى أعلى)",
+                autoGenerated: "توليد تلقائي",
+                imageUrl: "رابط الصورة",
+                uploadFailed: "فشل الرفع",
+                saveChanges: "حفظ التغييرات",
+                createCategory: "إنشاء فئة",
+                updated: "تم تحديث الفئة",
+                created: "تم إنشاء الفئة",
+                deleteFailed: "فشلت عملية الحذف",
+                deleted: "تم حذف الفئة",
+                loadFailed: "فشل تحميل الفئات",
+                generated: "تم توليد الترجمات!",
+                translationFailed: "فشلت الترجمة",
+                operationFailed: "فشلت العملية",
+                networkError: "خطأ في الشبكة"
             },
             inventory: {
                 title: "إدارة المخزون",
@@ -1957,7 +2694,8 @@ export const translations = {
                     blog: "المدونة",
                     profile: "ملفي الشخصي",
                     stripe: "إعدادات سترايب",
-                    signOut: "تسجيل الخروج"
+                    signOut: "تسجيل الخروج",
+                    invoices: "الفواتير"
                 }
             }
         }

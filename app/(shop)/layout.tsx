@@ -33,6 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }), {} as Record<string, string>);
 
   return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
     title: settings['site_name'] || "Yemeni Market - Authentic Goods",
     description: settings['site_description'] || "Premium Yemeni products including Sidr Honey and Coffee.",
     icons: {
@@ -74,3 +75,4 @@ export default function ShopLayout({
     </html>
   );
 }
+// Force rebuild for mobile nav

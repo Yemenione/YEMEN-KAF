@@ -292,7 +292,7 @@ function ShopContent() {
                     </div>
                 ) : (
                     <div className={viewMode === 'grid'
-                        ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'
+                        ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4'
                         : 'flex flex-col gap-4'
                     }>
                         {displayProducts.map((product) => (

@@ -56,6 +56,27 @@ export default function SettingsPage() {
         }
     };
 
+    const handleSendTestEmail = async () => {
+        const email = prompt("Enter email address to send test to:");
+        if (!email) return;
+
+        try {
+            const res = await fetch('/api/admin/email/test', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to: email })
+            });
+            if (res.ok) {
+                alert('Test email sent successfully!');
+            } else {
+                const data = await res.json();
+                alert('Failed to send: ' + data.error);
+            }
+        } catch (error) {
+            alert('Error sending test email');
+        }
+    };
+
     if (loading) return <div className="p-8 text-center text-gray-500">Loading settings...</div>;
 
     const tabs = [
@@ -66,7 +87,7 @@ export default function SettingsPage() {
         { id: 'payment', label: 'Payments', icon: CreditCard },
         { id: 'shipping', label: 'Shipping & Delivery', icon: Truck },
         { id: 'taxes', label: 'Taxes & VAT', icon: DollarSign },
-        { id: 'email', label: 'Email (Resend)', icon: ShieldCheck },
+        { id: 'email', label: 'Email (SMTP)', icon: ShieldCheck },
         { id: 'seasonal', label: 'Seasonal / Ramadan', icon: Calendar },
         { id: 'menus', label: 'Menus & Navigation', icon: List },
     ];
@@ -436,17 +457,86 @@ export default function SettingsPage() {
                     )}
 
                     {activeTab === 'email' && (
-                        <div className="space-y-4 animate-in fade-in duration-300">
-                            <h3 className="text-lg font-medium border-b pb-2">Email Service (Resend)</h3>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resend API Key</label>
-                                <input
-                                    type="password"
-                                    value={settings['resend_api_key'] || ''}
-                                    onChange={(e) => handleChange('resend_api_key', e.target.value)}
-                                    className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
-                                    placeholder="re_..."
-                                />
+                        <div className="space-y-6 animate-in fade-in duration-300">
+                            <div className="flex justify-between items-center border-b pb-4">
+                                <h3 className="text-lg font-medium">SMTP Email Configuration</h3>
+                                <button
+                                    onClick={handleSendTestEmail}
+                                    className="text-xs bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-md transition-colors"
+                                >
+                                    Send Test Email
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP Host</label>
+                                    <input
+                                        type="text"
+                                        value={settings['smtp_host'] || ''}
+                                        onChange={(e) => handleChange('smtp_host', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="smtp.example.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP Port</label>
+                                    <input
+                                        type="number"
+                                        value={settings['smtp_port'] || '587'}
+                                        onChange={(e) => handleChange('smtp_port', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="587"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP Username</label>
+                                    <input
+                                        type="text"
+                                        value={settings['smtp_user'] || ''}
+                                        onChange={(e) => handleChange('smtp_user', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="user@example.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP Password</label>
+                                    <input
+                                        type="password"
+                                        value={settings['smtp_password'] || ''}
+                                        onChange={(e) => handleChange('smtp_password', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Email</label>
+                                    <input
+                                        type="email"
+                                        value={settings['smtp_from_email'] || ''}
+                                        onChange={(e) => handleChange('smtp_from_email', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="no-reply@yemenimarket.com"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Name</label>
+                                    <input
+                                        type="text"
+                                        value={settings['smtp_from_name'] || ''}
+                                        onChange={(e) => handleChange('smtp_from_name', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="YEM KAF"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg mt-4">
+                                <h4 className="text-blue-800 font-medium text-sm mb-1">Configuration Tip</h4>
+                                <p className="text-blue-600 text-xs">
+                                    For Gmail, generate an &quot;App Password&quot; to use here. For other providers (Outlook, Hostinger, cPanel), use your standard SMTP credentials.
+                                    Port 587 is usually for STARTTLS, 465 for SSL.
+                                </p>
                             </div>
                         </div>
                     )}

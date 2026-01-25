@@ -16,6 +16,22 @@ export async function GET(req: Request) {
         const minPrice = searchParams.get('min_price');
         const maxPrice = searchParams.get('max_price');
 
+        let categoryFilterId: number | undefined;
+
+        if (categoryId) {
+            if (!isNaN(parseInt(categoryId))) {
+                categoryFilterId = parseInt(categoryId);
+            } else {
+                // Try to find category by slug
+                const category = await prisma.category.findFirst({
+                    where: { slug: categoryId }
+                });
+                if (category) {
+                    categoryFilterId = category.id;
+                }
+            }
+        }
+
         // Build Prisma query
         const where: Prisma.ProductWhereInput = {
             isActive: true,
@@ -25,7 +41,7 @@ export async function GET(req: Request) {
                     { description: { contains: search } }
                 ]
             }),
-            ...(categoryId && { categoryId: parseInt(categoryId) }),
+            ...(categoryFilterId && { categoryId: categoryFilterId }),
             ...(minPrice && { price: { gte: parseFloat(minPrice) } }),
             ...(maxPrice && { price: { lte: parseFloat(maxPrice) } }),
             ...(sort === 'discounted' && {

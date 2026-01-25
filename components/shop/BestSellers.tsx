@@ -44,10 +44,7 @@ export default function BestSellers() {
                 return product.images;
             }
 
-            const parsed = JSON.parse(product.images as string);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                return parsed[0];
-            }
+            return parsed[0] || '/images/honey-jar.jpg';
         } catch {
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
                 return product.images;
@@ -100,7 +97,7 @@ export default function BestSellers() {
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-10">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-8 md:gap-x-4 md:gap-y-10">
                     {products.map((product) => (
                         <Link key={product.id} href={`/shop/${product.slug}`} className="block">
                             <ProductCard

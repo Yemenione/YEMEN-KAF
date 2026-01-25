@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Menu, Save, Loader2, Plus, X, ListTree, Hash } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface MenuItem {
     label: string;
@@ -10,6 +11,7 @@ interface MenuItem {
 }
 
 export default function MenuBuilder() {
+    const { t } = useLanguage();
     const [mainNav, setMainNav] = useState<MenuItem[]>([]);
     const [footerLinks, setFooterLinks] = useState<MenuItem[]>([]);
 
@@ -68,7 +70,7 @@ export default function MenuBuilder() {
             });
 
             if (res.ok) {
-                alert('Navigation menus saved!');
+                alert(t('admin.design.menus.messages.saved'));
             }
         } catch (error) {
             console.error('Save failed:', error);
@@ -78,7 +80,7 @@ export default function MenuBuilder() {
     };
 
     const addLink = (type: 'main' | 'footer') => {
-        const newItem = { label: 'New Link', href: '#' };
+        const newItem = { label: t('admin.design.menus.addLink'), href: '#' };
         if (type === 'main') setMainNav([...mainNav, newItem]);
         else setFooterLinks([...footerLinks, newItem]);
     };
@@ -102,55 +104,60 @@ export default function MenuBuilder() {
 
     if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin" /></div>;
 
-    const MenuSection = ({ title, items, type }: { title: string, items: MenuItem[], type: 'main' | 'footer' }) => (
-        <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg border border-gray-200 dark:border-zinc-800 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b pb-4">
-                <h3 className="font-bold flex items-center gap-2">
-                    <ListTree className="w-5 h-5 text-[var(--coffee-brown)]" />
-                    {title}
-                </h3>
-                <button
-                    onClick={() => addLink(type)}
-                    className="text-xs flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded transition-colors"
-                >
-                    <Plus className="w-3 h-3" /> Add Link
-                </button>
-            </div>
+    if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin" /></div>;
 
-            <div className="space-y-3">
-                {items.map((item, idx) => (
-                    <div key={idx} className="flex gap-2 group animate-in slide-in-from-left-2 fade-in duration-200">
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold uppercase">Text</span>
-                                <input
-                                    className="w-full pl-12 pr-4 py-2 border rounded text-sm dark:bg-zinc-800 dark:border-zinc-700"
-                                    value={item.label}
-                                    onChange={(e) => updateLink(idx, 'label', e.target.value, type)}
-                                />
+    const MenuSection = ({ title, items, type }: { title: string, items: MenuItem[], type: 'main' | 'footer' }) => {
+        const { t } = useLanguage();
+        return (
+            <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg border border-gray-200 dark:border-zinc-800 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b pb-4">
+                    <h3 className="font-bold flex items-center gap-2">
+                        <ListTree className="w-5 h-5 text-[var(--coffee-brown)]" />
+                        {title}
+                    </h3>
+                    <button
+                        onClick={() => addLink(type)}
+                        className="text-xs flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded transition-colors"
+                    >
+                        <Plus className="w-3 h-3" /> {t('admin.design.menus.addLink')}
+                    </button>
+                </div>
+
+                <div className="space-y-3">
+                    {items.map((item, idx) => (
+                        <div key={idx} className="flex gap-2 group animate-in slide-in-from-left-2 fade-in duration-200">
+                            <div className="flex-1 grid grid-cols-2 gap-2">
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold uppercase">{t('admin.design.menus.text')}</span>
+                                    <input
+                                        className="w-full pl-12 pr-4 py-2 border rounded text-sm dark:bg-zinc-800 dark:border-zinc-700"
+                                        value={item.label}
+                                        onChange={(e) => updateLink(idx, 'label', e.target.value, type)}
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold uppercase"><Hash className="w-3 h-3 inline" /> {t('admin.design.menus.url')}</span>
+                                    <input
+                                        className="w-full pl-12 pr-4 py-2 border rounded text-sm dark:bg-zinc-800 dark:border-zinc-700"
+                                        value={item.href}
+                                        placeholder="/contact"
+                                        onChange={(e) => updateLink(idx, 'href', e.target.value, type)}
+                                    />
+                                </div>
                             </div>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] font-bold uppercase"><Hash className="w-3 h-3 inline" /> URL</span>
-                                <input
-                                    className="w-full pl-12 pr-4 py-2 border rounded text-sm dark:bg-zinc-800 dark:border-zinc-700"
-                                    value={item.href}
-                                    placeholder="/contact"
-                                    onChange={(e) => updateLink(idx, 'href', e.target.value, type)}
-                                />
-                            </div>
+                            <button
+                                onClick={() => removeLink(idx, type)}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
-                        <button
-                            onClick={() => removeLink(idx, type)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded transition-colors"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                ))}
-                {items.length === 0 && <p className="text-sm text-gray-400 italic py-4">No links added to this menu.</p>}
+                    ))}
+                    {items.length === 0 && <p className="text-sm text-gray-400 italic py-4">{t('admin.design.menus.noLinks')}</p>}
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="space-y-8 max-w-5xl">
@@ -158,9 +165,9 @@ export default function MenuBuilder() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                         <Menu className="w-8 h-8 text-[var(--coffee-brown)]" />
-                        Navigation Builder
+                        {t('admin.design.menus.title')}
                     </h1>
-                    <p className="text-gray-500 text-sm">Manage your site&apos;s header and footer links.</p>
+                    <p className="text-gray-500 text-sm">{t('admin.design.menus.subtitle')}</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -168,18 +175,18 @@ export default function MenuBuilder() {
                     className="flex items-center gap-2 px-6 py-2 bg-[var(--coffee-brown)] text-white rounded-md hover:bg-[#5a4635] disabled:opacity-50 transition-colors"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Save Navigation
+                    {saving ? t('admin.design.menus.saving') : t('admin.design.menus.save')}
                 </button>
             </div>
 
             <div className="grid grid-cols-1 gap-8">
-                <MenuSection title="Main Navigation (Header)" items={mainNav} type="main" />
-                <MenuSection title="Footer Links" items={footerLinks} type="footer" />
+                <MenuSection title={t('admin.design.menus.mainNav')} items={mainNav} type="main" />
+                <MenuSection title={t('admin.design.menus.footerLinks')} items={footerLinks} type="footer" />
             </div>
 
             <div className="bg-[var(--honey-gold)]/10 p-4 rounded-lg border border-[var(--honey-gold)]/20">
                 <p className="text-xs text-[var(--coffee-brown)]">
-                    <strong>Note:</strong> Internal links should start with a slash (e.g. <code>/shop</code>). External links should include the full URL (e.g. <code>https://google.com</code>).
+                    <strong>{t('design.menus.note')}:</strong> {t('design.menus.noteDesc')}
                 </p>
             </div>
         </div>

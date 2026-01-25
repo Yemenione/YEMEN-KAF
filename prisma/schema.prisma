@@ -601,6 +601,7 @@ model Review {
   id         Int      @id @default(autoincrement())
   rating     Int      @default(5) // 1-5 stars
   comment    String?  @db.Text
+  images     String?  @db.Text // JSON array of image URLs
   isVerified Boolean  @default(false) @map("is_verified") // If user ordered the product
   isActive   Boolean  @default(true) @map("is_active") // Admin moderation
   createdAt  DateTime @default(now()) @map("created_at")

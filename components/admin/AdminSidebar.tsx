@@ -65,6 +65,7 @@ export default function AdminSidebar() {
             module: 'ORDERS',
             items: [
                 { name: t('admin.sidebar.items.orders'), href: '/admin-portal/orders', icon: ShoppingCart },
+                { name: t('admin.sidebar.items.invoices') || 'Factures', href: '/admin-portal/invoices', icon: FileText },
                 { name: t('admin.sidebar.items.customers'), href: '/admin-portal/customers', icon: Users },
                 { name: t('admin.sidebar.items.inventory'), href: '/admin-portal/inventory', icon: Package },
                 { name: t('admin.sidebar.items.support'), href: '/admin-portal/support/tickets', icon: LifeBuoy },

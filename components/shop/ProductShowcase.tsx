@@ -42,10 +42,7 @@ export default function ProductShowcase() {
                 return product.images;
             }
 
-            const parsed = JSON.parse(product.images);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                return parsed[0];
-            }
+            return parsed[0] || '/images/honey-jar.jpg';
         } catch {
             // Fallback for non-JSON strings
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
@@ -91,7 +88,7 @@ export default function ProductShowcase() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 md:gap-x-8 md:gap-y-16">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-12 md:gap-x-8 md:gap-y-16">
                     {products.length > 0 ? (
                         products.map((product) => (
                             <Link key={product.id} href={`/shop/${product.slug}`} className="block">

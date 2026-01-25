@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Tag, Edit2, Calendar, DollarSign, Percent, Check } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
+import { toast } from "sonner";
 
 interface CartRule {
     id: number;
@@ -21,6 +23,7 @@ interface CartRule {
 }
 
 export default function CouponsPage() {
+    const { t } = useLanguage();
     const [coupons, setCoupons] = useState<CartRule[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -45,7 +48,7 @@ export default function CouponsPage() {
             const data = await res.json();
             setCoupons(data.length ? data : []);
         } catch {
-            console.error('Failed to fetch coupons');
+            toast.error(t('admin.marketing.coupons.messages.loadFailed'));
         } finally {
             setLoading(false);
         }
@@ -66,24 +69,28 @@ export default function CouponsPage() {
             });
 
             if (res.ok) {
+                toast.success(isEditing ? t('admin.marketing.coupons.messages.updated') : t('admin.marketing.coupons.messages.created'));
                 fetchCoupons();
                 resetForm();
             } else {
                 const err = await res.json();
-                alert(err.error);
+                toast.error(err.error || t('admin.marketing.coupons.messages.operationFailed'));
             }
         } catch {
-            alert('Operation failed');
+            toast.error(t('admin.marketing.coupons.messages.operationFailed'));
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Delete this coupon?')) return;
+        if (!confirm(t('admin.marketing.coupons.list.confirmDelete'))) return;
         try {
             const res = await fetch(`/api/admin/marketing/coupons/${id}`, { method: 'DELETE' });
-            if (res.ok) fetchCoupons();
+            if (res.ok) {
+                toast.success(t('admin.marketing.coupons.messages.deleted'));
+                fetchCoupons();
+            }
         } catch {
-            alert('Delete failed');
+            toast.error(t('admin.marketing.coupons.messages.deleteFailed'));
         }
     };
 
@@ -115,7 +122,7 @@ export default function CouponsPage() {
                 <div className="p-2 bg-pink-100 text-pink-600 rounded-lg">
                     <Tag className="w-6 h-6" />
                 </div>
-                Marketing & Coupons
+                {t('admin.marketing.coupons.title')}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -124,8 +131,8 @@ export default function CouponsPage() {
                 <div className="md:col-span-1">
                     <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm sticky top-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-semibold">{isEditing ? 'Edit Coupon' : 'New Coupon'}</h3>
-                            {isEditing && <button onClick={resetForm} className="text-xs text-gray-400">Cancel</button>}
+                            <h3 className="font-semibold">{isEditing ? t('admin.marketing.coupons.editCoupon') : t('admin.marketing.coupons.newCoupon')}</h3>
+                            {isEditing && <button onClick={resetForm} className="text-xs text-gray-400">{t('admin.marketing.coupons.cancel')}</button>}
                         </div>
 
                         {/* Tabs */}
@@ -136,7 +143,7 @@ export default function CouponsPage() {
                                     onClick={() => setActiveTab(tab)}
                                     className={`px-3 py-1 text-xs font-medium rounded-full ${activeTab === tab ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
-                                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                    {t(`marketing.coupons.tabs.${tab}`)}
                                 </button>
                             ))}
                         </div>
@@ -147,7 +154,7 @@ export default function CouponsPage() {
                             {activeTab === 'info' && (
                                 <div className="space-y-3 animate-in fade-in">
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Internal Name</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.name')}</label>
                                         <input
                                             type="text" required placeholder="Summer Sale 2025"
                                             className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -156,7 +163,7 @@ export default function CouponsPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Coupon Code</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.code')}</label>
                                         <input
                                             type="text" required placeholder="SUMMER20"
                                             className="w-full border rounded-md px-3 py-2 text-sm uppercase font-mono dark:bg-zinc-800 dark:border-zinc-700"
@@ -165,7 +172,7 @@ export default function CouponsPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Description (Public)</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.description')}</label>
                                         <textarea
                                             className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700 h-20"
                                             value={formData.description}
@@ -180,7 +187,7 @@ export default function CouponsPage() {
                                                 onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
                                                 className="rounded border-gray-300"
                                             />
-                                            <span className="text-sm">Active</span>
+                                            <span className="text-sm">{t('admin.marketing.coupons.form.isActive')}</span>
                                         </label>
                                     </div>
                                 </div>
@@ -191,7 +198,7 @@ export default function CouponsPage() {
                                 <div className="space-y-3 animate-in fade-in">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-500 mb-1">Valid From</label>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.startsAt')}</label>
                                             <input
                                                 type="date"
                                                 className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -200,7 +207,7 @@ export default function CouponsPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-500 mb-1">Valid Until</label>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.endsAt')}</label>
                                             <input
                                                 type="date"
                                                 className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -210,7 +217,7 @@ export default function CouponsPage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Minimum Order Amount</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.minAmount')}</label>
                                         <input
                                             type="number" min="0" step="0.01"
                                             className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -220,7 +227,7 @@ export default function CouponsPage() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-500 mb-1">Total Available</label>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.totalAvailable')}</label>
                                             <input
                                                 type="number" min="1"
                                                 className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -229,7 +236,7 @@ export default function CouponsPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-500 mb-1">Limit Per User</label>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.totalPerUser')}</label>
                                             <input
                                                 type="number" min="1"
                                                 className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -252,13 +259,13 @@ export default function CouponsPage() {
                                                 onChange={e => setFormData({ ...formData, freeShipping: e.target.checked })}
                                                 className="rounded border-gray-300"
                                             />
-                                            <span className="text-sm font-medium">Free Shipping</span>
+                                            <span className="text-sm font-medium">{t('admin.marketing.coupons.form.freeShipping')}</span>
                                         </label>
-                                        <p className="text-xs text-gray-400 ml-6">Grants free shipping if conditions are met.</p>
+                                        <p className="text-xs text-gray-400 ml-6">{t('admin.marketing.coupons.form.freeShippingDesc')}</p>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Percent Discount (%)</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.percentDiscount')}</label>
                                         <div className="relative">
                                             <Percent className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
                                             <input
@@ -271,7 +278,7 @@ export default function CouponsPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-500 mb-1">Amount Discount</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.marketing.coupons.form.amountDiscount')}</label>
                                         <div className="relative">
                                             <DollarSign className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
                                             <input
@@ -290,7 +297,7 @@ export default function CouponsPage() {
                                 className="w-full bg-[var(--coffee-brown)] text-white py-2 rounded-md font-medium text-sm hover:bg-[#5a4635] flex justify-center items-center gap-2 mt-4"
                             >
                                 {isEditing ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                                {isEditing ? "Update Coupon" : "Create Coupon"}
+                                {isEditing ? t('admin.marketing.coupons.form.update') : t('admin.marketing.coupons.form.create')}
                             </button>
                         </form>
                     </div>
@@ -299,12 +306,12 @@ export default function CouponsPage() {
                 {/* List Section */}
                 <div className="md:col-span-2 space-y-4">
                     {loading ? (
-                        <div className="text-center py-10 text-gray-500">Loading rules...</div>
+                        <div className="text-center py-10 text-gray-500">{t('admin.marketing.coupons.list.loading')}</div>
                     ) : coupons.length === 0 ? (
                         <div className="flex flex-col items-center justify-center bg-white dark:bg-zinc-900 border rounded-xl p-10 text-center">
                             <Tag className="w-12 h-12 text-gray-200 mb-4" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No Cart Rules Found</h3>
-                            <p className="text-gray-500 mt-1 mb-4">Create your first coupon code to start running promotions.</p>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('admin.marketing.coupons.list.noRules')}</h3>
+                            <p className="text-gray-500 mt-1 mb-4">{t('admin.marketing.coupons.list.noRulesDesc')}</p>
                         </div>
                     ) : (
                         coupons.map(rule => (
@@ -317,20 +324,20 @@ export default function CouponsPage() {
                                         <div className="flex items-center gap-2">
                                             <h4 className="font-bold text-gray-900 dark:text-gray-100">{rule.name}</h4>
                                             <span className="bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-xs font-mono tracking-wider border">{rule.code}</span>
-                                            {!rule.isActive && <span className="text-[10px] bg-gray-200 text-gray-600 px-2 rounded-full">DRAFT</span>}
+                                            {!rule.isActive && <span className="text-[10px] bg-gray-200 text-gray-600 px-2 rounded-full">{t('admin.marketing.coupons.list.draft')}</span>}
                                         </div>
                                         <div className="text-sm text-gray-500 mt-1 flex flex-col md:flex-row md:items-center gap-1 md:gap-3">
-                                            {Number(rule.reductionPercent) > 0 && <span className="text-green-600 font-medium">-{Number(rule.reductionPercent)}% Off</span>}
-                                            {Number(rule.reductionAmount) > 0 && <span className="text-green-600 font-medium">-{Number(rule.reductionAmount)} Off</span>}
-                                            {rule.freeShipping && <span className="text-blue-600 font-medium">+ Free Shipping</span>}
+                                            {Number(rule.reductionPercent) > 0 && <span className="text-green-600 font-medium">-{Number(rule.reductionPercent)}% {t('admin.marketing.coupons.list.off')}</span>}
+                                            {Number(rule.reductionAmount) > 0 && <span className="text-green-600 font-medium">-{Number(rule.reductionAmount)} {t('admin.marketing.coupons.list.off')}</span>}
+                                            {rule.freeShipping && <span className="text-blue-600 font-medium">+ {t('admin.marketing.coupons.form.freeShipping')}</span>}
 
                                             <span className="text-gray-300 hidden md:inline">|</span>
 
                                             <div className="flex items-center gap-1 text-xs">
                                                 <Calendar className="w-3 h-3" />
-                                                {rule.startsAt ? new Date(rule.startsAt).toLocaleDateString() : 'Now'}
+                                                {rule.startsAt ? new Date(rule.startsAt).toLocaleDateString() : t('admin.marketing.coupons.list.now')}
                                                 {' -> '}
-                                                {rule.endsAt ? new Date(rule.endsAt).toLocaleDateString() : 'Forever'}
+                                                {rule.endsAt ? new Date(rule.endsAt).toLocaleDateString() : t('admin.marketing.coupons.list.forever')}
                                             </div>
                                         </div>
                                     </div>

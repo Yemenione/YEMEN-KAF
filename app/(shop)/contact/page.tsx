@@ -71,7 +71,7 @@ export default function ContactPage() {
                                     <Mail className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-black mb-1">Email</h3>
+                                    <h3 className="font-bold text-black mb-1">{t('account.profile.email') || 'Email'}</h3>
                                     <a href="mailto:support@yemeni-market.com" className="text-gray-600 hover:text-black transition-colors">
                                         support@yemeni-market.com
                                     </a>
@@ -85,7 +85,7 @@ export default function ContactPage() {
                                     <Phone className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-black mb-1">Phone</h3>
+                                    <h3 className="font-bold text-black mb-1">{t('account.profile.phone') || 'Phone'}</h3>
                                     <a href="tel:+33666336860" className="text-gray-600 hover:text-black transition-colors">
                                         +33 6 66 33 68 60
                                     </a>
@@ -99,9 +99,9 @@ export default function ContactPage() {
                                     <MapPin className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-black mb-1">Address</h3>
+                                    <h3 className="font-bold text-black mb-1">{t('contact.address') || 'Address'}</h3>
                                     <p className="text-gray-600">
-                                        Paris, France
+                                        {t('footer.address') || 'Paris, France'}
                                     </p>
                                 </div>
                             </div>
@@ -113,11 +113,11 @@ export default function ContactPage() {
                                     <Clock className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-black mb-1">Business Hours</h3>
+                                    <h3 className="font-bold text-black mb-1">{t('contact.businessHours') || 'Business Hours'}</h3>
                                     <p className="text-gray-600 text-sm">
-                                        Monday - Friday: 9:00 AM - 6:00 PM<br />
-                                        Saturday: 10:00 AM - 4:00 PM<br />
-                                        Sunday: Closed
+                                        {t('contact.openMoFr')}<br />
+                                        {t('contact.openSa')}<br />
+                                        {t('contact.closedSu')}
                                     </p>
                                 </div>
                             </div>
@@ -127,7 +127,7 @@ export default function ContactPage() {
                     {/* Contact Form */}
                     <div className="lg:col-span-2">
                         <div className="bg-white border border-gray-200 rounded-xl p-8">
-                            <h2 className="text-2xl font-serif text-black mb-6">Send us a Message</h2>
+                            <h2 className="text-2xl font-serif text-black mb-6">{t('contact.sendMsgTitle') || 'Send us a Message'}</h2>
 
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -142,7 +142,7 @@ export default function ContactPage() {
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                                            placeholder="John Doe"
+                                            placeholder={t('contact.placeholders.name') || 'John Doe'}
                                         />
                                     </div>
 
@@ -157,7 +157,7 @@ export default function ContactPage() {
                                             onChange={handleChange}
                                             required
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                                            placeholder="john@example.com"
+                                            placeholder={t('contact.placeholders.email') || 'john@example.com'}
                                         />
                                     </div>
                                 </div>
@@ -173,7 +173,7 @@ export default function ContactPage() {
                                             value={formData.phone}
                                             onChange={handleChange}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                                            placeholder="+33 6 12 34 56 78"
+                                            placeholder={t('contact.placeholders.phone') || '+33 6 12 34 56 78'}
                                         />
                                     </div>
 
@@ -188,13 +188,13 @@ export default function ContactPage() {
                                             required
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
                                         >
-                                            <option value="">Select a subject</option>
-                                            <option value="general">General Inquiry</option>
-                                            <option value="order">Order Question</option>
-                                            <option value="product">Product Information</option>
-                                            <option value="shipping">Shipping & Delivery</option>
-                                            <option value="wholesale">Wholesale Inquiry</option>
-                                            <option value="other">Other</option>
+                                            <option value="">{t('contact.subjects.select')}</option>
+                                            <option value="general">{t('contact.subjects.general')}</option>
+                                            <option value="order">{t('contact.subjects.order')}</option>
+                                            <option value="product">{t('contact.subjects.product')}</option>
+                                            <option value="shipping">{t('contact.subjects.shipping')}</option>
+                                            <option value="wholesale">{t('contact.subjects.wholesale')}</option>
+                                            <option value="other">{t('contact.subjects.other')}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -210,19 +210,19 @@ export default function ContactPage() {
                                         required
                                         rows={6}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent resize-none"
-                                        placeholder="Tell us how we can help you..."
+                                        placeholder={t('contact.placeholders.message') || 'Tell us how we can help you...'}
                                     />
                                 </div>
 
                                 {submitStatus === 'success' && (
                                     <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-                                        ✅ Message sent successfully! We&apos;ll get back to you soon.
+                                        ✅ {t('contact.success') || "Message sent successfully! We'll get back to you soon."}
                                     </div>
                                 )}
 
                                 {submitStatus === 'error' && (
                                     <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-                                        ❌ Failed to send message. Please try again or email us directly.
+                                        ❌ {t('contact.error') || "Failed to send message. Please try again or email us directly."}
                                     </div>
                                 )}
 
@@ -232,7 +232,7 @@ export default function ContactPage() {
                                     className="w-full bg-black text-white py-4 rounded-lg font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? (
-                                        <>Processing...</>
+                                        <>{t('contact.processing') || 'Processing...'}</>
                                     ) : (
                                         <>
                                             <Send className="w-5 h-5" />

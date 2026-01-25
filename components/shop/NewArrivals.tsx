@@ -85,7 +85,7 @@ export default function NewArrivals() {
                     </h2>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-12">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-8 md:gap-x-6 md:gap-y-12">
                     {products.map((product) => (
                         <Link key={product.id} href={`/shop/${product.slug}`} className="block">
                             <ProductCard

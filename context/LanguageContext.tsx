@@ -7,7 +7,8 @@ interface LanguageContextType {
     locale: Locale;
     language: Locale; // Alias for locale
     setLocale: (locale: Locale) => void;
-    t: (key: string) => string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    t: (key: string, options?: { returnObjects?: boolean } & Record<string, any>) => any;
     isRTL: boolean;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getLocalizedValue: (obj: any, key: string) => string;
@@ -53,7 +54,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    const t = (key: string): string => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-unused-vars
+    const t = (key: string, options?: { returnObjects?: boolean } & Record<string, any>): any => {
         const keys = key.split(".");
         let value: TranslationValue | undefined = dynamicTranslations[locale];
 
@@ -64,6 +66,20 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
                 value = undefined;
                 break;
             }
+        }
+
+        if (options?.returnObjects) {
+            return value;
+        }
+
+        if (typeof value === 'string' && options) {
+            let interpolated = value;
+            Object.keys(options).forEach(optKey => {
+                if (optKey !== 'returnObjects') {
+                    interpolated = interpolated.replace(`{${optKey}}`, String(options[optKey]));
+                }
+            });
+            return interpolated;
         }
 
         return (typeof value === 'string' ? value : key) || key;

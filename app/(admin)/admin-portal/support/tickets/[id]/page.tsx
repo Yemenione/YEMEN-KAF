@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Send, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Message {
     id: number;
@@ -32,6 +33,7 @@ interface Ticket {
 }
 
 export default function TicketDetailPage() {
+    const { t } = useLanguage();
     const params = useParams();
     const id = params.id;
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -48,11 +50,11 @@ export default function TicketDetailPage() {
             const data = await res.json();
             setTicket(data);
         } catch {
-            console.error('Failed to fetch ticket');
+            console.error(t('admin.support.loadFailed') || 'Failed to fetch ticket');
         } finally {
             setLoading(false);
         }
-    }, [id]);
+    }, [id, t]);
 
     useEffect(() => {
         if (id) fetchTicket();
@@ -78,7 +80,7 @@ export default function TicketDetailPage() {
                 fetchTicket(); // Refresh to see new message
             }
         } catch {
-            console.error('Failed to send message');
+            console.error(t('admin.support.sendFailed') || 'Failed to send message');
         } finally {
             setSending(false);
         }
@@ -104,8 +106,8 @@ export default function TicketDetailPage() {
         }
     }, [ticket?.messages]);
 
-    if (loading) return <div>Loading ticket...</div>;
-    if (!ticket) return <div>Ticket not found</div>;
+    if (loading) return <div className="p-8 text-center text-gray-500">{t('admin.support.loading')}</div>;
+    if (!ticket) return <div className="p-8 text-center text-gray-500">{t('admin.support.ticketNotFound')}</div>;
 
     return (
         <div className="h-[calc(100vh-100px)] flex flex-col gap-4">
@@ -119,7 +121,7 @@ export default function TicketDetailPage() {
                         <h1 className="text-xl font-bold flex items-center gap-2">
                             #{ticket.id} {ticket.subject}
                             <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-zinc-800 font-normal`}>
-                                {ticket.priority} Priority
+                                {t('admin.support.priorityLabel', { priority: ticket.priority })}
                             </span>
                         </h1>
                         <p className="text-sm text-gray-500">
@@ -138,10 +140,10 @@ export default function TicketDetailPage() {
                     onChange={(e) => updateStatus(e.target.value)}
                     className="px-3 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 text-sm font-medium"
                 >
-                    <option value="Open">Open</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Closed">Closed</option>
+                    <option value="Open">{t('admin.support.statuses.open')}</option>
+                    <option value="Pending">{t('admin.support.statuses.pending')}</option>
+                    <option value="Resolved">{t('admin.support.statuses.resolved')}</option>
+                    <option value="Closed">{t('admin.support.statuses.closed')}</option>
                 </select>
             </div>
 
@@ -162,7 +164,9 @@ export default function TicketDetailPage() {
                                 }`}>
                                 <div className="text-xs opacity-70 mb-1 flex justify-between gap-4">
                                     <span className="font-bold">
-                                        {msg.senderType === 'ADMIN' ? (msg.isInternal ? 'Internal Note' : 'You') : 'Customer'}
+                                        {msg.senderType === 'ADMIN'
+                                            ? (msg.isInternal ? t('admin.support.internalNote') : t('admin.support.you'))
+                                            : t('admin.support.customer')}
                                     </span>
                                     <span>{new Date(msg.createdAt).toLocaleString()}</span>
                                 </div>
@@ -171,7 +175,7 @@ export default function TicketDetailPage() {
                         </div>
                     ))}
                     {ticket.messages.length === 0 && (
-                        <div className="text-center text-gray-400 py-10">No messages yet. start the conversation.</div>
+                        <div className="text-center text-gray-400 py-10">{t('admin.support.noMessages')}</div>
                     )}
                 </div>
 
@@ -181,7 +185,7 @@ export default function TicketDetailPage() {
                         <textarea
                             value={reply}
                             onChange={(e) => setReply(e.target.value)}
-                            placeholder="Type your reply..."
+                            placeholder={t('admin.support.replyPlaceholder')}
                             className="flex-1 px-4 py-3 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-[var(--coffee-brown)] resize-none h-24"
                         />
                         <div className="flex flex-col gap-2">
@@ -192,7 +196,7 @@ export default function TicketDetailPage() {
                                     onChange={(e) => setIsInternal(e.target.checked)}
                                     className="w-4 h-4 rounded text-yellow-500 focus:ring-yellow-500"
                                 />
-                                Internal Note
+                                {t('admin.support.internalNote')}
                             </label>
                             <button
                                 type="submit"
@@ -202,7 +206,7 @@ export default function TicketDetailPage() {
                                     : 'bg-[var(--coffee-brown)] hover:bg-[#5a4635]'
                                     } disabled:opacity-50`}
                             >
-                                <Send className="w-4 h-4" /> {sending ? 'Sending...' : 'Send'}
+                                <Send className="w-4 h-4" /> {sending ? t('admin.support.sending') : t('admin.support.send')}
                             </button>
                         </div>
                     </form>

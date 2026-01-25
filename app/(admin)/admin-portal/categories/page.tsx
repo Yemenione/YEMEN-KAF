@@ -79,7 +79,7 @@ export default function CategoriesPage() {
                 setCategories(data);
             }
         } catch {
-            toast.error("Failed to load categories");
+            toast.error(t('admin.categories.loadFailed'));
         } finally {
             setLoading(false);
         }
@@ -132,18 +132,18 @@ export default function CategoriesPage() {
         try {
             const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' });
             if (res.ok) {
-                toast.success("Category deleted");
+                toast.success(t('admin.categories.deleted'));
                 fetchCategories();
             }
         } catch {
-            toast.error("Delete failed");
+            toast.error(t('admin.categories.deleteFailed'));
         }
     };
 
     const handleAutoTranslate = async () => {
         const sourceText = formData.name_translations.en;
         if (!sourceText) {
-            toast.error("Enter English name first");
+            toast.error(t('admin.categories.enterEnglishFirst'));
             return;
         }
 
@@ -164,10 +164,10 @@ export default function CategoriesPage() {
                     ...prev,
                     name_translations: { ...prev.name_translations, ...data.translations }
                 }));
-                toast.success("Translations generated!");
+                toast.success(t('admin.categories.generated'));
             }
         } catch {
-            toast.error("Translation failed");
+            toast.error(t('admin.categories.translationFailed'));
         } finally {
             setUploading(false);
         }
@@ -186,15 +186,15 @@ export default function CategoriesPage() {
             });
 
             if (res.ok) {
-                toast.success(editingCategory ? "Category updated" : "Category created");
+                toast.success(editingCategory ? t('admin.categories.updated') : t('admin.categories.created'));
                 setIsModalOpen(false);
                 fetchCategories();
             } else {
                 const err = await res.json();
-                toast.error(err.error || "Operation failed");
+                toast.error(err.error || t('admin.categories.operationFailed'));
             }
         } catch {
-            toast.error("Network error");
+            toast.error(t('admin.categories.networkError'));
         }
     };
 
@@ -232,7 +232,7 @@ export default function CategoriesPage() {
                         <Save className="w-6 h-6 text-[var(--coffee-brown)]" />
                         {t('admin.sidebar.items.categories')}
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">Organize your product hierarchy and seasonal collections.</p>
+                    <p className="text-sm text-gray-500 mt-1">{t('admin.categories.subtitle')}</p>
                 </div>
 
                 {canManage && (
@@ -252,7 +252,7 @@ export default function CategoriesPage() {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--coffee-brown)] transition-colors" size={18} />
                         <input
                             type="text"
-                            placeholder="Explore collections..."
+                            placeholder={t('admin.categories.searchPlaceholder')}
                             className="w-full pl-12 pr-4 py-2.5 rounded-xl border-none bg-gray-50 dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--coffee-brown)]/20 transition-all outline-none text-sm font-bold"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -268,7 +268,7 @@ export default function CategoriesPage() {
                                 <th className="px-6 py-4">{t('admin.products.image')}</th>
                                 <th className="px-6 py-4">{t('admin.products.name')}</th>
                                 <th className="px-6 py-4">{t('admin.products.form.slug')}</th>
-                                <th className="px-6 py-4">Order</th>
+                                <th className="px-6 py-4">{t('admin.categories.order')}</th>
                                 <th className="px-6 py-4">{t('admin.common.status')}</th>
                                 <th className="px-6 py-4 text-right">{t('admin.common.actions')}</th>
                             </tr>
@@ -286,7 +286,7 @@ export default function CategoriesPage() {
                                                 {cat.image_url ? (
                                                     <Image src={cat.image_url} alt={cat.name} fill sizes="40px" className="object-cover group-hover:scale-110 transition-transform duration-500" />
                                                 ) : (
-                                                    <div className="flex items-center justify-center h-full text-gray-300 text-[10px] font-bold">NO IMG</div>
+                                                    <div className="flex items-center justify-center h-full text-gray-300 text-[10px] font-bold">{t('admin.categories.noImg')}</div>
                                                 )}
                                             </div>
                                         </td>
@@ -349,7 +349,7 @@ export default function CategoriesPage() {
                                             ? 'bg-emerald-100 text-emerald-700'
                                             : 'bg-zinc-100 text-zinc-400'
                                             }`}>
-                                            {cat.is_active ? 'Active' : 'Hidden'}
+                                            {cat.is_active ? t('admin.common.active') : t('admin.categories.hidden')}
                                         </span>
                                     </div>
                                     <p className="text-[10px] text-gray-400 font-mono truncate mb-1.5">{cat.slug}</p>
@@ -382,7 +382,7 @@ export default function CategoriesPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
                     <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-4 duration-300">
                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 flex-shrink-0">
-                            <h3 className="text-lg font-bold text-[var(--coffee-brown)] dark:text-white">{editingCategory ? 'Edit Category' : 'New Category'}</h3>
+                            <h3 className="text-lg font-bold text-[var(--coffee-brown)] dark:text-white">{editingCategory ? t('admin.categories.editTitle') : t('admin.categories.newTitle')}</h3>
                             <div className="flex items-center gap-2">
                                 {languages.map(lang => (
                                     <button
@@ -412,7 +412,7 @@ export default function CategoriesPage() {
                                         disabled={uploading}
                                         className="w-full py-2 bg-purple-50 text-purple-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-100 transition-colors flex items-center justify-center gap-2 border border-purple-100"
                                     >
-                                        ✨ AI Translate to {languages.find(l => l.code === activeLang)?.label}
+                                        ✨ {t('admin.categories.aiTranslate', { lang: languages.find(l => l.code === activeLang)?.label })}
                                     </button>
                                 )}
 
@@ -435,7 +435,7 @@ export default function CategoriesPage() {
                                         value={formData.parent_id}
                                         onChange={e => setFormData({ ...formData, parent_id: e.target.value })}
                                     >
-                                        <option value="">None (Top Level)</option>
+                                        <option value="">{t('admin.categories.topLevel')}</option>
                                         {categories
                                             .filter(c => c.id !== editingCategory?.id)
                                             .map(cat => (
@@ -446,17 +446,17 @@ export default function CategoriesPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Slug</label>
+                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">{t('admin.products.form.slug')}</label>
                                         <input
                                             type="text"
                                             className="w-full px-4 py-2.5 rounded-xl border-none bg-gray-50 dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--coffee-brown)]/20 transition-all outline-none text-sm font-bold opacity-70"
-                                            placeholder="auto-generated"
+                                            placeholder={t('admin.categories.autoGenerated')}
                                             value={formData.slug}
                                             onChange={e => setFormData({ ...formData, slug: e.target.value })}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Order</label>
+                                        <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">{t('admin.categories.order')}</label>
                                         <input
                                             type="number"
                                             className="w-full px-4 py-2.5 rounded-xl border-none bg-gray-50 dark:bg-zinc-800 focus:ring-2 focus:ring-[var(--coffee-brown)]/20 transition-all outline-none text-sm font-bold"
@@ -477,7 +477,7 @@ export default function CategoriesPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Image URL</label>
+                                    <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">{t('admin.categories.imageUrl')}</label>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
@@ -535,14 +535,14 @@ export default function CategoriesPage() {
                                 onClick={() => setIsModalOpen(false)}
                                 className="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors"
                             >
-                                Cancel
+                                {t('admin.common.cancel')}
                             </button>
                             <button
                                 form="categoryForm"
                                 type="submit"
                                 className="px-8 py-2.5 bg-zinc-900 border border-zinc-800 text-white rounded-xl hover:shadow-lg transition-all text-sm font-black"
                             >
-                                {editingCategory ? 'Save Changes' : 'Create Category'}
+                                {editingCategory ? t('admin.categories.saveChanges') : t('admin.categories.createCategory')}
                             </button>
                         </div>
                     </div>

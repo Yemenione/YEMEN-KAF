@@ -78,7 +78,7 @@ export async function POST(
         }
 
         const body = await request.json();
-        const { rating, comment } = body;
+        const { rating, comment, images } = body;
 
         if (!rating || rating < 1 || rating > 5) {
             return NextResponse.json({ error: "Invalid rating" }, { status: 400 });
@@ -108,6 +108,7 @@ export async function POST(
             data: {
                 rating,
                 comment,
+                images: images ? JSON.stringify(images) : null,
                 isVerified,
                 customerId: userId,
                 productId: product.id,

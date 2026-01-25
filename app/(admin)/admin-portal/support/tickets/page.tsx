@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Ticket {
     id: number;
@@ -21,6 +22,7 @@ interface Ticket {
 }
 
 export default function SupportTicketsPage() {
+    const { t } = useLanguage();
     const [tickets, setTickets] = useState<Ticket[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All');
@@ -34,7 +36,7 @@ export default function SupportTicketsPage() {
                 const data = await res.json();
                 setTickets(data);
             } catch {
-                console.error('Failed to fetch tickets');
+                console.error(t('admin.support.loadFailed') || 'Failed to fetch tickets');
             } finally {
                 setLoading(false);
             }
@@ -53,6 +55,10 @@ export default function SupportTicketsPage() {
         }
     };
 
+    const getTranslatedStatus = (status: string) => {
+        return t(`admin.support.statuses.${status.toLowerCase()}`) || status;
+    };
+
     const getPriorityIcon = (priority: string) => {
         switch (priority.toLowerCase()) {
             case 'high':
@@ -66,8 +72,8 @@ export default function SupportTicketsPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Support Tickets</h1>
-                    <p className="text-gray-500 text-sm">Manage customer inquiries and issues.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t('admin.support.title')}</h1>
+                    <p className="text-gray-500 text-sm">{t('admin.support.subtitle')}</p>
                 </div>
 
                 {/* 
@@ -88,7 +94,7 @@ export default function SupportTicketsPage() {
                             : 'bg-white dark:bg-zinc-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-zinc-700 border border-gray-200 dark:border-zinc-700'
                             }`}
                     >
-                        {status}
+                        {t(`admin.support.statuses.${status.toLowerCase()}`)}
                     </button>
                 ))}
             </div>
@@ -98,18 +104,18 @@ export default function SupportTicketsPage() {
                 <table className="w-full">
                     <thead className="bg-gray-50 dark:bg-zinc-800/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Update</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.support.table.subject')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.support.table.customer')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.support.table.status')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('admin.support.table.lastUpdate')}</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
                         {loading ? (
-                            <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">Loading tickets...</td></tr>
+                            <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('admin.support.loading')}</td></tr>
                         ) : tickets.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">No tickets found.</td></tr>
+                            <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">{t('admin.support.noTickets')}</td></tr>
                         ) : (
                             tickets.map((ticket) => (
                                 <tr key={ticket.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors group">
@@ -119,7 +125,7 @@ export default function SupportTicketsPage() {
                                                 {getPriorityIcon(ticket.priority)}
                                                 <span className="font-medium text-gray-900 dark:text-gray-100">{ticket.subject}</span>
                                             </div>
-                                            <span className="text-xs text-gray-400">#{ticket.id} • {ticket._count.messages} messages</span>
+                                            <span className="text-xs text-gray-400">#{ticket.id} • {t('admin.support.table.messages', { count: ticket._count.messages })}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -128,7 +134,7 @@ export default function SupportTicketsPage() {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(ticket.status)}`}>
-                                            {ticket.status}
+                                            {getTranslatedStatus(ticket.status)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -139,7 +145,7 @@ export default function SupportTicketsPage() {
                                             href={`/admin-portal/support/tickets/${ticket.id}`}
                                             className="text-[var(--coffee-brown)] hover:underline text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
-                                            View Details
+                                            {t('admin.support.viewDetails')}
                                         </Link>
                                     </td>
                                 </tr>

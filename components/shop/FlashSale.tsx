@@ -130,7 +130,7 @@ export default function FlashSale() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                     {products.map((product) => (
                         <div key={product.id} className="space-y-4">
                             <Link href={`/shop/${product.slug}`} className="block">

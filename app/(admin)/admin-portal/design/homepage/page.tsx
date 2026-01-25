@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Home, Save, Loader2, X, LayoutTemplate, Zap, Star, Upload, Search, Plus } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Product {
     id: number;
@@ -14,6 +15,7 @@ interface Category {
 }
 
 export default function HomepageManager() {
+    const { t } = useLanguage();
     const [heroProductIds, setHeroProductIds] = useState<number[]>([]);
     const [featuredCategoryIds, setFeaturedCategoryIds] = useState<number[]>([]);
     const [flashSaleProductIds, setFlashSaleProductIds] = useState<number[]>([]);
@@ -97,7 +99,7 @@ export default function HomepageManager() {
             });
 
             if (res.ok) {
-                alert('Homepage configuration saved!');
+                alert(t('marketing.design.homepage.messages.saved'));
             }
         } catch (error) {
             console.error('Save failed:', error);
@@ -144,11 +146,11 @@ export default function HomepageManager() {
             if (data.path) {
                 updatePromo(idx, 'image', data.path);
             } else {
-                alert('Upload failed: ' + (data.error || 'Unknown error'));
+                alert(t('admin.design.homepage.messages.uploadFailed') + ': ' + (data.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('Upload failed', error);
-            alert('Upload failed');
+            alert(t('admin.design.homepage.messages.uploadFailed'));
         } finally {
             if (btn) btn.style.opacity = '1';
         }
@@ -163,9 +165,9 @@ export default function HomepageManager() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                         <Home className="w-8 h-8 text-[var(--coffee-brown)]" />
-                        Homepage Content Manager
+                        {t('admin.design.homepage.title')}
                     </h1>
-                    <p className="text-gray-500 text-sm">Design your discovery experience and conversion modules.</p>
+                    <p className="text-gray-500 text-sm">{t('admin.design.homepage.subtitle')}</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -173,14 +175,14 @@ export default function HomepageManager() {
                     className="flex items-center gap-2 px-8 py-3 bg-[var(--coffee-brown)] text-white font-bold rounded-lg hover:bg-[#5a4635] disabled:opacity-50 transition-all shadow-lg active:scale-95"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Save All Changes
+                    {saving ? t('admin.design.homepage.saving') : t('admin.design.homepage.saveAll')}
                 </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* 1. Hero Slider */}
                 <Section
-                    title="Hero Slider Products"
+                    title={t('admin.design.homepage.sections.hero')}
                     icon={<LayoutTemplate className="w-5 h-5 text-amber-500" />}
                 >
                     <ListManager
@@ -188,13 +190,13 @@ export default function HomepageManager() {
                         all={allProducts}
                         onAdd={(id) => addItem(id, heroProductIds, setHeroProductIds)}
                         onRemove={(id) => removeItem(id, heroProductIds, setHeroProductIds)}
-                        placeholder="Select hero product..."
+                        placeholder={t('admin.design.homepage.list.selectHero')}
                     />
                 </Section>
 
                 {/* 2. Featured Collections */}
                 <Section
-                    title="Featured Collections"
+                    title={t('admin.design.homepage.sections.featured')}
                     icon={<LayoutTemplate className="w-5 h-5 text-blue-500" />}
                 >
                     <ListManager
@@ -202,19 +204,19 @@ export default function HomepageManager() {
                         all={allCategories}
                         onAdd={(id) => addItem(id, featuredCategoryIds, setFeaturedCategoryIds)}
                         onRemove={(id) => removeItem(id, featuredCategoryIds, setFeaturedCategoryIds)}
-                        placeholder="Select collection..."
+                        placeholder={t('admin.design.homepage.list.selectCollection')}
                         isCategory
                     />
                 </Section>
 
                 {/* 3. Flash Sale */}
                 <Section
-                    title="Flash Sale Module"
+                    title={t('admin.design.homepage.sections.flashSale')}
                     icon={<Zap className="w-5 h-5 text-red-500" />}
                 >
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div>
-                            <label className="text-xs font-bold uppercase text-gray-400">End Date/Time</label>
+                            <label className="text-xs font-bold uppercase text-gray-400">{t('admin.design.homepage.form.endDate')}</label>
                             <input
                                 type="datetime-local"
                                 value={flashSaleEndDate}
@@ -223,12 +225,12 @@ export default function HomepageManager() {
                             />
                         </div>
                         <div>
-                            <label className="text-xs font-bold uppercase text-gray-400">Urgency Text</label>
+                            <label className="text-xs font-bold uppercase text-gray-400">{t('admin.design.homepage.form.urgencyText')}</label>
                             <input
                                 type="text"
                                 value={flashSaleText}
                                 onChange={(e) => setFlashSaleText(e.target.value)}
-                                placeholder="Ends soon!"
+                                placeholder={t('admin.design.homepage.form.urgencyPlaceholder')}
                                 className="w-full mt-1 p-2 border rounded-md text-sm"
                             />
                         </div>
@@ -238,30 +240,30 @@ export default function HomepageManager() {
                         all={allProducts}
                         onAdd={(id) => addItem(id, flashSaleProductIds, setFlashSaleProductIds)}
                         onRemove={(id) => removeItem(id, flashSaleProductIds, setFlashSaleProductIds)}
-                        placeholder="Select flash sale product..."
+                        placeholder={t('admin.design.homepage.list.selectFlashSale')}
                         max={4}
                     />
                 </Section>
 
                 {/* 4. Best Sellers & Special Offers (Combined for space) */}
                 <div className="space-y-8">
-                    <Section title="Best Sellers" icon={<Star className="w-5 h-5 text-yellow-500" />}>
+                    <Section title={t('admin.design.homepage.sections.bestSellers')} icon={<Star className="w-5 h-5 text-yellow-500" />}>
                         <ListManager
                             items={bestSellersIds}
                             all={allProducts}
                             onAdd={(id) => addItem(id, bestSellersIds, setBestSellersIds)}
                             onRemove={(id) => removeItem(id, bestSellersIds, setBestSellersIds)}
-                            placeholder="Select best seller..."
+                            placeholder={t('admin.design.homepage.list.selectBestSeller')}
                             max={4}
                         />
                     </Section>
-                    <Section title="Special Offers" icon={<LayoutTemplate className="w-5 h-5 text-green-500" />}>
+                    <Section title={t('admin.design.homepage.sections.specialOffers')} icon={<LayoutTemplate className="w-5 h-5 text-green-500" />}>
                         <ListManager
                             items={specialOffersIds}
                             all={allProducts}
                             onAdd={(id) => addItem(id, specialOffersIds, setSpecialOffersIds)}
                             onRemove={(id) => removeItem(id, specialOffersIds, setSpecialOffersIds)}
-                            placeholder="Select special offer..."
+                            placeholder={t('admin.design.homepage.list.selectSpecialOffer')}
                             max={2}
                         />
                     </Section>
@@ -270,25 +272,25 @@ export default function HomepageManager() {
 
             {/* 5. Promo Grid (3 Dynamic Tiles) */}
             <div className="mt-8">
-                <Section title="Promo Grid (Discovery Tiles)" icon={<LayoutTemplate className="w-5 h-5 text-purple-500" />}>
+                <Section title={t('admin.design.homepage.sections.promoGrid')} icon={<LayoutTemplate className="w-5 h-5 text-purple-500" />}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {promoGrid.map((promo, idx) => (
                             <div key={idx} className="p-4 bg-gray-50 rounded-xl space-y-3 border border-dashed border-gray-300">
-                                <h4 className="font-bold text-xs uppercase text-gray-400">Tile {idx + 1}</h4>
-                                <input placeholder="Title" value={promo.title} onChange={(e) => updatePromo(idx, 'title', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
-                                <input placeholder="Subtitle" value={promo.sub} onChange={(e) => updatePromo(idx, 'sub', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
-                                <input placeholder="Link (e.g. /shop?cat=1)" value={promo.link} onChange={(e) => updatePromo(idx, 'link', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
+                                <h4 className="font-bold text-xs uppercase text-gray-400">{t('admin.design.homepage.form.tile')} {idx + 1}</h4>
+                                <input placeholder={t('admin.design.homepage.form.title')} value={promo.title} onChange={(e) => updatePromo(idx, 'title', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
+                                <input placeholder={t('admin.design.homepage.form.subtitle')} value={promo.sub} onChange={(e) => updatePromo(idx, 'sub', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
+                                <input placeholder={t('admin.design.homepage.form.link')} value={promo.link} onChange={(e) => updatePromo(idx, 'link', e.target.value)} className="w-full p-2 text-sm border rounded-md" />
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-400 uppercase">Image Source</label>
+                                    <label className="text-xs font-bold text-gray-400 uppercase">{t('admin.design.homepage.form.imageSource')}</label>
                                     <div className="flex items-center gap-2">
                                         <input
-                                            placeholder="Image URL or Upload"
+                                            placeholder={t('admin.design.homepage.form.imagePlaceholder')}
                                             value={promo.image}
                                             onChange={(e) => updatePromo(idx, 'image', e.target.value)}
                                             className="flex-1 p-2 text-sm border rounded-md"
                                         />
-                                        <label className="cursor-pointer p-2 bg-white border border-gray-300 hover:bg-gray-50 rounded-md transition-colors shadow-sm" title="Upload Image">
+                                        <label className="cursor-pointer p-2 bg-white border border-gray-300 hover:bg-gray-50 rounded-md transition-colors shadow-sm" title={t('admin.design.homepage.form.upload')}>
                                             <Upload className="w-4 h-4 text-gray-600" />
                                             <input
                                                 type="file"
@@ -341,6 +343,7 @@ function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = fa
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState("");
 
+    const { t } = useLanguage();
     const available = all.filter(i => !items.includes(i.id));
     const filtered = available.filter(i => i.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -357,7 +360,7 @@ function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = fa
                                     {isCategory ? 'C' : 'P'}
                                 </div>
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                                    {item?.name || `${isCategory ? 'Category' : 'Product'} #${id}`}
+                                    {item?.name || `${isCategory ? t('admin.design.homepage.list.category') : t('admin.design.homepage.list.product')} #${id}`}
                                 </span>
                             </div>
                             <button
@@ -371,7 +374,7 @@ function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = fa
                 })}
                 {items.length === 0 && (
                     <div className="text-center py-6 border-2 border-dashed border-gray-100 rounded-xl">
-                        <p className="text-sm text-gray-400 italic">No items selected.</p>
+                        <p className="text-sm text-gray-400 italic">{t('admin.design.homepage.list.noItems')}</p>
                     </div>
                 )}
             </div>
@@ -393,7 +396,7 @@ function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = fa
                                 <Search className="w-4 h-4 text-gray-400" />
                                 <input
                                     autoFocus
-                                    placeholder={available.length > 0 ? "Search..." : "No items available"}
+                                    placeholder={available.length > 0 ? t('admin.design.homepage.list.search') : t('admin.design.homepage.list.noAvailable')}
                                     disabled={available.length === 0}
                                     className="flex-1 outline-none text-sm bg-transparent dark:text-white placeholder:text-gray-300"
                                     value={search}
@@ -416,7 +419,7 @@ function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = fa
                                     ))
                                 ) : (
                                     <p className="text-xs text-gray-400 p-2 text-center">
-                                        {available.length === 0 ? "All items selected" : "No results found"}
+                                        {available.length === 0 ? t('admin.design.homepage.list.allSelected') : t('admin.design.homepage.list.noResults')}
                                     </p>
                                 )}
                             </div>
