@@ -130,3 +130,42 @@ export async function sendOrderConfirmationEmail(details: OrderConfirmationDetai
         html
     });
 }
+
+// 5. Send Contact Form Email
+interface ContactEmailDetails {
+    name: string;
+    email: string;
+    phone?: string;
+    subject: string;
+    message: string;
+}
+
+export async function sendContactEmail(details: ContactEmailDetails) {
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+        <h2 style="color: #cfb160;">New Contact Message</h2>
+        <div style="background: #f9f9f9; padding: 20px; border-radius: 5px;">
+            <p><strong>Name:</strong> ${details.name}</p>
+            <p><strong>Email:</strong> ${details.email}</p>
+            ${details.phone ? `<p><strong>Phone:</strong> ${details.phone}</p>` : ''}
+            <p><strong>Subject:</strong> ${details.subject}</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+            <p style="white-space: pre-wrap;">${details.message}</p>
+        </div>
+    </div>
+    `;
+
+    try {
+        // Send to admin
+        await sendEmail({
+            to: process.env.ADMIN_EMAIL || 'support@yemenimarket.com', // Fallback or env var
+            subject: `[Contact Form] ${details.subject}`,
+            html
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to send contact email:", error);
+        return { success: false, error };
+    }
+}
