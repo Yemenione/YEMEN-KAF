@@ -44,6 +44,7 @@ export default function BestSellers() {
                 return product.images;
             }
 
+            const parsed = JSON.parse(product.images);
             return parsed[0] || '/images/honey-jar.jpg';
         } catch {
             if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
