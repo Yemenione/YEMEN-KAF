@@ -42,6 +42,7 @@ export default function ProductShowcase() {
                 return product.images;
             }
 
+            const parsed = JSON.parse(product.images);
             return parsed[0] || '/images/honey-jar.jpg';
         } catch {
             // Fallback for non-JSON strings
