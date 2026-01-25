@@ -169,3 +169,39 @@ export async function sendContactEmail(details: ContactEmailDetails) {
         return { success: false, error };
     }
 }
+
+// 6. Send Welcome Email (Newsletter)
+export async function sendWelcomeEmail(to: string) {
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+        <div style="background-color: #0f1115; padding: 20px; text-align: center;">
+            <h1 style="color: #cfb160; margin: 0; font-size: 24px; text-transform: uppercase;">Welcome to YEM KAF</h1>
+        </div>
+        <div style="padding: 30px; border: 1px solid #eee; border-top: none;">
+            <p>Thank you for subscribing to our newsletter!</p>
+            <p>You will now receive updates on our latest products, exclusive offers, and the finest selection from Yemen.</p>
+            
+            <div style="margin: 30px 0; text-align: center;">
+                <a href="https://yemenimarket.com/shop" style="background-color: #cfb160; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Start Shopping</a>
+            </div>
+
+            <p style="font-size: 12px; color: #999; margin-top: 30px; text-align: center;">
+                If you did not sign up for this newsletter, you can ignore this email.
+            </p>
+        </div>
+    </div>
+    `;
+
+    try {
+        await sendEmail({
+            to,
+            subject: 'Welcome to YEM KAF',
+            html
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to send welcome email:", error);
+        return { success: false, error };
+    }
+}
+
