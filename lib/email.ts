@@ -173,3 +173,48 @@ export const sendContactEmail = async (data: ContactEmailData) => {
     return { success: false, error };
   }
 };
+
+export const sendWelcomeEmail = async (email: string) => {
+  try {
+    const transporter = await createTransporter();
+
+    const htmlContent = `
+      <div style="font-family: 'Helvetica Neue', Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee;">
+        <div style="background-color: #1a1a1a; padding: 30px; text-align: center;">
+          <h1 style="color: #D4AF37; margin: 0; font-size: 28px; letter-spacing: 2px;">WELCOME TO YEMEN KAF</h1>
+          <p style="color: #888; margin: 10px 0 0; font-size: 14px; letter-spacing: 1px;">THE ESSENCE OF YEMENI HERITAGE</p>
+        </div>
+        
+        <div style="padding: 40px; text-align: center; background-color: #fff;">
+          <h2 style="color: #1a1a1a; margin-top: 0; font-size: 22px;">Thank you for joining our community!</h2>
+          <p style="line-height: 1.6; color: #555;">We are delighted to have you with us. From now on, you will be the first to know about our premium Sidr Honey harvests, exclusive organic coffee batches, and traditional Yemeni treasures.</p>
+          
+          <div style="margin: 30px 0;">
+            <a href="https://yemen-kaf.vercel.app" style="background-color: #D4AF37; color: #fff; padding: 15px 30px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">EXPLORE OUR COLLECTION</a>
+          </div>
+          
+          <p style="font-size: 14px; color: #888; margin-top: 40px;">If you have any questions, simply reply to this email. Our concierge team is here to assist you.</p>
+        </div>
+
+        <div style="background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #aaa; border-top: 1px solid #eee;">
+          <p>&copy; ${new Date().getFullYear()} Yemen Kaf. All rights reserved.</p>
+          <p>Luxury Yemeni Gourmet & Traditional Arts</p>
+        </div>
+      </div>
+    `;
+
+    const info = await transporter.sendMail({
+      from: '"Yemen Kaf" <support@yemenkaf.com>',
+      to: email,
+      subject: 'Welcome to Yemen Kaf - The Essence of Yemeni Heritage',
+      text: 'Welcome to Yemen Kaf! Thank you for joining our newsletter.',
+      html: htmlContent,
+    });
+
+    console.log("Welcome email sent: %s", info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending welcome email:", error);
+    return { success: false, error };
+  }
+};
