@@ -85,31 +85,74 @@ export async function POST(req: Request) {
                 include: { carrier: true }
             });
 
-            // Map DB rates to API response format
-            rates.push(...applicableRates.map(rate => ({
+            // Deduplicate rates: Keep the lowest price per carrier
+            const uniqueRatesMap = new Map();
+
+            for (const rate of applicableRates) {
+                const existing = uniqueRatesMap.get(rate.carrier.id);
+                if (!existing || Number(rate.price) < Number(existing.price)) {
+                    uniqueRatesMap.set(rate.carrier.id, rate);
+                }
+            }
+
+            rates.push(...Array.from(uniqueRatesMap.values()).map((rate: any) => ({
                 cost: Number(rate.price),
-                deliveryDays: rate.carrier.code === 'colissimo' ? 2 : 4, // Estimate based on carrier
+                deliveryDays: rate.carrier.code === 'dhl' ? 1 : (rate.carrier.code === 'colissimo' ? 2 : 4),
                 serviceCode: rate.carrier.code || 'STANDARD',
                 serviceName: rate.carrier.name,
-                carrierId: rate.carrier.id
+                carrierId: rate.carrier.id,
+                carrierLogo: rate.carrier.logo
             })));
         }
 
-        // 5. Fallback for France if no DB rates found (Safety Net)
-        if (rates.length === 0 && dest.country === 'FR') {
-            // Hardcoded fallback solely to prevent checkout blocking
-            let cost = 4.95;
-            if (totalWeight > 0.25) cost = 5.95;
-            if (totalWeight > 0.5) cost = 7.35;
-            if (totalWeight > 1) cost = 8.55;
-            if (totalWeight > 2) cost = 12.55;
+        // 5. Fallback if no DB rates found (Safety Net)
+        if (rates.length === 0) {
+            // FR Fallback
+            if (dest.country === 'FR') {
+                let cost = 4.95;
+                if (totalWeight > 0.25) cost = 5.95;
+                if (totalWeight > 0.5) cost = 7.35;
+                if (totalWeight > 1) cost = 8.55;
+                if (totalWeight > 2) cost = 12.55;
 
-            rates.push({
-                cost: cost,
-                deliveryDays: 2,
-                serviceCode: 'DOM',
-                serviceName: 'Colissimo Domicile (Standard)'
-            });
+                rates.push({
+                    cost: cost,
+                    deliveryDays: 2,
+                    serviceCode: 'DOM',
+                    serviceName: 'Colissimo Domicile (Standard)',
+                    carrierLogo: '/uploads/carriers/colissimo.png', // Fallback path if exists
+                    carrierId: 999
+                });
+            }
+            // Europe Fallback (DHL + Colissimo Int)
+            else if (['DE', 'BE', 'NL', 'ES', 'IT', 'CH', 'AT', 'PT', 'SE', 'NO', 'DK', 'FI', 'IE', 'GB'].includes(dest.country)) {
+                // DHL Rate Calculation (Mock)
+                let dhlCost = 14.90;
+                if (totalWeight > 1) dhlCost = 19.90;
+                if (totalWeight > 2) dhlCost = 24.90;
+
+                rates.push({
+                    cost: dhlCost,
+                    deliveryDays: 1,
+                    serviceCode: 'DHL_EXP',
+                    serviceName: 'DHL Express Europe',
+                    carrierLogo: '/uploads/carriers/dhl.png', // Assuming user will upload or it exists
+                    carrierId: 888
+                });
+
+                // Colissimo International
+                let coliCost = 12.90;
+                if (totalWeight > 1) coliCost = 15.90;
+
+                rates.push({
+                    cost: coliCost,
+                    deliveryDays: 3,
+                    serviceCode: 'COLI_INT',
+                    serviceName: 'Colissimo International',
+                    carrierLogo: '/uploads/carriers/colissimo.png',
+                    carrierId: 999
+                });
+            }
         }
 
         return NextResponse.json({

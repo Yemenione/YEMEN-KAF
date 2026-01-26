@@ -29,11 +29,16 @@ export async function GET() {
             return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
         }
 
-        const { payload } = await jwtVerify(token, JWT_SECRET);
-        const userId = payload.userId as number;
+        let userId: number;
+        try {
+            const { payload } = await jwtVerify(token, JWT_SECRET);
+            userId = payload.userId as number;
+        } catch {
+            return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+        }
 
         // Fetch cart items with product details
-        const [cartItems] = await pool.execute<CartItemRow[]>(
+        const [cartItemsRaw] = await pool.execute<any[]>(
             `SELECT 
                 ci.id,
                 ci.quantity,
@@ -41,18 +46,42 @@ export async function GET() {
                 p.name,
                 p.price,
                 p.slug,
-                p.image_url
+                p.images
             FROM cart_items ci
             JOIN products p ON ci.product_id = p.id
             WHERE ci.customer_id = ?`,
             [userId]
         );
 
+        const cartItems = cartItemsRaw.map(item => {
+            let imageUrl = '/placeholder.png';
+            if (item.images) {
+                try {
+                    // Try parsing as JSON first
+                    const parsed = JSON.parse(item.images);
+                    if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
+                    else if (typeof parsed === 'string') imageUrl = parsed;
+                } catch {
+                    // If simple string (comma separated or single URL)
+                    imageUrl = item.images.split(',')[0].trim();
+                }
+            }
+            return {
+                id: item.id,
+                quantity: item.quantity,
+                product_id: item.product_id,
+                name: item.name,
+                price: item.price,
+                slug: item.slug,
+                image_url: imageUrl
+            };
+        });
+
         return NextResponse.json({ cartItems });
 
     } catch (error) {
         console.error('Cart fetch error:', error);
-        return NextResponse.json({ error: 'Failed to fetch cart' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch cart', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
     }
 }
 

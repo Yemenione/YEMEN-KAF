@@ -20,7 +20,7 @@ export default function CartDrawer() {
             {/* Backdrop */}
             <div
                 className={clsx(
-                    "fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity duration-500",
+                    "fixed inset-0 bg-black/40 backdrop-blur-sm z-[9999998] transition-opacity duration-500",
                     isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
                 )}
                 onClick={closeCart}
@@ -29,7 +29,7 @@ export default function CartDrawer() {
             {/* Drawer Panel */}
             <div
                 className={clsx(
-                    "fixed top-0 right-0 h-full w-full max-w-md bg-white z-[70] transform transition-transform duration-500 ease-in-out flex flex-col",
+                    "fixed top-0 right-0 h-full w-full max-w-md bg-white z-[9999999] transform transition-transform duration-500 ease-in-out flex flex-col",
                     isOpen ? "translate-x-0" : "translate-x-full"
                 )}
             >

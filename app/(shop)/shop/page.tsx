@@ -109,11 +109,17 @@ function ShopContent() {
             }
 
             // Maps sort options
-            if (sortBy === 'price_asc') {
+            if (sortBy === 'price-low') {
                 params.orderby = 'price';
                 params.order = 'asc';
-            } else if (sortBy === 'price_desc') {
+            } else if (sortBy === 'price-high') {
                 params.orderby = 'price';
+                params.order = 'desc';
+            } else if (sortBy === 'name-asc') {
+                params.orderby = 'title';
+                params.order = 'asc';
+            } else if (sortBy === 'name-desc') {
+                params.orderby = 'title';
                 params.order = 'desc';
             } else {
                 params.orderby = 'date';

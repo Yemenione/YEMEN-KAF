@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     ShoppingBag,
@@ -103,11 +104,20 @@ export default function AdminSidebar() {
         }
     ];
 
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
     return (
         <>
             {/* Mobile Overlay */}
             <AnimatePresence>
-                {isSidebarOpen && (
+                {isSidebarOpen && isMobile && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -122,7 +132,7 @@ export default function AdminSidebar() {
                 initial={false}
                 animate={{
                     width: isSidebarCollapsed ? '80px' : '280px',
-                    x: (!isSidebarOpen && typeof window !== 'undefined' && window.innerWidth < 1024)
+                    x: (!isSidebarOpen && isMobile)
                         ? (locale === 'ar' ? '100%' : '-100%')
                         : 0
                 }}
@@ -195,7 +205,7 @@ export default function AdminSidebar() {
                                                 href={item.href}
                                                 title={isSidebarCollapsed ? item.name : ''}
                                                 onClick={() => {
-                                                    if (typeof window !== 'undefined' && window.innerWidth < 1024) closeSidebar();
+                                                    if (isMobile) closeSidebar();
                                                 }}
                                                 className={clsx(
                                                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 relative group/link",

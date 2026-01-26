@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, Save, X, Loader2, Truck, Globe, Package } from "lucide-react";
 import Image from "next/image";
 import { getAllCarriers, createCarrier, updateCarrier, deleteCarrier } from "@/app/actions/carriers";
-import { getZones, createZone, updateZone, deleteZone, createRate, deleteRate } from "@/app/actions/shippingZones";
+import { getZones, createZone, updateZone, deleteZone, createRate, deleteRate } from "@/app/actions/shipping-zones";
 import { toast } from "sonner";
 
 interface Carrier {

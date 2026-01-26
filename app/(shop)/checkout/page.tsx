@@ -22,6 +22,7 @@ interface ShippingRate {
     name: string;
     price: number;
     estimatedDays: string;
+    carrierLogo?: string;
 }
 
 interface Address {
@@ -145,23 +146,50 @@ export default function CheckoutPage() {
 
     useEffect(() => {
         if (items.length > 0 && selectedCountry) {
+            // Map country name to ISO code for API
+            const countryMap: Record<string, string> = {
+                "France": "FR",
+                "United Kingdom": "GB",
+                "Germany": "DE",
+                "Belgium": "BE",
+                "Netherlands": "NL",
+                "Spain": "ES",
+                "Italy": "IT",
+                "Switzerland": "CH",
+                "Austria": "AT",
+                "Portugal": "PT",
+                "Sweden": "SE",
+                "Norway": "NO",
+                "Denmark": "DK",
+                "Finland": "FI",
+                "Ireland": "IE"
+            };
+            const isoCountry = countryMap[selectedCountry] || selectedCountry;
+
             fetch("/api/shipping/calculate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ items, country: selectedCountry }),
+                body: JSON.stringify({ items, country: isoCountry }),
             })
                 .then((res) => res.json())
                 .then((data) => {
-                    setShippingRates(data.rates || []);
+                    const mappedRates = (data.rates || []).map((r: any) => ({
+                        id: r.serviceCode || r.carrierId.toString(),
+                        name: r.serviceName,
+                        price: r.cost,
+                        estimatedDays: `${r.deliveryDays} ${r.deliveryDays === 1 ? 'day' : 'days'}`,
+                        carrierLogo: r.carrierLogo
+                    }));
+                    setShippingRates(mappedRates);
                     setCartWeight(data.totalWeight || 0);
                     // Default to first option if current selection is invalid or null
-                    if (data.rates && data.rates.length > 0) {
+                    if (mappedRates.length > 0) {
                         // Keep current if exists in new list, else set first
                         setSelectedShippingRate((prev) => {
-                            const exists = data.rates.find((r: ShippingRate) => r.id === prev?.id);
-                            return exists || data.rates[0];
+                            const exists = mappedRates.find((r: any) => r.id === prev?.id);
+                            return exists || mappedRates[0];
                         });
-                        setSelectedShippingMethod(data.rates[0].id); // Legacy support for string ID
+                        setSelectedShippingMethod(mappedRates[0].id);
                     } else {
                         setShippingRates([]);
                         setSelectedShippingRate(null);
@@ -394,20 +422,7 @@ export default function CheckoutPage() {
                                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white text-sm font-bold">1</span>
                                 {t('checkout.shippingDetails')}
                             </h2>
-                            <button
-                                onClick={() => {
-                                    // Mock Location functionality
-                                    setValue("city", "Paris", { shouldValidate: true });
-                                    setValue("country", "France", { shouldValidate: true });
-                                    setValue("zip", "75008", { shouldValidate: true });
-                                    setValue("address", "10 Avenue des Champs-Élysées", { shouldValidate: true });
-                                    setValue("state", "Île-de-France", { shouldValidate: true });
-                                    // In a real app, use Google Maps API or Geolocation API here
-                                }}
-                                className="text-xs uppercase tracking-wider font-bold text-black border-b border-black pb-0.5 hover:text-gray-600 transition-colors flex items-center gap-1"
-                            >
-                                <MapPin size={12} /> {t('checkout.smartLocation')}
-                            </button>
+                            {/* Smart Location Button Removed */}
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
@@ -480,10 +495,19 @@ export default function CheckoutPage() {
                                     <option value="">Select Country</option>
                                     <option value="France">France</option>
                                     <option value="United Kingdom">United Kingdom</option>
-                                    <option value="United States">United States</option>
-                                    <option value="UAE">UAE</option>
-                                    <option value="Saudi Arabia">Saudi Arabia</option>
-                                    <option value="Yemen">Yemen</option>
+                                    <option value="Germany">Germany</option>
+                                    <option value="Belgium">Belgium</option>
+                                    <option value="Netherlands">Netherlands</option>
+                                    <option value="Spain">Spain</option>
+                                    <option value="Italy">Italy</option>
+                                    <option value="Switzerland">Switzerland</option>
+                                    <option value="Austria">Austria</option>
+                                    <option value="Portugal">Portugal</option>
+                                    <option value="Sweden">Sweden</option>
+                                    <option value="Norway">Norway</option>
+                                    <option value="Denmark">Denmark</option>
+                                    <option value="Finland">Finland</option>
+                                    <option value="Ireland">Ireland</option>
                                 </select>
                                 {errors.country && <span className="text-red-500 text-xs">{errors.country.message}</span>}
                             </div>
@@ -532,7 +556,13 @@ export default function CheckoutPage() {
                                         <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl transition-all"></div>
                                         <div className="relative flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2">
-                                                <Truck className="w-6 h-6 text-gray-400 peer-checked:text-black" />
+                                                {rate.carrierLogo ? (
+                                                    <div className="relative w-16 h-8">
+                                                        <Image src={rate.carrierLogo} alt={rate.name} fill className="object-contain" sizes="64px" />
+                                                    </div>
+                                                ) : (
+                                                    <Truck className="w-6 h-6 text-gray-400 peer-checked:text-black" />
+                                                )}
                                                 <span className="font-bold text-lg">
                                                     {(!rate.price || rate.price === 0) ? t('checkout.free') : `${Number(rate.price).toFixed(2)}€`}
                                                 </span>
@@ -579,14 +609,16 @@ export default function CheckoutPage() {
                                                     <h3 className="font-serif text-lg text-black">Credit Card</h3>
                                                 </div>
                                             </label>
-                                            <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
-                                                <input type="radio" name="payment" className="peer sr-only" checked={selectedPaymentMethod === "cod"} onChange={() => setSelectedPaymentMethod("cod")} />
-                                                <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl"></div>
-                                                <div className="relative flex items-center gap-3 mb-2">
-                                                    <Banknote className="w-6 h-6 text-gray-400 peer-checked:text-black" />
-                                                    <h3 className="font-serif text-lg text-black">Cash on Delivery</h3>
-                                                </div>
-                                            </label>
+                                            {settings.payment_cod_enabled === 'true' && (
+                                                <label className="relative p-6 border rounded-xl cursor-pointer hover:border-black transition-all group">
+                                                    <input type="radio" name="payment" className="peer sr-only" checked={selectedPaymentMethod === "cod"} onChange={() => setSelectedPaymentMethod("cod")} />
+                                                    <div className="absolute inset-0 border-2 border-transparent peer-checked:border-black rounded-xl"></div>
+                                                    <div className="relative flex items-center gap-3 mb-2">
+                                                        <Banknote className="w-6 h-6 text-gray-400 peer-checked:text-black" />
+                                                        <h3 className="font-serif text-lg text-black">Cash on Delivery</h3>
+                                                    </div>
+                                                </label>
+                                            )}
                                         </>
                                     );
                                 }
@@ -616,7 +648,7 @@ export default function CheckoutPage() {
                         {/* Payment Content */}
                         <div className="p-6 border border-gray-100 rounded-xl bg-gray-50/50">
                             {selectedPaymentMethod === "stripe" && clientSecret && (
-                                <Elements options={options} stripe={stripePromise}>
+                                <Elements key={clientSecret} options={options} stripe={stripePromise}>
                                     <StripePaymentForm amount={orderTotal} onSuccess={handlePlaceOrder} isFormValid={isValid} />
                                 </Elements>
                             )}
@@ -634,10 +666,10 @@ export default function CheckoutPage() {
                             )}
                         </div>
                     </section>
-                </div>
+                </div >
 
                 {/* Right Column: Order Summary */}
-                <div className="lg:col-span-5 relative">
+                < div className="lg:col-span-5 relative" >
                     <div className="sticky top-32 p-8 md:p-10 bg-gray-50 rounded-3xl">
                         <h2 className="text-2xl font-serif text-black mb-8 flex items-center gap-3">
                             <ShoppingBag className="w-5 h-5" /> {t('checkout.yourOrder')}
@@ -647,8 +679,8 @@ export default function CheckoutPage() {
                             {items.length === 0 ? (
                                 <p className="text-gray-400 italic py-8 text-center">{t('checkout.emptyBag')}</p>
                             ) : (
-                                items.map((item) => (
-                                    <div key={item.id} className="flex gap-4 items-start pb-6 border-b border-black/5 last:border-0">
+                                items.map((item, index) => (
+                                    <div key={`${item.id}-${item.variantId || index}`} className="flex gap-4 items-start pb-6 border-b border-black/5 last:border-0">
                                         <div className="relative w-20 h-24 bg-white rounded-lg overflow-hidden flex-shrink-0 border border-black/5">
                                             <Image src={item.image} alt={item.title} fill className="object-cover" sizes="80px" />
                                         </div>
@@ -668,7 +700,7 @@ export default function CheckoutPage() {
                                 <span>{subtotal.toFixed(2)}€</span>
                             </div>
                             <div className="flex justify-between text-sm text-gray-600">
-                                <span>{t('checkout.tax')}</span>
+                                <span>TVA (Tax)</span>
                                 <span>{taxTotal.toFixed(2)}€</span>
                             </div>
                             <div className="flex justify-between text-sm text-gray-600">
@@ -716,9 +748,9 @@ export default function CheckoutPage() {
                             <span className="w-2 h-2 rounded-full bg-green-500 animation-pulse"></span> {t('checkout.secureCheckout')}
                         </p>
                     </div>
-                </div>
+                </div >
 
-            </div>
-        </main>
+            </div >
+        </main >
     );
 }

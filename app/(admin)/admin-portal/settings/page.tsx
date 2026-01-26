@@ -453,6 +453,21 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </div>
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-medium border-b pb-2">Manual Payment Methods</h3>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Enable Cash on Delivery (COD)</label>
+                                        <p className="text-xs text-gray-500">Allow customers to pay with cash upon arrival.</p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleChange('payment_cod_enabled', settings['payment_cod_enabled'] === 'true' ? 'false' : 'true')}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings['payment_cod_enabled'] === 'true' ? 'bg-[var(--coffee-brown)]' : 'bg-gray-200'}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings['payment_cod_enabled'] === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
