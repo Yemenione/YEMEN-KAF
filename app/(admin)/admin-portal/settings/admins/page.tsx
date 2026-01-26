@@ -6,6 +6,7 @@ import { Users, Shield, ShieldCheck, ShieldAlert, Mail, Clock, Loader2, Plus, Ed
 import { format } from 'date-fns';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface AdminUser {
     id: number;
@@ -17,6 +18,7 @@ interface AdminUser {
 }
 
 export default function AdminsPage() {
+    const { t } = useLanguage();
     const [admins, setAdmins] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -44,7 +46,7 @@ export default function AdminsPage() {
             setAdmins(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Failed to fetch admins:', error);
-            toast.error('Failed to load admins');
+            toast.error(t('admin.common.operationFailed'));
         } finally {
             setLoading(false);
         }
@@ -95,22 +97,22 @@ export default function AdminsPage() {
             });
 
             if (res.ok) {
-                toast.success(editingAdmin ? 'Admin updated' : 'Admin created');
+                toast.success(editingAdmin ? t('admin.settings.admins.updated') : t('admin.settings.admins.created'));
                 setIsModalOpen(false);
                 fetchAdmins();
             } else {
                 const error = await res.json();
-                toast.error(error.error || 'Operation failed');
+                toast.error(error.error || t('admin.common.operationFailed'));
             }
         } catch {
-            toast.error('Something went wrong');
+            toast.error(t('admin.common.operationFailed'));
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this admin?')) return;
+        if (!confirm(t('admin.settings.admins.confirmDelete'))) return;
 
         try {
             const res = await fetch(`/api/admin/admins/${id}`, {
@@ -118,11 +120,11 @@ export default function AdminsPage() {
             });
 
             if (res.ok) {
-                toast.success('Admin deleted');
+                toast.success(t('admin.settings.admins.deleted'));
                 setAdmins(admins.filter(a => a.id !== id));
             } else {
                 const error = await res.json();
-                toast.error(error.error || 'Delete failed');
+                toast.error(error.error || t('admin.common.operationFailed'));
             }
         } catch {
             toast.error('Failed to delete admin');
@@ -141,21 +143,31 @@ export default function AdminsPage() {
 
     if (loading) return <div className="flex items-center justify-center h-64"><Loader2 className="animate-spin" /></div>;
 
+    const getRoleLabel = (role: string) => {
+        switch (role) {
+            case 'SUPER_ADMIN': return t('admin.settings.admins.roles.superAdmin');
+            case 'EDITOR': return t('admin.settings.admins.roles.editor');
+            case 'SUPPORT': return t('admin.settings.admins.roles.support');
+            case 'FULFILLMENT': return t('admin.settings.admins.roles.fulfillment');
+            default: return t('admin.common.filter');
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                         <Users className="w-8 h-8 text-[var(--coffee-brown)]" />
-                        Team & Access Control
+                        {t('admin.settings.admins.title')}
                     </h1>
-                    <p className="text-gray-500 text-sm">Manage administrative users and their permission levels.</p>
+                    <p className="text-gray-500 text-sm">{t('admin.settings.admins.subtitle')}</p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
                     className="flex items-center gap-2 bg-[var(--coffee-brown)] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
                 >
-                    <Plus className="w-4 h-4" /> Add New Admin
+                    <Plus className="w-4 h-4" /> {t('admin.settings.admins.add')}
                 </button>
             </div>
 
@@ -198,11 +210,11 @@ export default function AdminsPage() {
                                 <div className="flex items-center justify-between">
                                     <div className={`flex items-center gap-2 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${roleInfo.color}`}>
                                         <RoleIcon className="w-3 h-3" />
-                                        {roleInfo.label}
+                                        {getRoleLabel(admin.role)}
                                     </div>
                                     <div className="text-[10px] text-gray-400 flex items-center gap-1 uppercase tracking-wider">
                                         <Clock className="w-3 h-3" />
-                                        {admin.lastLogin ? format(new Date(admin.lastLogin), 'MMM d, p') : 'Never'}
+                                        {admin.lastLogin ? format(new Date(admin.lastLogin), 'MMM d, p') : t('admin.settings.admins.never')}
                                     </div>
                                 </div>
                             </div>
@@ -223,15 +235,15 @@ export default function AdminsPage() {
                         </button>
 
                         <div className="mb-6">
-                            <h2 className="text-xl font-bold">{editingAdmin ? 'Edit Admin' : 'Add New Admin'}</h2>
+                            <h2 className="text-xl font-bold">{editingAdmin ? t('admin.settings.admins.edit') : t('admin.settings.admins.addNew')}</h2>
                             <p className="text-sm text-gray-500">
-                                {editingAdmin ? 'Update team member information and permissions.' : 'Grant administrative access to a new team member.'}
+                                {editingAdmin ? t('admin.settings.admins.editDesc') : t('admin.settings.admins.addDesc')}
                             </p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-1">
-                                <label className="text-xs font-bold uppercase text-gray-400 tracking-wider">Full Name</label>
+                                <label className="text-xs font-bold uppercase text-gray-400 tracking-wider">{t('admin.settings.admins.fullName')}</label>
                                 <input
                                     required
                                     type="text"
@@ -243,7 +255,7 @@ export default function AdminsPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-bold uppercase text-gray-400 tracking-wider">Email Address</label>
+                                <label className="text-xs font-bold uppercase text-gray-400 tracking-wider">{t('admin.settings.admins.email')}</label>
                                 <input
                                     required
                                     type="email"
@@ -256,7 +268,7 @@ export default function AdminsPage() {
 
                             <div className="space-y-1">
                                 <label className="text-xs font-bold uppercase text-gray-400 tracking-wider">
-                                    {editingAdmin ? 'New Password (leave blank to keep current)' : 'Password'}
+                                    {editingAdmin ? t('admin.settings.admins.passwordNew') : t('admin.settings.admins.password')}
                                 </label>
                                 <div className="relative">
                                     <input
@@ -278,16 +290,16 @@ export default function AdminsPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-xs font-bold uppercase text-gray-400 tracking-wider">Role & Permissions</label>
+                                <label className="text-xs font-bold uppercase text-gray-400 tracking-wider">{t('admin.settings.admins.role')}</label>
                                 <select
                                     value={formData.role}
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value as AdminUser['role'] })}
                                     className="w-full p-2.5 bg-gray-50 dark:bg-zinc-800 border-none rounded-lg focus:ring-1 focus:ring-[var(--coffee-brown)] outline-none transition-all appearance-none cursor-pointer"
                                 >
-                                    <option value="SUPER_ADMIN">Super Admin (All Permissions)</option>
-                                    <option value="EDITOR">Editor (Manage Catalog)</option>
-                                    <option value="SUPPORT">Support (Manage Tickets & RMAs)</option>
-                                    <option value="FULFILLMENT">Fulfillment (Manage Orders)</option>
+                                    <option value="SUPER_ADMIN">{t('admin.settings.admins.roles.superAdminDesc')}</option>
+                                    <option value="EDITOR">{t('admin.settings.admins.roles.editorDesc')}</option>
+                                    <option value="SUPPORT">{t('admin.settings.admins.roles.supportDesc')}</option>
+                                    <option value="FULFILLMENT">{t('admin.settings.admins.roles.fulfillmentDesc')}</option>
                                 </select>
                             </div>
 
@@ -297,7 +309,7 @@ export default function AdminsPage() {
                                     onClick={() => setIsModalOpen(false)}
                                     className="flex-1 px-4 py-2.5 rounded-lg border border-gray-100 dark:border-zinc-800 font-medium hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
                                 >
-                                    Cancel
+                                    {t('admin.settings.shipping.cancel')}
                                 </button>
                                 <button
                                     type="submit"
@@ -305,7 +317,7 @@ export default function AdminsPage() {
                                     className="flex-1 bg-[var(--coffee-brown)] text-white px-4 py-2.5 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {editingAdmin ? 'Save Changes' : 'Create Admin'}
+                                    {editingAdmin ? t('admin.settings.admins.saveChanges') : t('admin.settings.admins.create')}
                                 </button>
                             </div>
                         </form>
@@ -316,10 +328,10 @@ export default function AdminsPage() {
             <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl text-white space-y-2">
                 <h4 className="font-bold flex items-center gap-2 text-[var(--honey-gold)]">
                     <ShieldCheck className="w-5 h-5" />
-                    Security Best Practices
+                    {t('admin.settings.admins.securityTips')}
                 </h4>
                 <p className="text-sm text-zinc-400">
-                    Always use the minimum required role for each team member. **Super Admins** can manage everything including settings and team members, while **Editors** can only manage catalog content.
+                    {t('admin.settings.admins.securityTipsDesc')}
                 </p>
             </div>
         </div>

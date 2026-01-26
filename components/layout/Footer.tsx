@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Facebook, Instagram, Twitter, Mail, MapPin, Phone, Send } from "lucide-react";
+import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, Music, Ghost, Mail, MapPin, Phone, Send } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useState } from "react";
@@ -73,7 +73,7 @@ export default function Footer() {
                     <p className="text-[var(--coffee-brown)]/60 text-sm leading-relaxed max-w-xs">
                         {(locale === 'en' ? settings.site_description : null) || t('footer.description')}
                     </p>
-                    <div className="flex gap-4">
+                    <div className="flex flex-wrap gap-4">
                         {settings.social_instagram && (
                             <a href={settings.social_instagram} target="_blank" rel="noopener noreferrer" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">
                                 <Instagram size={20} />
@@ -84,7 +84,38 @@ export default function Footer() {
                                 <Facebook size={20} />
                             </a>
                         )}
-                        <a href="#" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors"><Twitter size={20} /></a>
+                        {settings.social_whatsapp && (
+                            <a href={settings.social_whatsapp} target="_blank" rel="noopener noreferrer" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">
+                                <MessageCircle size={20} />
+                            </a>
+                        )}
+                        {settings.social_twitter && (
+                            <a href={settings.social_twitter} target="_blank" rel="noopener noreferrer" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">
+                                <Twitter size={20} />
+                            </a>
+                        )}
+                        {settings.social_tiktok && (
+                            <a href={settings.social_tiktok} target="_blank" rel="noopener noreferrer" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                                    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+                                </svg>
+                            </a>
+                        )}
+                        {settings.social_youtube && (
+                            <a href={settings.social_youtube} target="_blank" rel="noopener noreferrer" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">
+                                <Youtube size={20} />
+                            </a>
+                        )}
+                        {settings.social_snapchat && (
+                            <a href={settings.social_snapchat} target="_blank" rel="noopener noreferrer" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">
+                                <Ghost size={20} />
+                            </a>
+                        )}
+                        {settings.social_linkedin && (
+                            <a href={settings.social_linkedin} target="_blank" rel="noopener noreferrer" className="text-[var(--coffee-brown)] hover:text-[var(--honey-gold)] transition-colors">
+                                <Linkedin size={20} />
+                            </a>
+                        )}
                     </div>
                 </div>
 

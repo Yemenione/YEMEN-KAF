@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { CreditCard, Save, Loader2, ShieldCheck, Zap, Coins, Key } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface PaymentMethod {
     id: string;
@@ -31,6 +32,7 @@ interface ConfigResponse {
 }
 
 export default function PaymentsPage() {
+    const { t } = useLanguage();
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -114,7 +116,7 @@ export default function PaymentsPage() {
                     }
                 })
             });
-            if (res.ok) alert('Payment configuration saved!');
+            if (res.ok) alert(t('admin.settings.success'));
         } catch (error) {
             console.error('Save failed:', error);
         } finally {
@@ -151,9 +153,9 @@ export default function PaymentsPage() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                         <CreditCard className="w-8 h-8 text-[var(--coffee-brown)]" />
-                        Payment Methods
+                        {t('admin.settings.payments.title')}
                     </h1>
-                    <p className="text-gray-500 text-sm">Activate and configure your payment gateways.</p>
+                    <p className="text-gray-500 text-sm">{t('admin.settings.payments.subtitle')}</p>
                 </div>
                 <button
                     onClick={handleSave}
@@ -161,7 +163,7 @@ export default function PaymentsPage() {
                     className="flex items-center gap-2 px-6 py-2 bg-[var(--coffee-brown)] text-white rounded-md hover:bg-[#5a4635] disabled:opacity-50 transition-colors font-medium shadow-sm"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Save Payment Config
+                    {t('admin.settings.payments.save')}
                 </button>
             </div>
 
@@ -187,7 +189,7 @@ export default function PaymentsPage() {
                                     : 'bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200'
                                     }`}
                             >
-                                {method.isEnabled ? 'Active' : 'Disabled'}
+                                {method.isEnabled ? t('admin.payments.active') : t('admin.payments.disabled')}
                             </button>
                         </div>
 
@@ -197,7 +199,7 @@ export default function PaymentsPage() {
                                     <>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1">
-                                                <Key className="w-3 h-3" /> {method.provider === 'paypal' ? 'Client ID' : 'Public API Key'}
+                                                <Key className="w-3 h-3" /> {method.provider === 'paypal' ? t('admin.settings.payments.clientId') : t('admin.settings.payments.publicKey')}
                                             </label>
                                             <input
                                                 type="text"
@@ -209,7 +211,7 @@ export default function PaymentsPage() {
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1">
-                                                <ShieldCheck className="w-3 h-3" /> Secret Key
+                                                <ShieldCheck className="w-3 h-3" /> {t('admin.settings.payments.secretKey')}
                                             </label>
                                             <input
                                                 type="password"
@@ -222,7 +224,7 @@ export default function PaymentsPage() {
                                         {method.provider === 'stripe' && (
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1">
-                                                    <ShieldCheck className="w-3 h-3" /> Webhook Secret
+                                                    <ShieldCheck className="w-3 h-3" /> {t('admin.settings.payments.webhookSecret')}
                                                 </label>
                                                 <input
                                                     type="password"
@@ -235,27 +237,27 @@ export default function PaymentsPage() {
                                         )}
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-1">
-                                                <Zap className="w-3 h-3" /> Environment Mode
+                                                <Zap className="w-3 h-3" /> {t('admin.settings.payments.envMode')}
                                             </label>
                                             <select
                                                 value={method.config?.mode}
                                                 onChange={(e) => updateConfig(method.id, 'mode', e.target.value)}
                                                 className="w-full p-2.5 bg-gray-50 dark:bg-zinc-800 border rounded-md text-sm focus:ring-1 focus:ring-[var(--coffee-brown)] outline-none appearance-none cursor-pointer"
                                             >
-                                                <option value="test">Sandbox / Testing</option>
-                                                <option value="live">Production / Live</option>
+                                                <option value="test">{t('admin.settings.payments.testMode')}</option>
+                                                <option value="live">{t('admin.settings.payments.liveMode')}</option>
                                             </select>
                                         </div>
                                     </>
                                 ) : (
                                     <div className="col-span-2 space-y-1">
-                                        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Order Instructions (Shown to Customer)</label>
+                                        <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{t('admin.settings.payments.instructions')}</label>
                                         <textarea
                                             rows={3}
                                             value={method.instructions}
                                             onChange={(e) => updateConfig(method.id, 'instructions', e.target.value)}
                                             className="w-full p-3 bg-gray-50 dark:bg-zinc-800 border rounded-md text-sm focus:ring-1 focus:ring-[var(--coffee-brown)] outline-none"
-                                            placeholder="Example: Please pay the courier in cash upon arrival."
+                                            placeholder={t('admin.settings.payments.instructionsPlaceholder')}
                                         />
                                     </div>
                                 )}
@@ -268,7 +270,7 @@ export default function PaymentsPage() {
             <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-100 dark:border-amber-800">
                 <ShieldCheck className="w-5 h-5 text-amber-600" />
                 <p className="text-xs text-amber-800 dark:text-amber-300 font-medium">
-                    All payment transactions are encrypted and processed through our PCI-DSS compliant providers.
+                    {t('admin.settings.payments.trustNote')}
                 </p>
             </div>
         </div>

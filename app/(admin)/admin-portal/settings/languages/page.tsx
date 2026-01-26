@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Globe, Check, Star, Edit2 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Language {
     id: number;
@@ -15,6 +16,7 @@ interface Language {
 }
 
 export default function LanguagesPage() {
+    const { t } = useLanguage();
     const [languages, setLanguages] = useState<Language[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -68,25 +70,25 @@ export default function LanguagesPage() {
                 resetForm();
             } else {
                 const err = await res.json();
-                alert(err.error);
+                alert(err.error || t('admin.common.operationFailed'));
             }
         } catch {
-            alert('Operation failed');
+            alert(t('admin.common.operationFailed'));
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this language?')) return;
+        if (!confirm(t('admin.common.confirmDelete'))) return;
         try {
             const res = await fetch(`/api/admin/settings/languages/${id}`, { method: 'DELETE' });
             if (res.ok) {
                 fetchLanguages();
             } else {
                 const err = await res.json();
-                alert(err.error);
+                alert(err.error || t('admin.common.operationFailed'));
             }
         } catch {
-            alert('Delete failed');
+            alert(t('admin.common.operationFailed'));
         }
     };
 
@@ -114,7 +116,7 @@ export default function LanguagesPage() {
         <div className="max-w-6xl mx-auto space-y-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Globe className="w-6 h-6 text-blue-600" />
-                Internationalization
+                {t('admin.settings.languages.title')}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -123,15 +125,15 @@ export default function LanguagesPage() {
                 <div className="md:col-span-1">
                     <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm sticky top-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-semibold">{isEditing ? 'Edit Language' : 'Add New Language'}</h3>
+                            <h3 className="font-semibold">{isEditing ? t('admin.settings.languages.edit') : t('admin.settings.languages.addNew')}</h3>
                             {isEditing && (
-                                <button onClick={resetForm} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+                                <button onClick={resetForm} className="text-xs text-gray-400 hover:text-gray-600">{t('admin.settings.shipping.cancel')}</button>
                             )}
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Name</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.products.name')}</label>
                                 <input
                                     type="text"
                                     required
@@ -144,7 +146,7 @@ export default function LanguagesPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">ISO Code</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.settings.taxes.countryCode')}</label>
                                     <input
                                         type="text"
                                         required
@@ -156,7 +158,7 @@ export default function LanguagesPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">Locale</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.settings.languages.locale')}</label>
                                     <input
                                         type="text"
                                         required
@@ -169,7 +171,7 @@ export default function LanguagesPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Flag Emoji</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.settings.languages.flagEmoji')}</label>
                                 <input
                                     type="text"
                                     className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -187,7 +189,7 @@ export default function LanguagesPage() {
                                         onChange={e => setFormData({ ...formData, isRTL: e.target.checked })}
                                         className="rounded border-gray-300"
                                     />
-                                    <span className="text-sm">RTL (Right-to-Left)</span>
+                                    <span className="text-sm">{t('admin.settings.languages.rtl')}</span>
                                 </label>
 
                                 <label className="flex items-center gap-2 cursor-pointer">
@@ -197,7 +199,7 @@ export default function LanguagesPage() {
                                         onChange={e => setFormData({ ...formData, isDefault: e.target.checked })}
                                         className="rounded border-gray-300"
                                     />
-                                    <span className="text-sm">Set as Default Language</span>
+                                    <span className="text-sm">{t('admin.settings.languages.setAsDefault')}</span>
                                 </label>
 
                                 <label className="flex items-center gap-2 cursor-pointer">
@@ -207,7 +209,7 @@ export default function LanguagesPage() {
                                         onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
                                         className="rounded border-gray-300"
                                     />
-                                    <span className="text-sm">Active / Published</span>
+                                    <span className="text-sm">{t('admin.settings.languages.activePublished')}</span>
                                 </label>
                             </div>
 
@@ -216,7 +218,7 @@ export default function LanguagesPage() {
                                 className="w-full bg-[var(--coffee-brown)] text-white py-2 rounded-md font-medium text-sm hover:bg-[#5a4635] flex justify-center items-center gap-2"
                             >
                                 {isEditing ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                                {isEditing ? "Update Language" : "Add Language"}
+                                {isEditing ? t('admin.settings.languages.update') : t('admin.settings.languages.add')}
                             </button>
                         </form>
                     </div>
@@ -225,10 +227,10 @@ export default function LanguagesPage() {
                 {/* List Section */}
                 <div className="md:col-span-2 space-y-4">
                     {loading ? (
-                        <div className="text-center py-10 text-gray-500">Loading languages...</div>
+                        <div className="text-center py-10 text-gray-500">{t('admin.settings.languages.loading')}</div>
                     ) : languages.length === 0 ? (
                         <div className="bg-white dark:bg-zinc-900 border rounded-xl p-8 text-center text-gray-500">
-                            No languages defined yet. Add one to get started.
+                            {t('admin.settings.languages.noLanguages')}
                         </div>
                     ) : (
                         languages.map(lang => (
@@ -242,12 +244,12 @@ export default function LanguagesPage() {
                                             <h4 className="font-bold text-gray-900 dark:text-gray-100">{lang.name}</h4>
                                             {lang.isDefault && (
                                                 <span className="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide flex items-center gap-1">
-                                                    <Star className="w-3 h-3 fill-current" /> Default
+                                                    <Star className="w-3 h-3 fill-current" /> {t('admin.settings.languages.default')}
                                                 </span>
                                             )}
                                             {!lang.isActive && (
                                                 <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-full font-medium">
-                                                    Inactive
+                                                    {t('admin.payments.disabled')}
                                                 </span>
                                             )}
                                         </div>

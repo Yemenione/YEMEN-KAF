@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, DollarSign, Edit2, Check } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Currency {
     id: number;
@@ -14,6 +15,7 @@ interface Currency {
 }
 
 export default function CurrenciesPage() {
+    const { t } = useLanguage();
     const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -65,20 +67,20 @@ export default function CurrenciesPage() {
                 resetForm();
             } else {
                 const err = await res.json();
-                alert(err.error);
+                alert(err.error || t('admin.common.operationFailed'));
             }
         } catch {
-            alert('Operation failed');
+            alert(t('admin.common.operationFailed'));
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Delete this currency?')) return;
+        if (!confirm(t('admin.common.confirmDelete'))) return;
         try {
             const res = await fetch(`/api/admin/settings/currencies/${id}`, { method: 'DELETE' });
             if (res.ok) fetchCurrencies();
         } catch {
-            alert('Delete failed');
+            alert(t('admin.common.operationFailed'));
         }
     };
 
@@ -107,7 +109,7 @@ export default function CurrenciesPage() {
                 <div className="p-2 bg-green-100 text-green-600 rounded-lg">
                     <DollarSign className="w-6 h-6" />
                 </div>
-                Currencies & Exchange Rates
+                {t('admin.settings.currencies.title')}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -116,13 +118,13 @@ export default function CurrenciesPage() {
                 <div className="md:col-span-1">
                     <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl p-5 shadow-sm sticky top-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-semibold">{isEditing ? 'Edit Currency' : 'Add New Currency'}</h3>
-                            {isEditing && <button onClick={resetForm} className="text-xs text-gray-400">Cancel</button>}
+                            <h3 className="font-semibold">{isEditing ? t('admin.settings.currencies.edit') : t('admin.settings.currencies.addNew')}</h3>
+                            {isEditing && <button onClick={resetForm} className="text-xs text-gray-400">{t('admin.settings.shipping.cancel')}</button>}
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Currency Name</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.settings.currencies.name')}</label>
                                 <input
                                     type="text" required placeholder="Euro, US Dollar..."
                                     className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -132,7 +134,7 @@ export default function CurrenciesPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">ISO Code</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.settings.taxes.countryCode')}</label>
                                     <input
                                         type="text" required maxLength={3} placeholder="EUR"
                                         className="w-full border rounded-md px-3 py-2 text-sm uppercase dark:bg-zinc-800 dark:border-zinc-700"
@@ -141,7 +143,7 @@ export default function CurrenciesPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1">Symbol</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.settings.currencies.symbol')}</label>
                                     <input
                                         type="text" required placeholder="€, $..."
                                         className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700"
@@ -152,14 +154,14 @@ export default function CurrenciesPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Exchange Rate (1 Default = ? This)</label>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">{t('admin.settings.currencies.rate')}</label>
                                 <input
                                     type="number" step="0.000001" min="0" disabled={formData.isDefault}
                                     className="w-full border rounded-md px-3 py-2 text-sm dark:bg-zinc-800 dark:border-zinc-700 disabled:bg-gray-100 disabled:text-gray-400"
                                     value={formData.exchangeRate}
                                     onChange={e => setFormData({ ...formData, exchangeRate: parseFloat(e.target.value) })}
                                 />
-                                {formData.isDefault && <p className="text-[10px] text-gray-400 mt-1">Default currency always has a rate of 1.0</p>}
+                                {formData.isDefault && <p className="text-[10px] text-gray-400 mt-1">{t('admin.settings.currencies.defaultRateHint')}</p>}
                             </div>
 
                             <div className="space-y-2 pt-2">
@@ -177,7 +179,7 @@ export default function CurrenciesPage() {
                                         }}
                                         className="rounded border-gray-300"
                                     />
-                                    <span className="text-sm">Set as Base Currency</span>
+                                    <span className="text-sm">{t('admin.settings.currencies.setAsBase')}</span>
                                 </label>
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input
@@ -186,7 +188,7 @@ export default function CurrenciesPage() {
                                         onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
                                         className="rounded border-gray-300"
                                     />
-                                    <span className="text-sm">Active</span>
+                                    <span className="text-sm">{t('admin.payments.active')}</span>
                                 </label>
                             </div>
 
@@ -195,7 +197,7 @@ export default function CurrenciesPage() {
                                 className="w-full bg-[var(--coffee-brown)] text-white py-2 rounded-md font-medium text-sm hover:bg-[#5a4635] flex justify-center items-center gap-2"
                             >
                                 {isEditing ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                                {isEditing ? "Update Currency" : "Add Currency"}
+                                {isEditing ? t('admin.settings.currencies.update') : t('admin.settings.currencies.add')}
                             </button>
                         </form>
                     </div>
@@ -213,11 +215,11 @@ export default function CurrenciesPage() {
                                     <div className="flex items-center gap-2">
                                         <h4 className="font-bold text-gray-900 dark:text-gray-100">{curr.name}</h4>
                                         <span className="bg-gray-100 dark:bg-zinc-800 px-2 rounded text-xs font-mono">{curr.isoCode}</span>
-                                        {curr.isDefault && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">BASE</span>}
-                                        {!curr.isActive && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inactive</span>}
+                                        {curr.isDefault && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">{t('admin.settings.currencies.base')}</span>}
+                                        {!curr.isActive && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{t('admin.payments.disabled')}</span>}
                                     </div>
                                     <div className="text-sm text-gray-500 mt-1">
-                                        Exchange Rate: <span className="font-mono font-medium text-gray-800 dark:text-gray-200">{Number(curr.exchangeRate).toFixed(6)}</span>
+                                        {t('admin.settings.currencies.exchangeRate')}: <span className="font-mono font-medium text-gray-800 dark:text-gray-200">{Number(curr.exchangeRate).toFixed(6)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -236,7 +238,7 @@ export default function CurrenciesPage() {
                     ))}
                     {currencies.length === 0 && !loading && (
                         <div className="text-center py-10 text-gray-500 bg-white dark:bg-zinc-900 rounded-xl border border-dashed">
-                            No currencies configured. Add the base currency first due to logic constraints.
+                            {t('admin.settings.currencies.noCurrencies')}
                         </div>
                     )}
                 </div>

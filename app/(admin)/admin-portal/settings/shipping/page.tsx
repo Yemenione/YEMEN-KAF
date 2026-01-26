@@ -6,6 +6,7 @@ import Image from "next/image";
 import { getAllCarriers, createCarrier, updateCarrier, deleteCarrier } from "@/app/actions/carriers";
 import { getZones, createZone, updateZone, deleteZone, createRate, deleteRate } from "@/app/actions/zones";
 import { toast } from "sonner";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Carrier {
     id: number;
@@ -89,6 +90,7 @@ const ALL_COUNTRIES = [
 ];
 
 export default function ShippingSettingsPage() {
+    const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState<'carriers' | 'zones'>('carriers');
     const [carriers, setCarriers] = useState<Carrier[]>([]);
     const [zones, setZones] = useState<Zone[]>([]);
@@ -292,8 +294,8 @@ export default function ShippingSettingsPage() {
         <div className="space-y-8 p-8 max-w-6xl mx-auto">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Paramètres de Livraison</h1>
-                    <p className="text-gray-500">Gérez les transporteurs, les zones et les tarifs d&apos;expédition.</p>
+                    <h1 className="text-2xl font-bold text-gray-900">{t('admin.settings.shipping.title')}</h1>
+                    <p className="text-gray-500">{t('admin.settings.shipping.subtitle')}</p>
                 </div>
             </div>
 
@@ -303,14 +305,14 @@ export default function ShippingSettingsPage() {
                     onClick={() => setActiveTab('carriers')}
                     className={`pb-3 px-4 text-sm font-medium transition-colors relative ${activeTab === 'carriers' ? 'text-black' : 'text-gray-500 hover:text-black'}`}
                 >
-                    Transporteurs
+                    {t('admin.settings.shipping.carrierMgmt')}
                     {activeTab === 'carriers' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
                 </button>
                 <button
                     onClick={() => setActiveTab('zones')}
                     className={`pb-3 px-4 text-sm font-medium transition-colors relative ${activeTab === 'zones' ? 'text-black' : 'text-gray-500 hover:text-black'}`}
                 >
-                    Zones & Tarifs
+                    {t('admin.settings.shipping.zones')}
                     {activeTab === 'zones' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
                 </button>
             </div>
@@ -323,23 +325,23 @@ export default function ShippingSettingsPage() {
                             onClick={() => setIsAddingCarrier(true)}
                             className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm"
                         >
-                            <Plus size={16} /> Ajouter un transporteur
+                            <Plus size={16} /> {t('admin.settings.shipping.addCarrier')}
                         </button>
                     </div>
 
                     {isAddingCarrier && (
                         <div className="bg-white border rounded-xl p-6 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-4">
                             <div className="flex justify-between items-center">
-                                <h3 className="font-bold">Nouveau Transporteur</h3>
+                                <h3 className="font-bold">{t('admin.settings.shipping.newCarrier')}</h3>
                                 <button onClick={() => setIsAddingCarrier(false)}><X size={18} /></button>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nom</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('admin.settings.shipping.name')}</label>
                                     <input type="text" value={newCarrier.name} onChange={e => setNewCarrier({ ...newCarrier, name: e.target.value })} className="w-full border rounded p-2 text-sm" placeholder="DHL, FedEx..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Délai</label>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('admin.settings.shipping.deliveryTime')}</label>
                                     <input type="text" value={newCarrier.deliveryTime} onChange={e => setNewCarrier({ ...newCarrier, deliveryTime: e.target.value })} className="w-full border rounded p-2 text-sm" placeholder="24h-48h" />
                                 </div>
                                 <div className="md:col-span-2">
@@ -350,13 +352,13 @@ export default function ShippingSettingsPage() {
                                             {isUploading && <div className="absolute inset-0 bg-white/50 flex items-center justify-center"><Loader2 className="animate-spin" /></div>}
                                         </div>
                                         <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-xs font-medium">
-                                            Upload <input type="file" className="hidden" onChange={handleFileUpload} accept="image/*" />
+                                            {t('admin.settings.shipping.upload')} <input type="file" className="hidden" onChange={handleFileUpload} accept="image/*" />
                                         </label>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex justify-end action">
-                                <button onClick={handleSaveNewCarrier} className="bg-black text-white px-4 py-2 rounded text-sm">Enregistrer</button>
+                                <button onClick={handleSaveNewCarrier} className="bg-black text-white px-4 py-2 rounded text-sm">{t('admin.settings.shipping.save')}</button>
                             </div>
                         </div>
                     )}
@@ -399,18 +401,18 @@ export default function ShippingSettingsPage() {
                             onClick={() => setIsAddingZone(true)}
                             className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm"
                         >
-                            <Plus size={16} /> Ajouter une Zone
+                            <Plus size={16} /> {t('admin.settings.shipping.addZone')}
                         </button>
                     </div>
 
                     {isAddingZone && (
                         <div className="bg-white border rounded-xl p-6 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-4">
                             <div className="flex justify-between items-center">
-                                <h3 className="font-bold">Nouvelle Zone d&apos;Expédition</h3>
+                                <h3 className="font-bold">{t('admin.settings.shipping.newZone')}</h3>
                                 <button onClick={() => setIsAddingZone(false)}><X size={18} /></button>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nom de la Zone</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">{t('admin.settings.shipping.zoneName')}</label>
                                 <input
                                     type="text"
                                     value={newZoneName}
@@ -420,7 +422,7 @@ export default function ShippingSettingsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Pays inclus</label>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('admin.settings.shipping.countriesIncluded')}</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 border rounded p-4 max-h-48 overflow-y-auto">
                                     {ALL_COUNTRIES.map(country => (
                                         <button
@@ -432,10 +434,10 @@ export default function ShippingSettingsPage() {
                                         </button>
                                     ))}
                                 </div>
-                                <p className="text-xs text-gray-400 mt-1">{selectedCountries.length} pays sélectionnés</p>
+                                <p className="text-xs text-gray-400 mt-1">{selectedCountries.length} {t('admin.settings.shipping.countriesSelected')}</p>
                             </div>
                             <div className="flex justify-end">
-                                <button onClick={handleCreateZone} className="bg-black text-white px-4 py-2 rounded text-sm">Créer la Zone</button>
+                                <button onClick={handleCreateZone} className="bg-black text-white px-4 py-2 rounded text-sm">{t('admin.settings.shipping.createZone')}</button>
                             </div>
                         </div>
                     )}
@@ -461,9 +463,9 @@ export default function ShippingSettingsPage() {
 
                                 <div className="p-4">
                                     <div className="mb-4 flex items-center justify-between">
-                                        <h4 className="text-sm font-bold text-gray-700">Tarifs Configurés</h4>
+                                        <h4 className="text-sm font-bold text-gray-700">{t('admin.settings.shipping.rates')}</h4>
                                         <button onClick={() => setAddingRateToZone(zone.id)} className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded flex items-center gap-1">
-                                            <Plus size={12} /> Ajouter un tarif
+                                            <Plus size={12} /> {t('admin.settings.shipping.addRate')}
                                         </button>
                                     </div>
 
@@ -471,13 +473,13 @@ export default function ShippingSettingsPage() {
                                         <div className="bg-gray-50 p-4 rounded-lg mb-4 border border-blue-200">
                                             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                                                 <div>
-                                                    <label className="text-[10px] font-bold uppercase text-gray-500">Transporteur</label>
+                                                    <label className="text-[10px] font-bold uppercase text-gray-500">{t('admin.settings.shipping.carrier')}</label>
                                                     <select
                                                         className="w-full text-sm border rounded p-1.5"
                                                         value={newRate.carrierId}
                                                         onChange={e => setNewRate({ ...newRate, carrierId: e.target.value })}
                                                     >
-                                                        <option value="">Choisir...</option>
+                                                        <option value="">{t('admin.common.filter')}...</option>
                                                         {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                                     </select>
                                                 </div>
@@ -495,8 +497,8 @@ export default function ShippingSettingsPage() {
                                                 </div>
                                             </div>
                                             <div className="mt-3 flex gap-2 justify-end">
-                                                <button onClick={() => setAddingRateToZone(null)} className="text-xs text-gray-500 hover:text-black">Annuler</button>
-                                                <button onClick={() => handleaddRate(zone.id)} className="bg-black text-white text-xs px-3 py-1.5 rounded">Valider</button>
+                                                <button onClick={() => setAddingRateToZone(null)} className="text-xs text-gray-500 hover:text-black">{t('admin.settings.shipping.cancel')}</button>
+                                                <button onClick={() => handleaddRate(zone.id)} className="bg-black text-white text-xs px-3 py-1.5 rounded">{t('admin.settings.shipping.validate')}</button>
                                             </div>
                                         </div>
                                     )}
@@ -537,7 +539,7 @@ export default function ShippingSettingsPage() {
                         {zones.length === 0 && (
                             <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed">
                                 <Globe className="mx-auto text-gray-300 mb-2" size={32} />
-                                <p className="text-gray-500 text-sm">Aucune zone. Commencez par créer une zone (ex: Europe).</p>
+                                <p className="text-gray-500 text-sm">{t('admin.settings.shipping.noZones')}</p>
                             </div>
                         )}
                     </div>

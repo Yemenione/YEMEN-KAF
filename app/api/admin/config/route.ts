@@ -49,7 +49,9 @@ export async function POST(req: NextRequest) {
         const updates = Object.entries(settings).map(([key, value]) => {
             const isPublic = [
                 'site_name', 'site_description', 'support_email', 'support_phone',
-                'social_facebook', 'social_instagram', 'logo_url', 'primary_color',
+                'social_facebook', 'social_instagram', 'social_whatsapp', 'social_twitter',
+                'social_tiktok', 'social_youtube', 'social_snapchat', 'social_linkedin',
+                'logo_url', 'primary_color',
                 'stripe_publishable_key', 'paypal_client_id',
                 'homepage_hero_products', 'homepage_featured_categories',
                 'homepage_flash_sale_product_ids', 'homepage_flash_sale_end_date',

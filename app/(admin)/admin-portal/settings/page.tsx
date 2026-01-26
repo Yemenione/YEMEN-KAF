@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Save, Store, Mail, Phone, Facebook, Instagram, Image as ImageIcon, CreditCard, ShieldCheck, Calendar, List, Truck, DollarSign } from 'lucide-react';
+import { Save, Store, Mail, Phone, Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, Music, Ghost, Image as ImageIcon, CreditCard, ShieldCheck, Calendar, List, Truck, DollarSign } from 'lucide-react';
 import ImageUploader from '@/components/admin/ImageUploader';
 import CarriersManager from '@/components/admin/CarriersManager';
 import MenuEditor from '@/components/admin/MenuEditor';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface ConfigMap {
     [key: string]: string;
 }
 
 export default function SettingsPage() {
+    const { t } = useLanguage();
     const [settings, setSettings] = useState<ConfigMap>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -45,9 +47,9 @@ export default function SettingsPage() {
                 body: JSON.stringify({ settings })
             });
             if (res.ok) {
-                alert('Settings saved successfully!');
+                alert(t('admin.settings.success'));
             } else {
-                alert('Failed to save settings');
+                alert(t('admin.settings.error'));
             }
         } catch (error) {
             console.error('Save error', error);
@@ -57,7 +59,7 @@ export default function SettingsPage() {
     };
 
     const handleSendTestEmail = async () => {
-        const email = prompt("Enter email address to send test to:");
+        const email = prompt(t('admin.settings.email.testPrompt'));
         if (!email) return;
 
         try {
@@ -67,44 +69,44 @@ export default function SettingsPage() {
                 body: JSON.stringify({ to: email })
             });
             if (res.ok) {
-                alert('Test email sent successfully!');
+                alert(t('admin.settings.email.testSuccess'));
             } else {
                 const data = await res.json();
-                alert('Failed to send: ' + data.error);
+                alert(t('admin.settings.email.testError') + data.error);
             }
         } catch (error) {
-            alert('Error sending test email');
+            alert(t('admin.settings.email.testError'));
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading settings...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-500">{t('admin.common.loading')}</div>;
 
     const tabs = [
-        { id: 'general', label: 'General', icon: Store },
-        { id: 'contact', label: 'Contact', icon: Mail },
-        { id: 'social', label: 'Social Media', icon: Facebook },
-        { id: 'theme', label: 'Theme & Logo', icon: ImageIcon },
-        { id: 'payment', label: 'Payments', icon: CreditCard },
-        { id: 'shipping', label: 'Shipping & Delivery', icon: Truck },
-        { id: 'taxes', label: 'Taxes & VAT', icon: DollarSign },
-        { id: 'email', label: 'Email (SMTP)', icon: ShieldCheck },
-        { id: 'seasonal', label: 'Seasonal / Ramadan', icon: Calendar },
-        { id: 'menus', label: 'Menus & Navigation', icon: List },
+        { id: 'general', label: t('admin.settings.tabs.general'), icon: Store },
+        { id: 'contact', label: t('admin.settings.tabs.contact'), icon: Mail },
+        { id: 'social', label: t('admin.settings.tabs.social'), icon: Facebook },
+        { id: 'theme', label: t('admin.settings.tabs.theme'), icon: ImageIcon },
+        { id: 'payment', label: t('admin.settings.tabs.payment'), icon: CreditCard },
+        { id: 'shipping', label: t('admin.settings.tabs.shipping'), icon: Truck },
+        { id: 'taxes', label: t('admin.settings.tabs.taxes'), icon: DollarSign },
+        { id: 'email', label: t('admin.settings.tabs.email'), icon: ShieldCheck },
+        { id: 'seasonal', label: t('admin.settings.tabs.seasonal'), icon: Calendar },
+        { id: 'menus', label: t('admin.settings.tabs.menus'), icon: List },
     ];
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Store Settings</h1>
-                    <p className="text-gray-500 text-sm">Manage global website configuration.</p>
+                    <h1 className="text-2xl font-bold tracking-tight">{t('admin.settings.title')}</h1>
+                    <p className="text-gray-500 text-sm">{t('admin.settings.subtitle')}</p>
                 </div>
                 <button
                     onClick={handleSave}
                     disabled={saving}
                     className="bg-[var(--coffee-brown)] text-white px-6 py-2 rounded-md hover:bg-[#5a4635] flex items-center gap-2 transition-colors disabled:opacity-50"
                 >
-                    {saving ? 'Saving...' : <><Save className="w-4 h-4" /> Save Changes</>}
+                    {saving ? t('admin.settings.saving') : <><Save className="w-4 h-4" /> {t('admin.settings.saveChanges')}</>}
                 </button>
             </div>
 
@@ -133,10 +135,10 @@ export default function SettingsPage() {
                         <div className="space-y-6 animate-in fade-in duration-300">
                             {/* Store Identity */}
                             <div className="border-b border-gray-100 dark:border-zinc-800 pb-6 mb-6">
-                                <h3 className="text-lg font-medium mb-4">Store Identity</h3>
+                                <h3 className="text-lg font-medium mb-4">{t('admin.settings.general.identity')}</h3>
                                 <div className="grid grid-cols-1 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Name</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.name')}</label>
                                         <input
                                             type="text"
                                             value={settings['store_name'] || settings['site_name'] || ''}
@@ -148,7 +150,7 @@ export default function SettingsPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Official VAT / Tax Number</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.vat')}</label>
                                         <input
                                             type="text"
                                             value={settings['vat_number'] || ''}
@@ -159,7 +161,7 @@ export default function SettingsPage() {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Email (Public)</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.email')}</label>
                                             <input
                                                 type="email"
                                                 value={settings['store_email'] || ''}
@@ -168,7 +170,7 @@ export default function SettingsPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Phone (Public)</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.phone')}</label>
                                             <input
                                                 type="text"
                                                 value={settings['store_phone'] || ''}
@@ -178,7 +180,7 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Official Address (Invoices)</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.address')}</label>
                                         <textarea
                                             rows={3}
                                             value={settings['store_address'] || ''}
@@ -192,10 +194,10 @@ export default function SettingsPage() {
 
                             {/* SEO & Meta */}
                             <div>
-                                <h3 className="text-lg font-medium mb-4">SEO & Metadata</h3>
+                                <h3 className="text-lg font-medium mb-4">{t('admin.settings.general.seo')}</h3>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Homepage Meta Description</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.metaDescription')}</label>
                                         <textarea
                                             rows={2}
                                             value={settings['site_description'] || ''}
@@ -212,13 +214,12 @@ export default function SettingsPage() {
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
                                 <p className="text-yellow-800 text-sm">
-                                    <strong>Note:</strong> Advanced Shipping Rates (Colissimo/Mondial Relay tables) are managed via the Database Seed for now to ensure free calculation.
-                                    Use this section for global shipping settings.
+                                    {t('admin.settings.shipping.note')}
                                 </p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Free Shipping Threshold (€)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.shipping.threshold')}</label>
                                 <div className="relative max-w-xs">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
                                     <input
@@ -228,11 +229,11 @@ export default function SettingsPage() {
                                         className="w-full pl-8 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
                                     />
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1">Orders above this amount will technically be eligible for free shipping if the carrier supports it.</p>
+                                <p className="text-xs text-gray-500 mt-1">{t('admin.settings.shipping.thresholdDesc')}</p>
                             </div>
 
                             <div className="border-t border-gray-100 dark:border-zinc-800 pt-6">
-                                <h3 className="font-medium mb-4">Carrier Management</h3>
+                                <h3 className="font-medium mb-4">{t('admin.settings.shipping.carrierMgmt')}</h3>
                                 <CarriersManager />
                             </div>
                         </div>
@@ -241,17 +242,17 @@ export default function SettingsPage() {
                     {activeTab === 'taxes' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <div>
-                                <h3 className="text-lg font-medium mb-4">Tax Configuration</h3>
+                                <h3 className="text-lg font-medium mb-4">{t('admin.settings.taxes.title')}</h3>
                                 <div className="grid grid-cols-1 gap-6">
                                     <div className="flex items-center gap-4">
                                         <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors bg-[var(--coffee-brown)]">
                                             <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6" />
                                         </div>
-                                        <span className="text-sm font-medium">Enable Tax Calculation (Global)</span>
+                                        <span className="text-sm font-medium">{t('admin.settings.taxes.enableTax')}</span>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Invoice Prefix</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.taxes.prefix')}</label>
                                         <input
                                             type="text"
                                             value={settings['invoice_prefix'] || 'INV-2025-'}
@@ -261,7 +262,7 @@ export default function SettingsPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Standard VAT Rate (%)</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.taxes.standardRate')}</label>
                                         <div className="relative max-w-xs">
                                             <input
                                                 type="number"
@@ -274,7 +275,7 @@ export default function SettingsPage() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reduced VAT Rate (%)</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('admin.settings.taxes.reducedRate')}</label>
                                         <div className="relative max-w-xs">
                                             <input
                                                 type="number"
@@ -284,7 +285,7 @@ export default function SettingsPage() {
                                             />
                                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-1">Applies to food items like Honey (Miel).</p>
+                                        <p className="text-xs text-gray-500 mt-1">{t('admin.settings.taxes.reducedDesc')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -294,7 +295,7 @@ export default function SettingsPage() {
                     {activeTab === 'contact' && (
                         <div className="space-y-4 animate-in fade-in duration-300">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Support Email</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.tabs.contact')} Email</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -306,7 +307,7 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.phone')}</label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -346,13 +347,90 @@ export default function SettingsPage() {
                                     />
                                 </div>
                             </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WhatsApp (Full URL or Phone)</label>
+                                <div className="relative">
+                                    <MessageCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={settings['social_whatsapp'] || ''}
+                                        onChange={(e) => handleChange('social_whatsapp', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="https://wa.me/..."
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Twitter / X URL</label>
+                                <div className="relative">
+                                    <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={settings['social_twitter'] || ''}
+                                        onChange={(e) => handleChange('social_twitter', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">TikTok URL</label>
+                                <div className="relative">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full">
+                                            <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+                                        </svg>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={settings['social_tiktok'] || ''}
+                                        onChange={(e) => handleChange('social_tiktok', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">YouTube URL</label>
+                                <div className="relative">
+                                    <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={settings['social_youtube'] || ''}
+                                        onChange={(e) => handleChange('social_youtube', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Snapchat URL</label>
+                                <div className="relative">
+                                    <Ghost className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={settings['social_snapchat'] || ''}
+                                        onChange={(e) => handleChange('social_snapchat', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">LinkedIn URL</label>
+                                <div className="relative">
+                                    <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={settings['social_linkedin'] || ''}
+                                        onChange={(e) => handleChange('social_linkedin', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {activeTab === 'theme' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Logo</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('admin.settings.tabs.theme')}</label>
                                 <div className="flex items-start gap-4">
                                     <div className="flex items-start gap-4">
                                         <ImageUploader
@@ -399,9 +477,9 @@ export default function SettingsPage() {
                     {activeTab === 'payment' && (
                         <div className="space-y-8 animate-in fade-in duration-300">
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium border-b pb-2">Stripe Configuration</h3>
+                                <h3 className="text-lg font-medium border-b pb-2">{t('admin.settings.payments.stripe')}</h3>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Publishable Key</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.payments.publicKey')}</label>
                                     <input
                                         type="text"
                                         value={settings['stripe_publishable_key'] || ''}
@@ -411,7 +489,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Secret Key</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.payments.secretKey')}</label>
                                     <input
                                         type="password"
                                         value={settings['stripe_secret_key'] || ''}
@@ -421,7 +499,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Webhook Secret</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.payments.webhookSecret')}</label>
                                     <input
                                         type="password"
                                         value={settings['stripe_webhook_secret'] || ''}
@@ -433,9 +511,9 @@ export default function SettingsPage() {
                             </div>
 
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium border-b pb-2">PayPal Configuration</h3>
+                                <h3 className="text-lg font-medium border-b pb-2">{t('admin.settings.payments.paypal')}</h3>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client ID</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.payments.clientId')}</label>
                                     <input
                                         type="text"
                                         value={settings['paypal_client_id'] || ''}
@@ -444,7 +522,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Client Secret</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.payments.secretKey')}</label>
                                     <input
                                         type="password"
                                         value={settings['paypal_secret_key'] || ''}
@@ -454,11 +532,11 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium border-b pb-2">Manual Payment Methods</h3>
+                                <h3 className="text-lg font-medium border-b pb-2">{t('admin.settings.payments.manual')}</h3>
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Enable Cash on Delivery (COD)</label>
-                                        <p className="text-xs text-gray-500">Allow customers to pay with cash upon arrival.</p>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.settings.payments.cod')}</label>
+                                        <p className="text-xs text-gray-500">{t('admin.settings.payments.codDesc')}</p>
                                     </div>
                                     <button
                                         onClick={() => handleChange('payment_cod_enabled', settings['payment_cod_enabled'] === 'true' ? 'false' : 'true')}
@@ -474,18 +552,18 @@ export default function SettingsPage() {
                     {activeTab === 'email' && (
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <div className="flex justify-between items-center border-b pb-4">
-                                <h3 className="text-lg font-medium">SMTP Email Configuration</h3>
+                                <h3 className="text-lg font-medium">{t('admin.settings.email.title')}</h3>
                                 <button
                                     onClick={handleSendTestEmail}
                                     className="text-xs bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-md transition-colors"
                                 >
-                                    Send Test Email
+                                    {t('admin.settings.email.sendTest')}
                                 </button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP Host</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.email.host')}</label>
                                     <input
                                         type="text"
                                         value={settings['smtp_host'] || ''}
@@ -495,7 +573,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP Port</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.email.port')}</label>
                                     <input
                                         type="number"
                                         value={settings['smtp_port'] || '587'}
@@ -505,7 +583,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP Username</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.email.username')}</label>
                                     <input
                                         type="text"
                                         value={settings['smtp_user'] || ''}
@@ -515,7 +593,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SMTP Password</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.email.password')}</label>
                                     <input
                                         type="password"
                                         value={settings['smtp_password'] || ''}
@@ -525,7 +603,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Email</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.email.fromEmail')}</label>
                                     <input
                                         type="email"
                                         value={settings['smtp_from_email'] || ''}
@@ -535,7 +613,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Name</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.email.fromName')}</label>
                                     <input
                                         type="text"
                                         value={settings['smtp_from_name'] || ''}
@@ -547,10 +625,9 @@ export default function SettingsPage() {
                             </div>
 
                             <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg mt-4">
-                                <h4 className="text-blue-800 font-medium text-sm mb-1">Configuration Tip</h4>
+                                <h4 className="text-blue-800 font-medium text-sm mb-1">{t('admin.settings.email.tip')}</h4>
                                 <p className="text-blue-600 text-xs">
-                                    For Gmail, generate an &quot;App Password&quot; to use here. For other providers (Outlook, Hostinger, cPanel), use your standard SMTP credentials.
-                                    Port 587 is usually for STARTTLS, 465 for SSL.
+                                    {t('admin.settings.email.tipDesc')}
                                 </p>
                             </div>
                         </div>
@@ -560,11 +637,11 @@ export default function SettingsPage() {
                         <div className="space-y-6 animate-in fade-in duration-300">
                             <div className="flex items-center justify-between border-b pb-4">
                                 <div>
-                                    <h3 className="text-lg font-medium">Ramadan Special Section</h3>
-                                    <p className="text-sm text-gray-500">Enable and configure the Ramadan offers section on the homepage.</p>
+                                    <h3 className="text-lg font-medium">{t('admin.settings.seasonal.title')}</h3>
+                                    <p className="text-sm text-gray-500">{t('admin.settings.seasonal.desc')}</p>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Enable Section</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.settings.seasonal.enable')}</span>
                                     <button
                                         onClick={() => handleChange('ramadan_mode_enabled', settings['ramadan_mode_enabled'] === 'true' ? 'false' : 'true')}
                                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings['ramadan_mode_enabled'] === 'true' ? 'bg-[var(--coffee-brown)]' : 'bg-gray-200'}`}
@@ -576,7 +653,7 @@ export default function SettingsPage() {
 
                             <div className="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Section Title</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.seasonal.sectionTitle')}</label>
                                     <input
                                         type="text"
                                         value={settings['ramadan_title'] || ''}
@@ -586,7 +663,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subtitle</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.seasonal.subtitle')}</label>
                                     <textarea
                                         rows={2}
                                         value={settings['ramadan_subtitle'] || ''}
@@ -596,7 +673,7 @@ export default function SettingsPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product IDs (JSON Array)</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.seasonal.productIds')}</label>
                                     <input
                                         type="text"
                                         value={settings['ramadan_product_ids'] || '[]'}
@@ -605,8 +682,7 @@ export default function SettingsPage() {
                                         placeholder="[1, 2, 3]"
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Enter product IDs as a JSON array, e.g. <span className="font-mono">[12, 15, 22]</span>.
-                                        You can find IDs in the Products list.
+                                        {t('admin.settings.seasonal.productIdsDesc')}
                                     </p>
                                 </div>
                             </div>
@@ -619,8 +695,8 @@ export default function SettingsPage() {
                             {/* Main Menu */}
                             <div>
                                 <div className="mb-4">
-                                    <h3 className="text-lg font-medium">Main Navigation</h3>
-                                    <p className="text-sm text-gray-500">Links shown in the top header.</p>
+                                    <h3 className="text-lg font-medium">{t('admin.settings.menus.mainNav')}</h3>
+                                    <p className="text-sm text-gray-500">{t('admin.settings.menus.mainNavDesc')}</p>
                                 </div>
                                 <MenuEditor
                                     value={settings['menu_main'] || '[]'}
@@ -633,8 +709,8 @@ export default function SettingsPage() {
                             {/* Footer Menu */}
                             <div>
                                 <div className="mb-4">
-                                    <h3 className="text-lg font-medium">Footer &quot;Quick Links&quot;</h3>
-                                    <p className="text-sm text-gray-500">Links shown in the footer column.</p>
+                                    <h3 className="text-lg font-medium">{t('admin.settings.menus.footerLinks')}</h3>
+                                    <p className="text-sm text-gray-500">{t('admin.settings.menus.footerLinksDesc')}</p>
                                 </div>
                                 <MenuEditor
                                     value={settings['menu_footer_links'] || '[]'}

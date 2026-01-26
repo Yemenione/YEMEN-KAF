@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2 } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface TaxRule {
     id: number;
@@ -14,6 +15,7 @@ interface TaxRule {
 }
 
 export default function TaxRulesPage() {
+    const { t } = useLanguage();
     const [rules, setRules] = useState<TaxRule[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -58,24 +60,24 @@ export default function TaxRulesPage() {
             setFormData({ name: "", rate: 0, country: "FR", priority: 0, isActive: true });
             fetchRules();
         } else {
-            alert('Failed to save tax rule');
+            alert(t('admin.common.operationFailed'));
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure?")) return;
+        if (!confirm(t('admin.common.confirmDelete'))) return;
         const res = await fetch(`/api/admin/tax-rules/${id}`, { method: 'DELETE' });
         if (res.ok) fetchRules();
         else {
             const err = await res.json();
-            alert(err.error || 'Failed to delete');
+            alert(err.error || t('admin.common.operationFailed'));
         }
     };
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Tax Rules</h1>
+                <h1 className="text-2xl font-bold">{t('admin.settings.taxes.title')}</h1>
                 <button
                     onClick={() => {
                         setIsEditing(true);
@@ -84,16 +86,16 @@ export default function TaxRulesPage() {
                     }}
                     className="bg-[var(--coffee-brown)] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:opacity-90"
                 >
-                    <Plus size={18} /> Add Tax Rule
+                    <Plus size={18} /> {t('admin.settings.taxes.addRule')}
                 </button>
             </div>
 
             {isEditing && (
                 <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border dark:border-zinc-800 shadow-sm animate-fade-in">
-                    <h3 className="font-semibold mb-4">{editId ? 'Edit Tax Rule' : 'New Tax Rule'}</h3>
+                    <h3 className="font-semibold mb-4">{editId ? t('admin.settings.taxes.editRule') : t('admin.settings.taxes.newRule')}</h3>
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-1">Rule Name</label>
+                            <label className="block text-sm font-medium mb-1">{t('admin.settings.taxes.ruleName')}</label>
                             <input
                                 required
                                 type="text"
@@ -104,7 +106,7 @@ export default function TaxRulesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Rate (%)</label>
+                            <label className="block text-sm font-medium mb-1">{t('admin.settings.taxes.rate')}</label>
                             <input
                                 required
                                 type="number"
@@ -115,7 +117,7 @@ export default function TaxRulesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Country Code</label>
+                            <label className="block text-sm font-medium mb-1">{t('admin.settings.taxes.countryCode')}</label>
                             <input
                                 required
                                 type="text"
@@ -126,7 +128,7 @@ export default function TaxRulesPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-1">Priority</label>
+                            <label className="block text-sm font-medium mb-1">{t('admin.settings.taxes.priority')}</label>
                             <input
                                 type="number"
                                 className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
@@ -140,13 +142,13 @@ export default function TaxRulesPage() {
                                 onClick={() => setIsEditing(false)}
                                 className="px-4 py-2 text-sm border rounded-lg"
                             >
-                                Cancel
+                                {t('admin.settings.shipping.cancel')}
                             </button>
                             <button
                                 type="submit"
                                 className="px-4 py-2 text-sm bg-[var(--honey-gold)] text-black font-medium rounded-lg hover:brightness-110"
                             >
-                                Save Rule
+                                {t('admin.settings.taxes.saveRule')}
                             </button>
                         </div>
                     </form>
@@ -157,10 +159,10 @@ export default function TaxRulesPage() {
                 <table className="w-full text-left">
                     <thead className="bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 text-xs uppercase">
                         <tr>
-                            <th className="px-6 py-3">Name</th>
-                            <th className="px-6 py-3">Rate</th>
-                            <th className="px-6 py-3">Country</th>
-                            <th className="px-6 py-3 text-right">Actions</th>
+                            <th className="px-6 py-3">{t('admin.products.name')}</th>
+                            <th className="px-6 py-3">{t('admin.products.price')}</th>
+                            <th className="px-6 py-3">{t('admin.orders.details.shippingAddress')}</th>
+                            <th className="px-6 py-3 text-right">{t('admin.orders.action')}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y dark:divide-zinc-800">
@@ -196,7 +198,7 @@ export default function TaxRulesPage() {
                         {!loading && rules.length === 0 && (
                             <tr>
                                 <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
-                                    No tax rules found. Add one to get started.
+                                    {t('admin.settings.taxes.noRules')}
                                 </td>
                             </tr>
                         )}

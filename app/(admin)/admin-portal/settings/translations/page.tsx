@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Filter, Search } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface TranslationRow {
     group: string;
@@ -17,6 +18,7 @@ interface Language {
 }
 
 export default function TranslationsPage() {
+    const { t } = useLanguage();
     const [translations, setTranslations] = useState<TranslationRow[]>([]);
     const [languages, setLanguages] = useState<Language[]>([]);
     const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function TranslationsPage() {
             // Visual feedback could be added here (e.g. green border flash)
 
         } catch {
-            alert('Failed to save translation');
+            alert(t('admin.common.operationFailed'));
         }
     };
 
@@ -81,7 +83,7 @@ export default function TranslationsPage() {
             setNewKeyData({ group: 'frontend', key: '', value: '' });
             fetchData(); // Reload to see new row
         } catch {
-            alert('Failed to add key');
+            alert(t('admin.common.operationFailed'));
         }
     };
 
@@ -98,12 +100,12 @@ export default function TranslationsPage() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Translations</h2>
+                <h2 className="text-2xl font-bold">{t('admin.settings.translations.title')}</h2>
                 <button
                     onClick={() => setShowAddModal(true)}
                     className="px-4 py-2 bg-[var(--coffee-brown)] text-white rounded-md text-sm font-medium hover:bg-[#5a4635] flex items-center gap-2"
                 >
-                    <Plus className="w-4 h-4" /> Add Translation Key
+                    <Plus className="w-4 h-4" /> {t('admin.settings.translations.addKey')}
                 </button>
             </div>
 
@@ -113,7 +115,7 @@ export default function TranslationsPage() {
                     <Search className="absolute left-3 top-2.5 text-gray-400 w-4 h-4" />
                     <input
                         type="text"
-                        placeholder="Search keys or values..."
+                        placeholder={t('admin.settings.translations.searchPlaceholder')}
                         className="w-full pl-9 pr-4 py-2 border rounded-md text-sm dark:bg-zinc-800 dark:border-zinc-700"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -126,7 +128,7 @@ export default function TranslationsPage() {
                         value={filterGroup}
                         onChange={e => setFilterGroup(e.target.value)}
                     >
-                        <option value="All">All Groups</option>
+                        <option value="All">{t('admin.settings.translations.allGroups')}</option>
                         {groups.map(g => <option key={g} value={g}>{g}</option>)}
                     </select>
                 </div>
@@ -138,7 +140,7 @@ export default function TranslationsPage() {
                     <table className="w-full text-left text-sm">
                         <thead className="bg-gray-50 dark:bg-zinc-800 text-gray-500 uppercase font-medium border-b dark:border-zinc-700">
                             <tr>
-                                <th className="px-6 py-3 w-64">Key</th>
+                                <th className="px-6 py-3 w-64">{t('admin.settings.translations.tableHeaderKey')}</th>
                                 {languages.map(lang => (
                                     <th key={lang.id} className="px-6 py-3 min-w-[200px]">
                                         <div className="flex items-center gap-2">
@@ -151,9 +153,9 @@ export default function TranslationsPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
                             {loading ? (
-                                <tr><td colSpan={10} className="p-8 text-center">Loading translations...</td></tr>
+                                <tr><td colSpan={10} className="p-8 text-center">{t('admin.common.loading')}</td></tr>
                             ) : filteredTranslations.length === 0 ? (
-                                <tr><td colSpan={10} className="p-8 text-center text-gray-500">No translations found</td></tr>
+                                <tr><td colSpan={10} className="p-8 text-center text-gray-500">{t('admin.common.noResults')}</td></tr>
                             ) : (
                                 filteredTranslations.map((row) => (
                                     <tr key={`${row.group}-${row.key}`} className="hover:bg-gray-50 dark:hover:bg-zinc-800/20">
@@ -174,7 +176,7 @@ export default function TranslationsPage() {
                                                             handleSave(row.group, row.key, lang.isoCode, newVal);
                                                         }
                                                     }}
-                                                    placeholder={`Enter ${lang.name} text...`}
+                                                    placeholder={t('admin.settings.translations.enterText', { name: lang.name })}
                                                 />
                                             </td>
                                         ))}
@@ -190,10 +192,10 @@ export default function TranslationsPage() {
             {showAddModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-xl max-w-md w-full p-6">
-                        <h3 className="text-lg font-bold mb-4">Add Translation Key</h3>
+                        <h3 className="text-lg font-bold mb-4">{t('admin.settings.translations.addKeyTitle')}</h3>
                         <form onSubmit={handleAddKey} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-1">Group</label>
+                                <label className="block text-sm font-medium mb-1">{t('admin.settings.translations.fieldGroup')}</label>
                                 <select
                                     className="w-full border rounded-md px-3 py-2 dark:bg-zinc-800"
                                     value={newKeyData.group}
@@ -206,7 +208,7 @@ export default function TranslationsPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Key (dot.notation)</label>
+                                <label className="block text-sm font-medium mb-1">{t('admin.settings.translations.fieldKey')}</label>
                                 <input
                                     type="text"
                                     required
@@ -217,7 +219,7 @@ export default function TranslationsPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Initial Value (English)</label>
+                                <label className="block text-sm font-medium mb-1">{t('admin.settings.translations.fieldValue')}</label>
                                 <textarea
                                     required
                                     className="w-full border rounded-md px-3 py-2 dark:bg-zinc-800"
@@ -232,13 +234,13 @@ export default function TranslationsPage() {
                                     onClick={() => setShowAddModal(false)}
                                     className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-md"
                                 >
-                                    Cancel
+                                    {t('admin.settings.shipping.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     className="px-4 py-2 bg-[var(--coffee-brown)] text-white rounded-md hover:bg-[#5a4635]"
                                 >
-                                    Add Key
+                                    {t('admin.settings.translations.addKeyAction')}
                                 </button>
                             </div>
                         </form>
