@@ -258,7 +258,7 @@ export default function MobileAppAdminPage() {
 
 // --- SUB-COMPONENTS ---
 
-function FileUploadButton({ onUpload, label, icon: Icon = Plus, folder = 'app' }: { onUpload: (url: string) => void, label: string, icon?: React.ElementType, folder?: string }) {
+function FileUploadButton({ onUpload, label, icon: Icon = Plus, folder = 'app' }: { onUpload: (url: string) => void, label: string, icon?: any, folder?: string }) {
     const [uploading, setUploading] = useState(false);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
