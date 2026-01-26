@@ -289,12 +289,10 @@ function FileUploadButton({ onUpload, label, icon: Icon = Plus, folder = 'app' }
         }
     };
 
-    const TypedIcon = Icon as React.ElementType;
-    const displayText = (uploading ? "..." : label) as string;
     return (
         <label className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-lg text-[10px] font-bold transition-all cursor-pointer border border-gray-200 dark:border-zinc-700">
-            {uploading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <TypedIcon className="w-3 h-3" />}
-            {displayText}
+            {uploading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Icon className="w-3 h-3" />}
+            {uploading ? "..." : label}
             <input type="file" className="hidden" accept="image/*" onChange={handleUpload} disabled={uploading} />
         </label>
     );
