@@ -141,6 +141,29 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
         return () => clearInterval(timer);
     }, []);
 
+    // Variants logic initialization (moved up to avoid ReferenceError in hooks)
+    const hasVariants = product.variants && product.variants.length > 0;
+    const attributes = hasVariants ? product.variants.reduce((acc: Record<string, Set<string>>, variant: ProductVariant) => {
+        variant.attributes.forEach((attr: VariantAttribute) => {
+            if (!acc[attr.name]) acc[attr.name] = new Set();
+            acc[attr.name].add(attr.value);
+        });
+        return acc;
+    }, {}) : {};
+    const attributeNames = Object.keys(attributes);
+
+    // Auto-select first variant on load
+    useEffect(() => {
+        if (hasVariants && Object.keys(selectedOptions).length === 0) {
+            const firstVariant = product.variants[0];
+            const initialOptions: Record<string, string> = {};
+            firstVariant.attributes.forEach(attr => {
+                initialOptions[attr.name] = attr.value;
+            });
+            setSelectedOptions(initialOptions);
+        }
+    }, [hasVariants, product.variants, selectedOptions]);
+
     // Delivery Date Calculation (Current + 3 days)
     const getDeliveryDate = () => {
         const date = new Date();
@@ -278,17 +301,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
 
     const productImages = getImages();
 
-    // Variants logic
-    const hasVariants = product.variants && product.variants.length > 0;
-    const attributes = hasVariants ? product.variants.reduce((acc: Record<string, Set<string>>, variant: ProductVariant) => {
-        variant.attributes.forEach((attr: VariantAttribute) => {
-            if (!acc[attr.name]) acc[attr.name] = new Set();
-            acc[attr.name].add(attr.value);
-        });
-        return acc;
-    }, {}) : {};
-
-    const attributeNames = Object.keys(attributes);
+    // (End of moved variants logic)
 
     const selectedVariant = hasVariants ? product.variants.find((v: ProductVariant) => {
         return v.attributes.every((attr: VariantAttribute) => selectedOptions[attr.name] === attr.value);
@@ -428,13 +441,18 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
 
                     {/* Variants Control */}
                     {hasVariants && (
-                        <div className="space-y-5 mb-6">
+                        <div className="space-y-6 mb-8">
                             {attributeNames.map((attrName) => (
                                 <div key={attrName}>
-                                    <label className="block text-[9px] font-extrabold text-gray-300 uppercase tracking-widest mb-2">
-                                        {attrName}
-                                    </label>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex justify-between items-end mb-3">
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">
+                                            {attrName}
+                                        </label>
+                                        <span className="text-[10px] font-bold text-[var(--honey-gold)] uppercase">
+                                            {selectedOptions[attrName] || t('common.select') || "Choisir"}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2.5">
                                         {Array.from(attributes[attrName] as Set<string>).map((value) => {
                                             const isSelected = selectedOptions[attrName] === value;
                                             const strValue = String(value);
@@ -442,9 +460,9 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                                 <button
                                                     key={strValue}
                                                     onClick={() => handleOptionSelect(attrName, strValue)}
-                                                    className={`px-5 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${isSelected
-                                                        ? 'bg-[#E3C069] text-white shadow-md'
-                                                        : 'bg-white border border-gray-100 text-gray-400'
+                                                    className={`px-6 py-3 rounded-2xl text-[11px] font-bold uppercase tracking-wider transition-all duration-300 transform active:scale-95 ${isSelected
+                                                        ? 'bg-black text-white shadow-lg border-black'
+                                                        : 'bg-white border border-gray-100 text-gray-500 shadow-sm'
                                                         }`}
                                                 >
                                                     {strValue}
@@ -470,20 +488,17 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
                                 >
                                     -
                                 </button>
-                                <span className="font-bold text-sm">{quantity}g</span>
+                                <span className="font-bold text-sm">{quantity}</span>
                                 <button
                                     onClick={() => {
                                         const stock = selectedVariant?.stock ?? product.stock ?? product.stock_quantity ?? product.quantity ?? 10;
-                                        setQuantity(Math.min(stock, quantity + 1));
+                                        setQuantity(prev => Math.min(stock, prev + 1));
                                     }}
                                     className="w-10 h-10 rounded-full flex items-center justify-center text-black hover:bg-gray-50 text-lg pb-1"
                                 >
                                     +
                                 </button>
                             </div>
-                            <button className="flex-1 border border-[#E3C069] text-[#E3C069] rounded-full h-12 flex items-center justify-center text-[10px] font-bold uppercase tracking-widest">
-                                500g
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -986,7 +1001,7 @@ export default function ProductDetails({ product, carriers = [] }: { product: Pr
             </div>
 
             {/* Sticky Mobile Add to Bag - LUXURY VERSION */}
-            <div className="fixed bottom-20 left-4 right-4 bg-[#1A1A1A]/90 backdrop-blur-xl border border-white/10 p-4 lg:hidden z-40 rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center justify-between gap-4 animate-in slide-in-from-bottom-2">
+            <div className="fixed bottom-[100px] left-4 right-4 bg-[#1A1A1A]/90 backdrop-blur-xl border border-white/10 p-4 lg:hidden z-40 rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center justify-between gap-4 animate-in slide-in-from-bottom-2">
                 <div className="flex flex-col pl-2">
                     <span className="text-[9px] text-gray-400 uppercase font-black tracking-[0.2em] mb-0.5">{t('product.totalTTC')}</span>
                     <span className="text-xl font-serif text-white">{currentPrice.toFixed(2)}€</span>
