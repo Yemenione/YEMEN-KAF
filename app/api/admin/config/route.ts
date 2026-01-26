@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
         const updates = Object.entries(settings).map(([key, value]) => {
             const isPublic = [
                 'site_name', 'site_description', 'support_email', 'support_phone',
+                'store_email', 'store_phone', 'store_address',
                 'social_facebook', 'social_instagram', 'social_whatsapp', 'social_twitter',
                 'social_tiktok', 'social_youtube', 'social_snapchat', 'social_linkedin',
                 'logo_url', 'primary_color',

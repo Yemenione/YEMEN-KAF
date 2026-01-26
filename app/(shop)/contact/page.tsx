@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import { useSettings } from "@/context/SettingsContext";
 import { Mail, Phone, MapPin, Send, Clock } from "lucide-react";
 
 export default function ContactPage() {
     const { t } = useLanguage();
+    const { settings } = useSettings();
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -15,6 +17,10 @@ export default function ContactPage() {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    const contactEmail = settings.support_email || settings.store_email || "support@yemeni-market.com";
+    const contactPhone = settings.support_phone || settings.store_phone || "+33 6 12 34 56 78";
+    const contactAddress = settings.store_address || t('footer.address') || "Paris, France";
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,43 +63,43 @@ export default function ContactPage() {
                         {t('contact.title') || 'Contact Us'}
                     </h1>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                        {t('contact.subtitle') || 'Have questions? We&apos;d love to hear from you. Send us a message and we&apos;ll respond as soon as possible.'}
+                        {t('contact.subtitle') || 'Have questions? We\'d love to hear from you. Send us a message and we\'ll respond as soon as possible.'}
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* Contact Information */}
-                    <div className="lg:col-span-1 space-y-8">
+                    <div className="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
                         {/* Contact Cards */}
-                        <div className="bg-gray-50 p-6 rounded-xl">
+                        <div className="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center flex-shrink-0">
                                     <Mail className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-black mb-1">{t('account.profile.email') || 'Email'}</h3>
-                                    <a href="mailto:support@yemeni-market.com" className="text-gray-600 hover:text-black transition-colors">
-                                        support@yemeni-market.com
+                                    <h3 className="font-bold text-black mb-1">{t('contact.email') || 'Email'}</h3>
+                                    <a href={`mailto:${contactEmail}`} className="text-gray-600 hover:text-black transition-colors break-all">
+                                        {contactEmail}
                                     </a>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 p-6 rounded-xl">
+                        <div className="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center flex-shrink-0">
                                     <Phone className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-black mb-1">{t('account.profile.phone') || 'Phone'}</h3>
-                                    <a href="tel:+33666336860" className="text-gray-600 hover:text-black transition-colors">
-                                        +33 6 66 33 68 60
+                                    <h3 className="font-bold text-black mb-1">{t('contact.phone') || 'Phone'}</h3>
+                                    <a href={`tel:${contactPhone}`} className="text-gray-600 hover:text-black transition-colors">
+                                        {contactPhone}
                                     </a>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 p-6 rounded-xl">
+                        <div className="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center flex-shrink-0">
                                     <MapPin className="w-6 h-6 text-white" />
@@ -101,24 +107,24 @@ export default function ContactPage() {
                                 <div>
                                     <h3 className="font-bold text-black mb-1">{t('contact.address') || 'Address'}</h3>
                                     <p className="text-gray-600">
-                                        {t('footer.address') || 'Paris, France'}
+                                        {contactAddress}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 p-6 rounded-xl">
+                        <div className="bg-gray-50 p-6 rounded-xl hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center flex-shrink-0">
                                     <Clock className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-black mb-1">{t('contact.businessHours') || 'Business Hours'}</h3>
-                                    <p className="text-gray-600 text-sm">
-                                        {t('contact.openMoFr')}<br />
-                                        {t('contact.openSa')}<br />
-                                        {t('contact.closedSu')}
-                                    </p>
+                                    <div className="text-gray-600 text-sm space-y-1">
+                                        <p>{t('contact.openMoFr')}</p>
+                                        <p>{t('contact.openSa')}</p>
+                                        <p>{t('contact.closedSu')}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

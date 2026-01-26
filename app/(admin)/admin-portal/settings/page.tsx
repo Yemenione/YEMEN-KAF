@@ -293,9 +293,9 @@ export default function SettingsPage() {
                     )}
 
                     {activeTab === 'contact' && (
-                        <div className="space-y-4 animate-in fade-in duration-300">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.tabs.contact')} Email</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Support Email</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -303,11 +303,12 @@ export default function SettingsPage() {
                                         value={settings['support_email'] || ''}
                                         onChange={(e) => handleChange('support_email', e.target.value)}
                                         className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="support@example.com"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.phone')}</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Support Phone</label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -315,6 +316,46 @@ export default function SettingsPage() {
                                         value={settings['support_phone'] || ''}
                                         onChange={(e) => handleChange('support_phone', e.target.value)}
                                         className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="+33 1 23 45 67 89"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Email (Public Display)</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="email"
+                                        value={settings['store_email'] || ''}
+                                        onChange={(e) => handleChange('store_email', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="contact@yement-market.com"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Phone (Public Display)</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={settings['store_phone'] || ''}
+                                        onChange={(e) => handleChange('store_phone', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="+33 1 23 45 67 89"
+                                    />
+                                </div>
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Address</label>
+                                <div className="relative">
+                                    <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={settings['store_address'] || ''}
+                                        onChange={(e) => handleChange('store_address', e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="123 Main St, Paris, France"
                                     />
                                 </div>
                             </div>
