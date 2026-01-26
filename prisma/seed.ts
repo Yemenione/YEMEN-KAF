@@ -60,6 +60,51 @@ async function main() {
             }
         ];
 
+        // Brands
+        const brands = [
+            {
+                name: 'Al-Rajwi',
+                slug: 'al-rajwi',
+                logo: '/uploads/brands/al_rajwi.png', // Placeholder
+                description: 'Famous Yemeni honey and spice brand.',
+                is_active: 1
+            },
+            {
+                name: 'Al-Yemeniya',
+                slug: 'al-yemeniya',
+                logo: '/uploads/brands/al_yemeniya.png', // Placeholder
+                description: 'Traditional authentic products from Yemen.',
+                is_active: 1
+            },
+            {
+                name: 'Teashop',
+                slug: 'teashop',
+                logo: '/uploads/brands/teashop.png', // Placeholder
+                description: 'Premium tea selections.',
+                is_active: 1
+            },
+            {
+                name: 'Yem Kaf',
+                slug: 'yem-kaf',
+                logo: '/uploads/brands/yem_kaf.png', // Placeholder
+                description: 'Our signature house brand.',
+                is_active: 1
+            }
+        ];
+
+        console.log('Upserting Brands...');
+        for (const brand of brands) {
+            await connection.execute(`
+                INSERT INTO brands (name, slug, logo, description, is_active, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    name = VALUES(name),
+                    description = VALUES(description),
+                    logo = VALUES(logo),
+                    is_active = VALUES(is_active)
+            `, [brand.name, brand.slug, brand.logo, brand.description, brand.is_active]);
+        }
+
         for (const cat of categories) {
             console.log(`Upserting category: ${cat.name} (${cat.slug})`);
             await connection.execute(`
@@ -175,6 +220,175 @@ async function main() {
                     is_featured = VALUES(is_featured),
                     updated_at = NOW()
             `, [prod.category_id, prod.name, prod.slug, prod.description, prod.price, prod.stock_quantity, prod.weight, prod.images, prod.is_active, prod.is_featured]);
+        }
+
+        // Carriers
+        // Updated to enable ALL codes for seeding logic
+        const carriers = [
+            {
+                name: 'Colissimo',
+                code: 'colissimo',
+                logo: '/uploads/carriers/colissimo.png',
+                delivery_time: '48h-72h',
+                description: 'Standard home delivery.',
+                is_active: 1
+            },
+            {
+                name: 'Mondial Relay',
+                code: 'mondial_relay',
+                logo: '/uploads/carriers/mondial_relay.png',
+                delivery_time: '3-5 days',
+                description: 'Pickup point delivery (Economical).',
+                is_active: 1
+            },
+            {
+                name: 'DHL Express',
+                code: 'dhl',
+                logo: '/uploads/carriers/dhl.png',
+                delivery_time: '24h (Europe)',
+                description: 'Fast international delivery.',
+                is_active: 1
+            },
+            {
+                name: 'FedEx',
+                code: 'fedex', // Added code
+                logo: null,
+                delivery_time: '3-5 days',
+                description: 'Secure international shipping.',
+                is_active: 1
+            },
+            {
+                name: 'UPS',
+                code: 'ups',  // Added code
+                logo: null,
+                delivery_time: '3-5 days',
+                description: 'Global standard shipping.',
+                is_active: 1
+            }
+        ];
+
+        console.log('Seeding Carriers...');
+        for (const carrier of carriers) {
+            await connection.execute(`
+                INSERT INTO carriers (name, code, logo, delivery_time, description, is_active, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    code = VALUES(code),
+                    delivery_time = VALUES(delivery_time),
+                    description = VALUES(description),
+                    logo = VALUES(logo)
+            `, [carrier.name, carrier.code, carrier.logo, carrier.delivery_time, carrier.description, carrier.is_active]);
+        }
+
+        // Zones
+        console.log('Seeding Zones...');
+        const zones = [
+            {
+                name: 'France Metropolitaine',
+                countries: JSON.stringify(['FR', 'MC', 'AD'])
+            },
+            {
+                name: 'France Outre-mer (DOM-TOM)',
+                countries: JSON.stringify(['GP', 'MQ', 'RE', 'GF', 'YT', 'PM', 'BL', 'MF', 'WF', 'PF', 'NC'])
+            },
+            {
+                name: 'Europe',
+                countries: JSON.stringify(['DE', 'BE', 'NL', 'LU', 'IT', 'ES', 'PT', 'AT', 'IE', 'SE', 'DK', 'FI', 'GR', 'PL', 'CZ', 'HU'])
+            },
+            {
+                name: 'International (World)',
+                countries: JSON.stringify([
+                    'US', 'CA', 'GB', 'CH', // North America + Non-EU
+                    'SA', 'AE', 'KW', 'QA', 'BH', 'OM', 'YE', // Gulf & Yemen
+                    'AU', 'JP', 'KR', 'SG', 'CN', // Asia Pacific
+                    'TR', 'MA', 'DZ', 'TN', 'EG'  // MENA
+                ])
+            }
+        ];
+
+        let zoneIds: Record<string, number> = {};
+
+        for (const zone of zones) {
+            const [rows] = await connection.execute<any[]>('SELECT id FROM shipping_zones WHERE name = ?', [zone.name]);
+            let zoneId;
+            if (rows.length === 0) {
+                const [res] = await connection.execute<any>('INSERT INTO shipping_zones (name, countries, is_active) VALUES (?, ?, 1)', [zone.name, zone.countries]);
+                zoneId = res.insertId;
+            } else {
+                zoneId = rows[0].id;
+                await connection.execute('UPDATE shipping_zones SET countries = ? WHERE id = ?', [zone.countries, zoneId]);
+            }
+            zoneIds[zone.name] = zoneId;
+        }
+
+        // Get Carrier IDs
+        async function getCarrierId(code: string): Promise<number> {
+            const [rows] = await connection.execute<any[]>('SELECT id FROM carriers WHERE code = ?', [code]);
+            return rows[0]?.id;
+        }
+
+        const dhlId = await getCarrierId('dhl');
+        const colissimoId = await getCarrierId('colissimo');
+        const mondialRelayId = await getCarrierId('mondial_relay');
+        const fedexId = await getCarrierId('fedex');
+        const upsId = await getCarrierId('ups');
+
+        // Shipping Rates (Prices)
+        console.log('Seeding Rates...');
+        const rates = [
+            // France Metropolitaine - Colissimo (Home)
+            { zoneId: zoneIds['France Metropolitaine'], carrierId: colissimoId, min: 0, max: 250, price: 4.95 },
+            { zoneId: zoneIds['France Metropolitaine'], carrierId: colissimoId, min: 250, max: 1000, price: 7.95 },
+            { zoneId: zoneIds['France Metropolitaine'], carrierId: colissimoId, min: 1000, max: 5000, price: 12.95 },
+
+            // France Metropolitaine - Mondial Relay (Point Relais - Cheaper)
+            { zoneId: zoneIds['France Metropolitaine'], carrierId: mondialRelayId, min: 0, max: 1000, price: 3.90 },
+            { zoneId: zoneIds['France Metropolitaine'], carrierId: mondialRelayId, min: 1000, max: 3000, price: 5.90 },
+
+            // France Outre-mer - Colissimo (Higher rates)
+            { zoneId: zoneIds['France Outre-mer (DOM-TOM)'], carrierId: colissimoId, min: 0, max: 500, price: 11.90 },
+            { zoneId: zoneIds['France Outre-mer (DOM-TOM)'], carrierId: colissimoId, min: 500, max: 1000, price: 17.90 },
+            { zoneId: zoneIds['France Outre-mer (DOM-TOM)'], carrierId: colissimoId, min: 1000, max: 3000, price: 29.90 },
+
+            // Europe - DHL (Fast)
+            { zoneId: zoneIds['Europe'], carrierId: dhlId, min: 0, max: 1000, price: 14.90 },
+            { zoneId: zoneIds['Europe'], carrierId: dhlId, min: 1000, max: 3000, price: 19.90 },
+
+            // Europe - Mondial Relay (Economy)
+            { zoneId: zoneIds['Europe'], carrierId: mondialRelayId, min: 0, max: 2000, price: 9.90 },
+
+            // Europe - UPS (Standard)
+            { zoneId: zoneIds['Europe'], carrierId: upsId, min: 0, max: 1000, price: 12.90 },
+            { zoneId: zoneIds['Europe'], carrierId: upsId, min: 1000, max: 3000, price: 16.90 },
+            { zoneId: zoneIds['Europe'], carrierId: upsId, min: 3000, max: 5000, price: 24.90 },
+
+            // Europe - FedEx (Priority)
+            { zoneId: zoneIds['Europe'], carrierId: fedexId, min: 0, max: 1000, price: 15.90 },
+            { zoneId: zoneIds['Europe'], carrierId: fedexId, min: 1000, max: 3000, price: 22.90 },
+
+            // International (World) - DHL
+            { zoneId: zoneIds['International (World)'], carrierId: dhlId, min: 0, max: 1000, price: 29.90 },
+            { zoneId: zoneIds['International (World)'], carrierId: dhlId, min: 1000, max: 3000, price: 49.90 },
+            { zoneId: zoneIds['International (World)'], carrierId: dhlId, min: 3000, max: 5000, price: 69.90 },
+
+            // International (World) - FedEx
+            { zoneId: zoneIds['International (World)'], carrierId: fedexId, min: 0, max: 1000, price: 32.90 },
+            { zoneId: zoneIds['International (World)'], carrierId: fedexId, min: 1000, max: 3000, price: 55.90 },
+
+            // International (World) - UPS
+            { zoneId: zoneIds['International (World)'], carrierId: upsId, min: 0, max: 1000, price: 28.90 },
+            { zoneId: zoneIds['International (World)'], carrierId: upsId, min: 1000, max: 3000, price: 45.90 }
+        ];
+
+        // Clear old rates to prevent duplicates with different IDs
+        await connection.execute('TRUNCATE TABLE shipping_rates');
+
+        for (const rate of rates) {
+            if (!rate.zoneId || !rate.carrierId) continue;
+            await connection.execute(`
+                INSERT INTO shipping_rates (zone_id, carrier_id, min_weight, max_weight, price)
+                VALUES (?, ?, ?, ?, ?)
+            `, [rate.zoneId, rate.carrierId, rate.min, rate.max, rate.price]);
         }
 
         console.log('Seeding completed successfully.');

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, Save, X, Loader2, Truck } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Loader2, Truck, Globe, Package } from "lucide-react";
 import Image from "next/image";
 import { getAllCarriers, createCarrier, updateCarrier, deleteCarrier } from "@/app/actions/carriers";
+import { getZones, createZone, updateZone, deleteZone, createRate, deleteRate } from "@/app/actions/shipping-zones";
 import { toast } from "sonner";
 
 interface Carrier {
@@ -16,13 +17,111 @@ interface Carrier {
     isActive: boolean;
 }
 
-export default function ShippingSettingsPage() {
-    const [carriers, setCarriers] = useState<Carrier[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [editingCarrier, setEditingCarrier] = useState<Carrier | null>(null);
-    const [isAdding, setIsAdding] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
+interface Rate {
+    id: number;
+    price: number;
+    minWeight: number;
+    maxWeight: number;
+    carrier: Carrier;
+    carrierId: number;
+}
 
+interface Zone {
+    id: number;
+    name: string;
+    countries: string; // JSON string
+    rates: Rate[];
+}
+
+const ALL_COUNTRIES = [
+    // Europe
+    { code: "FR", name: "France" },
+    { code: "MC", name: "Monaco" },
+    { code: "AD", name: "Andorra" },
+    { code: "GB", name: "United Kingdom" },
+    { code: "DE", name: "Germany" },
+    { code: "BE", name: "Belgium" },
+    { code: "NL", name: "Netherlands" },
+    { code: "ES", name: "Spain" },
+    { code: "IT", name: "Italy" },
+    { code: "CH", name: "Switzerland" },
+    { code: "AT", name: "Austria" },
+    { code: "PT", name: "Portugal" },
+    { code: "SE", name: "Sweden" },
+    { code: "NO", name: "Norway" },
+    { code: "DK", name: "Denmark" },
+    { code: "FI", name: "Finland" },
+    { code: "IE", name: "Ireland" },
+    { code: "GR", name: "Greece" },
+    { code: "PL", name: "Poland" },
+    { code: "CZ", name: "Czech Republic" },
+    { code: "HU", name: "Hungary" },
+    // DOM-TOM
+    { code: "GP", name: "Guadeloupe" },
+    { code: "MQ", name: "Martinique" },
+    { code: "RE", name: "La Réunion" },
+    { code: "GF", name: "Guyane" },
+    { code: "YT", name: "Mayotte" },
+    { code: "NC", name: "Nouvelle-Calédonie" },
+    { code: "PF", name: "Polynésie" },
+    // North America
+    { code: "US", name: "United States" },
+    { code: "CA", name: "Canada" },
+    // Middle East
+    { code: "SA", name: "Saudi Arabia" },
+    { code: "AE", name: "United Arab Emirates" },
+    { code: "KW", name: "Kuwait" },
+    { code: "QA", name: "Qatar" },
+    { code: "BH", name: "Bahrain" },
+    { code: "OM", name: "Oman" },
+    { code: "YE", name: "Yemen" },
+    { code: "TR", name: "Turkey" },
+    { code: "EG", name: "Egypt" },
+    { code: "MA", name: "Morocco" },
+    { code: "DZ", name: "Algeria" },
+    { code: "TN", name: "Tunisia" },
+    // Asia/Pacific
+    { code: "CN", name: "China" },
+    { code: "JP", name: "Japan" },
+    { code: "KR", name: "South Korea" },
+    { code: "SG", name: "Singapore" },
+    { code: "AU", name: "Australia" }
+];
+
+export default function ShippingSettingsPage() {
+    const [activeTab, setActiveTab] = useState<'carriers' | 'zones'>('carriers');
+    const [carriers, setCarriers] = useState<Carrier[]>([]);
+    const [zones, setZones] = useState<Zone[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Carrier State
+    const [editingCarrier, setEditingCarrier] = useState<Carrier | null>(null);
+    const [isAddingCarrier, setIsAddingCarrier] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [newCarrier, setNewCarrier] = useState({
+        name: "",
+        slug: "",
+        logo: "",
+        deliveryTime: "",
+        description: "",
+        price: 0,
+        isFree: false,
+        isActive: true
+    });
+
+    // Zone State
+    const [isAddingZone, setIsAddingZone] = useState(false);
+    const [newZoneName, setNewZoneName] = useState("");
+    const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+
+    // Rate State
+    const [addingRateToZone, setAddingRateToZone] = useState<number | null>(null);
+    const [newRate, setNewRate] = useState({
+        carrierId: "",
+        minWeight: 0,
+        maxWeight: 1000,
+        price: 0
+    });
 
     useEffect(() => {
         fetchInitialData();
@@ -30,10 +129,14 @@ export default function ShippingSettingsPage() {
 
     async function fetchInitialData() {
         setLoading(true);
-        const [carriersData] = await Promise.all([
-            getAllCarriers()
+        const [carriersData, zonesData] = await Promise.all([
+            getAllCarriers(),
+            getZones()
         ]);
         setCarriers(carriersData);
+        if (zonesData.success && zonesData.data) {
+            setZones(zonesData.data as unknown as Zone[]);
+        }
         setLoading(false);
     }
 
@@ -55,14 +158,14 @@ export default function ShippingSettingsPage() {
             if (!res.ok) throw new Error('Upload failed');
 
             const data = await res.json();
-            const url = data.path; // The API returns 'path' which is the relative URL
+            const url = data.path;
 
             if (editingCarrier) {
                 setEditingCarrier({ ...editingCarrier, logo: url });
-            } else if (isAdding) {
+            } else if (isAddingCarrier) {
                 setNewCarrier({ ...newCarrier, logo: url });
             }
-            toast.success("Logo uploaded successfully");
+            toast.success("Logo uploaded");
         } catch (error) {
             console.error("Upload error:", error);
             toast.error("Failed to upload logo");
@@ -71,26 +174,13 @@ export default function ShippingSettingsPage() {
         }
     };
 
-    const [newCarrier, setNewCarrier] = useState({
-        name: "",
-        slug: "",
-        logo: "",
-        deliveryTime: "",
-        description: "",
-        price: 0,
-        isFree: false,
-        isActive: true
-    });
-
-    const handleSaveNew = async () => {
-        if (!newCarrier.name) {
-            toast.error("Name is required");
-            return;
-        }
+    // Carrier Handlers
+    const handleSaveNewCarrier = async () => {
+        if (!newCarrier.name) return toast.error("Name is required");
         const res = await createCarrier(newCarrier);
         if (res.success) {
             toast.success("Carrier created");
-            setIsAdding(false);
+            setIsAddingCarrier(false);
             setNewCarrier({ name: "", slug: "", logo: "", deliveryTime: "", description: "", price: 0, isFree: false, isActive: true });
             fetchInitialData();
         } else {
@@ -98,12 +188,8 @@ export default function ShippingSettingsPage() {
         }
     };
 
-    const handleUpdate = async () => {
+    const handleUpdateCarrier = async () => {
         if (!editingCarrier) return;
-        if (!editingCarrier.name) {
-            toast.error("Name is required");
-            return;
-        }
         const payload = {
             ...editingCarrier,
             logo: editingCarrier.logo || undefined,
@@ -120,14 +206,77 @@ export default function ShippingSettingsPage() {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this carrier?")) return;
+    const handleDeleteCarrier = async (id: number) => {
+        if (!confirm("Delete this carrier?")) return;
         const res = await deleteCarrier(id);
         if (res.success) {
             toast.success("Carrier deleted");
             fetchInitialData();
+        }
+    };
+
+    // Zone Handlers
+    const handleCreateZone = async () => {
+        if (!newZoneName) return toast.error("Zone name required");
+        if (selectedCountries.length === 0) return toast.error("Select at least one country");
+
+        const res = await createZone({ name: newZoneName, countries: selectedCountries });
+        if (res.success) {
+            toast.success("Zone created");
+            setIsAddingZone(false);
+            setNewZoneName("");
+            setSelectedCountries([]);
+            fetchInitialData();
         } else {
-            toast.error("Failed to delete carrier");
+            toast.error("Failed to create zone");
+        }
+    };
+
+    const handleDeleteZone = async (id: number) => {
+        if (!confirm("Delete this zone and all its rates?")) return;
+        const res = await deleteZone(id);
+        if (res.success) {
+            toast.success("Zone deleted");
+            fetchInitialData();
+        }
+    };
+
+    // Rate Handlers
+    const handleaddRate = async (zoneId: number) => {
+        if (!newRate.carrierId) return toast.error("Select a carrier");
+
+        const res = await createRate({
+            zoneId,
+            carrierId: Number(newRate.carrierId),
+            minWeight: Number(newRate.minWeight),
+            maxWeight: Number(newRate.maxWeight),
+            price: Number(newRate.price)
+        });
+
+        if (res.success) {
+            toast.success("Rate added");
+            setAddingRateToZone(null);
+            setNewRate({ carrierId: "", minWeight: 0, maxWeight: 1000, price: 0 });
+            fetchInitialData();
+        } else {
+            toast.error("Failed to add rate");
+        }
+    };
+
+    const handleDeleteRate = async (id: number) => {
+        if (!confirm("Delete this rate?")) return;
+        const res = await deleteRate(id);
+        if (res.success) {
+            toast.success("Rate deleted");
+            fetchInitialData();
+        }
+    };
+
+    const toggleCountry = (code: string) => {
+        if (selectedCountries.includes(code)) {
+            setSelectedCountries(selectedCountries.filter(c => c !== code));
+        } else {
+            setSelectedCountries([...selectedCountries, code]);
         }
     };
 
@@ -140,197 +289,260 @@ export default function ShippingSettingsPage() {
     }
 
     return (
-        <div className="space-y-8 p-8 max-w-5xl mx-auto">
+        <div className="space-y-8 p-8 max-w-6xl mx-auto">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Gestion des Transporteurs</h1>
-                    <p className="text-gray-500">Gérez les logos et informations de livraison affichés sur les fiches produits.</p>
+                    <h1 className="text-2xl font-bold text-gray-900">Paramètres de Livraison</h1>
+                    <p className="text-gray-500">Gérez les transporteurs, les zones et les tarifs d'expédition.</p>
                 </div>
-                {!isAdding && (
-                    <button
-                        onClick={() => setIsAdding(true)}
-                        className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                        <Plus size={18} />
-                        Ajouter un transporteur
-                    </button>
-                )}
             </div>
 
-            {/* Add New Carrier Form */}
-            {isAdding && (
-                <div className="bg-white border rounded-xl p-6 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className="flex items-center justify-between mb-2">
-                        <h2 className="font-bold text-lg">Nouveau Transporteur</h2>
-                        <button onClick={() => setIsAdding(false)} className="text-gray-400 hover:text-black">
-                            <X size={20} />
+            {/* Tabs */}
+            <div className="flex gap-4 border-b">
+                <button
+                    onClick={() => setActiveTab('carriers')}
+                    className={`pb-3 px-4 text-sm font-medium transition-colors relative ${activeTab === 'carriers' ? 'text-black' : 'text-gray-500 hover:text-black'}`}
+                >
+                    Transporteurs
+                    {activeTab === 'carriers' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
+                </button>
+                <button
+                    onClick={() => setActiveTab('zones')}
+                    className={`pb-3 px-4 text-sm font-medium transition-colors relative ${activeTab === 'zones' ? 'text-black' : 'text-gray-500 hover:text-black'}`}
+                >
+                    Zones & Tarifs
+                    {activeTab === 'zones' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
+                </button>
+            </div>
+
+            {/* CARRIERS TAB */}
+            {activeTab === 'carriers' && (
+                <div className="space-y-6">
+                    <div className="flex justify-end">
+                        <button
+                            onClick={() => setIsAddingCarrier(true)}
+                            className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm"
+                        >
+                            <Plus size={16} /> Ajouter un transporteur
                         </button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nom du transporteur</label>
-                                <input
-                                    type="text"
-                                    value={newCarrier.name}
-                                    onChange={(e) => setNewCarrier({ ...newCarrier, name: e.target.value })}
-                                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-black outline-none"
-                                    placeholder="Ex: Colissimo, Chronopost..."
-                                />
+
+                    {isAddingCarrier && (
+                        <div className="bg-white border rounded-xl p-6 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-bold">Nouveau Transporteur</h3>
+                                <button onClick={() => setIsAddingCarrier(false)}><X size={18} /></button>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Temps de livraison</label>
-                                <input
-                                    type="text"
-                                    value={newCarrier.deliveryTime}
-                                    onChange={(e) => setNewCarrier({ ...newCarrier, deliveryTime: e.target.value })}
-                                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-black outline-none"
-                                    placeholder="Ex: 48h-72h"
-                                />
-                            </div>
-                        </div>
-                        <div className="space-y-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
-                            <div className="flex items-center gap-4">
-                                <div className="relative w-20 h-20 border-2 border-dashed rounded-lg flex items-center justify-center bg-gray-50 overflow-hidden">
-                                    {newCarrier.logo ? (
-                                        <Image src={newCarrier.logo} alt="Preview" fill className="object-contain p-2" />
-                                    ) : (
-                                        <Truck size={24} className="text-gray-300" />
-                                    )}
-                                    {isUploading && (
-                                        <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                                            <Loader2 className="animate-spin text-black" size={20} />
-                                        </div>
-                                    )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nom</label>
+                                    <input type="text" value={newCarrier.name} onChange={e => setNewCarrier({ ...newCarrier, name: e.target.value })} className="w-full border rounded p-2 text-sm" placeholder="DHL, FedEx..." />
                                 </div>
-                                <label className="cursor-pointer bg-white border px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
-                                    {isUploading ? "Uploading..." : "Choisir un logo"}
-                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e)} disabled={isUploading} />
-                                </label>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Délai</label>
+                                    <input type="text" value={newCarrier.deliveryTime} onChange={e => setNewCarrier({ ...newCarrier, deliveryTime: e.target.value })} className="w-full border rounded p-2 text-sm" placeholder="24h-48h" />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Logo</label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 border rounded bg-gray-50 flex items-center justify-center relative">
+                                            {newCarrier.logo ? <Image src={newCarrier.logo} alt="Logo" fill className="object-contain p-1" /> : <Truck className="text-gray-300" />}
+                                            {isUploading && <div className="absolute inset-0 bg-white/50 flex items-center justify-center"><Loader2 className="animate-spin" /></div>}
+                                        </div>
+                                        <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded text-xs font-medium">
+                                            Upload <input type="file" className="hidden" onChange={handleFileUpload} accept="image/*" />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex justify-end action">
+                                <button onClick={handleSaveNewCarrier} className="bg-black text-white px-4 py-2 rounded text-sm">Enregistrer</button>
                             </div>
                         </div>
-                    </div>
-                    <div className="flex justify-end gap-3 pt-4 border-t">
-                        <button onClick={() => setIsAdding(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-black">Annuler</button>
-                        <button onClick={handleSaveNew} className="bg-black text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">Enregistrer</button>
+                    )}
+
+                    <div className="grid grid-cols-1 gap-4">
+                        {carriers.map(carrier => (
+                            <div key={carrier.id} className="bg-white border rounded-lg p-4 flex items-center justify-between group">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 border rounded bg-gray-50 flex items-center justify-center relative">
+                                        {carrier.logo ? <Image src={carrier.logo} alt={carrier.name} fill className="object-contain p-1" /> : <Truck className="text-gray-300" />}
+                                    </div>
+                                    <div>
+                                        {editingCarrier?.id === carrier.id ? (
+                                            <input value={editingCarrier.name} onChange={e => setEditingCarrier({ ...editingCarrier, name: e.target.value })} className="border rounded px-2 py-1 text-sm font-bold" />
+                                        ) : (
+                                            <h3 className="font-bold">{carrier.name}</h3>
+                                        )}
+                                        <p className="text-xs text-gray-500">{carrier.deliveryTime || "Pas de délai"}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {editingCarrier?.id === carrier.id ? (
+                                        <button onClick={handleUpdateCarrier} className="p-2 text-green-600 bg-green-50 rounded"><Save size={16} /></button>
+                                    ) : (
+                                        <button onClick={() => setEditingCarrier(carrier)} className="p-2 text-blue-600 hover:bg-blue-50 rounded"><Edit2 size={16} /></button>
+                                    )}
+                                    <button onClick={() => handleDeleteCarrier(carrier.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 size={16} /></button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
 
-            {/* Carriers List */}
-            <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                    <thead className="bg-gray-50 border-b">
-                        <tr>
-                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Logo</th>
-                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Nom</th>
-                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Livraison</th>
-                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Statut</th>
-                            <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                        {carriers.map((carrier) => (
-                            <tr key={carrier.id} className="hover:bg-gray-50/50 transition-colors group">
-                                <td className="px-6 py-4">
-                                    <div className="relative w-12 h-12 bg-gray-50 rounded border flex items-center justify-center overflow-hidden">
-                                        {carrier.logo ? (
-                                            <Image src={carrier.logo} alt={carrier.name} fill className="object-contain p-1" />
-                                        ) : (
-                                            <Truck size={20} className="text-gray-300" />
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    {editingCarrier?.id === carrier.id ? (
-                                        <input
-                                            type="text"
-                                            value={editingCarrier.name || ''}
-                                            onChange={(e) => setEditingCarrier({ ...editingCarrier, name: e.target.value })}
-                                            className="border rounded px-2 py-1 text-sm w-full focus:ring-1 focus:ring-black outline-none"
-                                        />
-                                    ) : (
-                                        <span className="font-medium text-gray-900">{carrier.name}</span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {editingCarrier?.id === carrier.id ? (
-                                        <input
-                                            type="text"
-                                            value={editingCarrier.deliveryTime || ''}
-                                            onChange={(e) => setEditingCarrier({ ...editingCarrier, deliveryTime: e.target.value })}
-                                            className="border rounded px-2 py-1 text-sm w-full focus:ring-1 focus:ring-black outline-none"
-                                        />
-                                    ) : (
-                                        <span className="text-sm text-gray-500">{carrier.deliveryTime || "Non spécifié"}</span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <button
-                                        onClick={() => {
-                                            const updated = {
-                                                ...carrier,
-                                                isActive: !carrier.isActive,
-                                                logo: carrier.logo || undefined,
-                                                deliveryTime: carrier.deliveryTime || undefined,
-                                                description: carrier.description || undefined
-                                            };
-                                            updateCarrier(carrier.id, updated).then(() => fetchInitialData());
-                                        }}
-                                        className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${carrier.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-                                            }`}
-                                    >
-                                        {carrier.isActive ? "Actif" : "Inactif"}
-                                    </button>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        {editingCarrier?.id === carrier.id ? (
-                                            <>
-                                                <button onClick={handleUpdate} className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                                                    <Save size={18} />
-                                                </button>
-                                                <button onClick={() => setEditingCarrier(null)} className="p-2 text-gray-400 hover:bg-gray-50 rounded-lg transition-colors">
-                                                    <X size={18} />
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <button onClick={() => setEditingCarrier(carrier)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button onClick={() => handleDelete(carrier.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {carriers.length === 0 && (
-                    <div className="py-12 text-center space-y-3">
-                        <Truck size={40} className="mx-auto text-gray-200" />
-                        <p className="text-gray-400 text-sm">Aucun transporteur configuré.</p>
+            {/* ZONES TAB */}
+            {activeTab === 'zones' && (
+                <div className="space-y-8">
+                    <div className="flex justify-end">
+                        <button
+                            onClick={() => setIsAddingZone(true)}
+                            className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm"
+                        >
+                            <Plus size={16} /> Ajouter une Zone
+                        </button>
                     </div>
-                )}
-            </div>
 
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                    <Truck size={20} className="text-blue-600" />
+                    {isAddingZone && (
+                        <div className="bg-white border rounded-xl p-6 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-4">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-bold">Nouvelle Zone d'Expédition</h3>
+                                <button onClick={() => setIsAddingZone(false)}><X size={18} /></button>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Nom de la Zone</label>
+                                <input
+                                    type="text"
+                                    value={newZoneName}
+                                    onChange={e => setNewZoneName(e.target.value)}
+                                    className="w-full border rounded p-2 text-sm"
+                                    placeholder="Ex: Europe, France Métropolitaine..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Pays inclus</label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 border rounded p-4 max-h-48 overflow-y-auto">
+                                    {ALL_COUNTRIES.map(country => (
+                                        <button
+                                            key={country.code}
+                                            onClick={() => toggleCountry(country.code)}
+                                            className={`text-xs px-2 py-1.5 rounded text-left transition-colors ${selectedCountries.includes(country.code) ? 'bg-black text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`}
+                                        >
+                                            {selectedCountries.includes(country.code) && "✓ "}{country.name}
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-400 mt-1">{selectedCountries.length} pays sélectionnés</p>
+                            </div>
+                            <div className="flex justify-end">
+                                <button onClick={handleCreateZone} className="bg-black text-white px-4 py-2 rounded text-sm">Créer la Zone</button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="space-y-6">
+                        {zones.map(zone => (
+                            <div key={zone.id} className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                                <div className="bg-gray-50 p-4 border-b flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <Globe size={18} className="text-gray-500" />
+                                        <h3 className="font-bold text-lg">{zone.name}</h3>
+                                        <span className="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                                            {(() => {
+                                                try {
+                                                    const countries = JSON.parse(zone.countries);
+                                                    return `${countries.length} pays`;
+                                                } catch { return '0 pays'; }
+                                            })()}
+                                        </span>
+                                    </div>
+                                    <button onClick={() => handleDeleteZone(zone.id)} className="text-red-500 hover:bg-red-50 p-2 rounded"><Trash2 size={16} /></button>
+                                </div>
+
+                                <div className="p-4">
+                                    <div className="mb-4 flex items-center justify-between">
+                                        <h4 className="text-sm font-bold text-gray-700">Tarifs Configurés</h4>
+                                        <button onClick={() => setAddingRateToZone(zone.id)} className="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded flex items-center gap-1">
+                                            <Plus size={12} /> Ajouter un tarif
+                                        </button>
+                                    </div>
+
+                                    {addingRateToZone === zone.id && (
+                                        <div className="bg-gray-50 p-4 rounded-lg mb-4 border border-blue-200">
+                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                                                <div>
+                                                    <label className="text-[10px] font-bold uppercase text-gray-500">Transporteur</label>
+                                                    <select
+                                                        className="w-full text-sm border rounded p-1.5"
+                                                        value={newRate.carrierId}
+                                                        onChange={e => setNewRate({ ...newRate, carrierId: e.target.value })}
+                                                    >
+                                                        <option value="">Choisir...</option>
+                                                        {carriers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold uppercase text-gray-500">Poids Min (g)</label>
+                                                    <input type="number" className="w-full text-sm border rounded p-1.5" value={newRate.minWeight} onChange={e => setNewRate({ ...newRate, minWeight: Number(e.target.value) })} />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold uppercase text-gray-500">Poids Max (g)</label>
+                                                    <input type="number" className="w-full text-sm border rounded p-1.5" value={newRate.maxWeight} onChange={e => setNewRate({ ...newRate, maxWeight: Number(e.target.value) })} />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold uppercase text-gray-500">Prix (€)</label>
+                                                    <input type="number" className="w-full text-sm border rounded p-1.5" value={newRate.price} onChange={e => setNewRate({ ...newRate, price: Number(e.target.value) })} />
+                                                </div>
+                                            </div>
+                                            <div className="mt-3 flex gap-2 justify-end">
+                                                <button onClick={() => setAddingRateToZone(null)} className="text-xs text-gray-500 hover:text-black">Annuler</button>
+                                                <button onClick={() => handleaddRate(zone.id)} className="bg-black text-white text-xs px-3 py-1.5 rounded">Valider</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {zone.rates && zone.rates.length > 0 ? (
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-gray-50 text-gray-500">
+                                                <tr>
+                                                    <th className="p-2 font-medium">Transporteur</th>
+                                                    <th className="p-2 font-medium">Poids</th>
+                                                    <th className="p-2 font-medium">Prix</th>
+                                                    <th className="p-2 text-right">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {zone.rates.map(rate => (
+                                                    <tr key={rate.id} className="border-b last:border-0 hover:bg-gray-50">
+                                                        <td className="p-2 flex items-center gap-2">
+                                                            {rate.carrier.logo ? <Image src={rate.carrier.logo} alt="" width={20} height={20} className="object-contain" /> : <Package size={14} />}
+                                                            {rate.carrier.name}
+                                                        </td>
+                                                        <td className="p-2">{rate.minWeight}g - {rate.maxWeight}g</td>
+                                                        <td className="p-2 font-bold">{Number(rate.price).toFixed(2)}€</td>
+                                                        <td className="p-2 text-right">
+                                                            <button onClick={() => handleDeleteRate(rate.id)} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    ) : (
+                                        <p className="text-xs text-gray-400 italic">Aucun tarif configuré pour cette zone.</p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+
+                        {zones.length === 0 && (
+                            <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed">
+                                <Globe className="mx-auto text-gray-300 mb-2" size={32} />
+                                <p className="text-gray-500 text-sm">Aucune zone. Commencez par créer une zone (ex: Europe).</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div>
-                    <h4 className="text-sm font-bold text-blue-900">Astuce Premium</h4>
-                    <p className="text-sm text-blue-700 mt-1">
-                        Les transporteurs configurés ici apparaîtront dynamiquement sur chaque fiche produit avec leur logo et temps de livraison estimé.
-                        Utilisez des logos transparents (PNG) pour un rendu optimal.
-                    </p>
-                </div>
-            </div>
-        </div >
+            )}
+        </div>
     );
 }

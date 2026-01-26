@@ -13,6 +13,7 @@ import FlashSale from "@/components/shop/FlashSale";
 import RecentlyViewed from "@/components/shop/RecentlyViewed";
 import PromoGrid from "@/components/shop/PromoGrid";
 import RamadanSection from "@/components/shop/RamadanSection";
+import FeaturedBrands from "@/components/shop/FeaturedBrands";
 import BlogSection from "@/components/shop/BlogSection";
 import { Truck, ShieldCheck, Star } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -128,6 +129,9 @@ export default function HomeClient({ reviews, posts, categories }: HomeClientPro
 
             {/* Recently Viewed - Global Standard v3 */}
             <RecentlyViewed />
+
+            {/* Featured Brands - NEW */}
+            <FeaturedBrands />
 
             {/* Newsletter - NEW */}
             <Newsletter />
