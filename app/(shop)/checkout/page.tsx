@@ -148,21 +148,16 @@ export default function CheckoutPage() {
         if (items.length > 0 && selectedCountry) {
             // Map country name to ISO code for API
             const countryMap: Record<string, string> = {
-                "France": "FR",
-                "United Kingdom": "GB",
-                "Germany": "DE",
-                "Belgium": "BE",
-                "Netherlands": "NL",
-                "Spain": "ES",
-                "Italy": "IT",
-                "Switzerland": "CH",
-                "Austria": "AT",
-                "Portugal": "PT",
-                "Sweden": "SE",
-                "Norway": "NO",
-                "Denmark": "DK",
-                "Finland": "FI",
-                "Ireland": "IE"
+                "France": "FR", "United Kingdom": "GB", "Germany": "DE", "Belgium": "BE",
+                "Netherlands": "NL", "Spain": "ES", "Italy": "IT", "Switzerland": "CH",
+                "Austria": "AT", "Portugal": "PT", "Sweden": "SE", "Norway": "NO",
+                "Denmark": "DK", "Finland": "FI", "Ireland": "IE",
+                // New
+                "United States": "US", "Canada": "CA",
+                "Saudi Arabia": "SA", "United Arab Emirates": "AE", "Qatar": "QA", "Kuwait": "KW",
+                "Bahrain": "BH", "Oman": "OM",
+                "Japan": "JP", "South Korea": "KR", "Singapore": "SG", "Malaysia": "MY",
+                "Australia": "AU", "New Zealand": "NZ"
             };
             const isoCountry = countryMap[selectedCountry] || selectedCountry;
 
@@ -493,21 +488,45 @@ export default function CheckoutPage() {
                                 <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 group-focus-within:text-black transition-colors">{t('checkout.country')}</label>
                                 <select {...register("country")} className={`w-full border-b py-3 text-lg outline-none transition-colors bg-transparent appearance-none cursor-pointer ${errors.country ? 'border-red-500' : 'border-gray-200 focus:border-black'}`}>
                                     <option value="">Select Country</option>
-                                    <option value="France">France</option>
-                                    <option value="United Kingdom">United Kingdom</option>
-                                    <option value="Germany">Germany</option>
-                                    <option value="Belgium">Belgium</option>
-                                    <option value="Netherlands">Netherlands</option>
-                                    <option value="Spain">Spain</option>
-                                    <option value="Italy">Italy</option>
-                                    <option value="Switzerland">Switzerland</option>
-                                    <option value="Austria">Austria</option>
-                                    <option value="Portugal">Portugal</option>
-                                    <option value="Sweden">Sweden</option>
-                                    <option value="Norway">Norway</option>
-                                    <option value="Denmark">Denmark</option>
-                                    <option value="Finland">Finland</option>
-                                    <option value="Ireland">Ireland</option>
+                                    <optgroup label="Europe">
+                                        <option value="France">France</option>
+                                        <option value="United Kingdom">United Kingdom</option>
+                                        <option value="Germany">Germany</option>
+                                        <option value="Belgium">Belgium</option>
+                                        <option value="Netherlands">Netherlands</option>
+                                        <option value="Spain">Spain</option>
+                                        <option value="Italy">Italy</option>
+                                        <option value="Switzerland">Switzerland</option>
+                                        <option value="Austria">Austria</option>
+                                        <option value="Portugal">Portugal</option>
+                                        <option value="Sweden">Sweden</option>
+                                        <option value="Norway">Norway</option>
+                                        <option value="Denmark">Denmark</option>
+                                        <option value="Finland">Finland</option>
+                                        <option value="Ireland">Ireland</option>
+                                    </optgroup>
+                                    <optgroup label="North America">
+                                        <option value="United States">United States</option>
+                                        <option value="Canada">Canada</option>
+                                    </optgroup>
+                                    <optgroup label="Middle East (Gulf)">
+                                        <option value="Saudi Arabia">Saudi Arabia</option>
+                                        <option value="United Arab Emirates">United Arab Emirates</option>
+                                        <option value="Qatar">Qatar</option>
+                                        <option value="Kuwait">Kuwait</option>
+                                        <option value="Bahrain">Bahrain</option>
+                                        <option value="Oman">Oman</option>
+                                    </optgroup>
+                                    <optgroup label="Asia">
+                                        <option value="Japan">Japan</option>
+                                        <option value="South Korea">South Korea</option>
+                                        <option value="Singapore">Singapore</option>
+                                        <option value="Malaysia">Malaysia</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option value="Australia">Australia</option>
+                                        <option value="New Zealand">New Zealand</option>
+                                    </optgroup>
                                 </select>
                                 {errors.country && <span className="text-red-500 text-xs">{errors.country.message}</span>}
                             </div>
