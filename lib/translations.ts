@@ -125,6 +125,12 @@ export const translations = {
             stockLimited: "Limited Stock",
             productNotFound: "Product not found",
             returnToShop: "Return to Shop",
+            compare: "Compare",
+            addToCompare: "Add to compare",
+            removeFromCompare: "Remove from compare",
+            compareProducts: "Compare Products",
+            compareEmpty: "Your comparison is empty",
+            compareEmptyDesc: "Add at least two products to compare their features and find the perfect one for you.",
         },
         // Product
         product: {
@@ -1049,6 +1055,12 @@ export const translations = {
             stockLimited: "Stock limité",
             productNotFound: "Produit introuvable",
             returnToShop: "Retour à la boutique",
+            compare: "Comparer",
+            addToCompare: "Ajouter au comparateur",
+            removeFromCompare: "Retirer du comparateur",
+            compareProducts: "Comparer les produits",
+            compareEmpty: "Votre comparateur est vide",
+            compareEmptyDesc: "Ajoutez au moins deux produits pour comparer leurs caractéristiques.",
         },
         // Product
         product: {
@@ -1972,6 +1984,12 @@ export const translations = {
             stockLimited: "مخزون محدود",
             productNotFound: "المنتج غير موجود",
             returnToShop: "العودة للمتجر",
+            compare: "مقارنة",
+            addToCompare: "إضافة للمقارنة",
+            removeFromCompare: "إزالة من المقارنة",
+            compareProducts: "مقارنة المنتجات",
+            compareEmpty: "قائمة المقارنة فارغة",
+            compareEmptyDesc: "أضف منتجين على الأقل لمقارنة مميزاتهما واختيار الأنسب لك.",
         },
         // Product
         product: {

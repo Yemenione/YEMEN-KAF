@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, CreditCard, ChevronRight, ShoppingBag, MapPin, Truck, Banknote, Coins, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Navbar from "@/components/layout/Navbar";
 import { getStripe } from "@/lib/stripe";
 import { Elements } from "@stripe/react-stripe-js";
@@ -167,8 +167,8 @@ export default function CheckoutPage() {
                 body: JSON.stringify({ items, country: isoCountry }),
             })
                 .then((res) => res.json())
-                .then((data) => {
-                    const mappedRates = (data.rates || []).map((r: any) => ({
+                .then((data: { rates?: { serviceCode: string; carrierId: number | string; serviceName: string; cost: number; deliveryDays: number; carrierLogo: string }[]; totalWeight?: number }) => {
+                    const mappedRates = (data.rates || []).map((r) => ({
                         id: r.serviceCode || r.carrierId.toString(),
                         name: r.serviceName,
                         price: r.cost,
@@ -181,7 +181,7 @@ export default function CheckoutPage() {
                     if (mappedRates.length > 0) {
                         // Keep current if exists in new list, else set first
                         setSelectedShippingRate((prev) => {
-                            const exists = mappedRates.find((r: any) => r.id === prev?.id);
+                            const exists = mappedRates.find((r) => r.id === prev?.id);
                             return exists || mappedRates[0];
                         });
                         setSelectedShippingMethod(mappedRates[0].id);
@@ -194,45 +194,8 @@ export default function CheckoutPage() {
         }
     }, [items, selectedCountry]);
 
-    // Fetch saved addresses for logged-in users
-    useEffect(() => {
-        const fetchAddresses = async () => {
-            try {
-                const res = await fetch('/api/account/addresses');
-                if (res.ok) {
-                    setIsAuthenticated(true);
-                    const data = await res.json();
-
-                    if (data.addresses && data.addresses.length > 0) {
-                        setSavedAddresses(data.addresses);
-                        // Auto-select default address if exists
-                        const defaultAddr = data.addresses.find((a: Address) => a.is_default);
-                        if (defaultAddr) {
-                            setSelectedAddressId(defaultAddr.id.toString());
-                            fillFormWithAddress(defaultAddr);
-                        } else {
-                            // Or just select the first one? Or let user choose? 
-                            // Let's force 'new' if no default, or maybe first one. Usually first one is better UX.
-                            // But keeping existing logic:
-                        }
-                    } else {
-                        // Logged in but no addresses: default to 'new' mode
-                        setSavedAddresses([]);
-                        setSelectedAddressId("new");
-                    }
-                } else {
-                    setIsAuthenticated(false);
-                }
-            } catch {
-                console.log('Not logged in or no addresses');
-                setIsAuthenticated(false);
-            }
-        };
-        fetchAddresses();
-    }, []);
-
     // Fill form with selected address
-    const fillFormWithAddress = (address: Address) => {
+    const fillFormWithAddress = useCallback((address: Address) => {
         let firstName = '';
         let lastName = '';
 
@@ -253,7 +216,39 @@ export default function CheckoutPage() {
         setValue("state", address.state || '', { shouldValidate: true });
         setValue("zip", address.postal_code || '', { shouldValidate: true });
         setValue("country", address.country || 'France', { shouldValidate: true });
-    };
+    }, [user, setValue]);
+
+    // Fetch saved addresses for logged-in users
+    useEffect(() => {
+        const fetchAddresses = async () => {
+            try {
+                const res = await fetch('/api/account/addresses');
+                if (res.ok) {
+                    setIsAuthenticated(true);
+                    const data = await res.json();
+
+                    if (data.addresses && data.addresses.length > 0) {
+                        setSavedAddresses(data.addresses);
+                        // Auto-select default address if exists
+                        const defaultAddr = data.addresses.find((a: Address) => a.is_default);
+                        if (defaultAddr) {
+                            setSelectedAddressId(defaultAddr.id.toString());
+                            fillFormWithAddress(defaultAddr);
+                        }
+                    } else {
+                        setSavedAddresses([]);
+                        setSelectedAddressId("new");
+                    }
+                } else {
+                    setIsAuthenticated(false);
+                }
+            } catch {
+                console.log('Not logged in or no addresses');
+                setIsAuthenticated(false);
+            }
+        };
+        fetchAddresses();
+    }, [fillFormWithAddress]);
 
     // Handle address selection
     const handleAddressSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {

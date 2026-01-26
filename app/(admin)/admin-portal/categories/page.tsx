@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Plus, Search, Edit, Trash2, Save, X, Eye, EyeOff, UploadCloud } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -67,11 +67,7 @@ export default function CategoriesPage() {
     const role = (user?.role || 'EDITOR') as AdminRole;
     const canManage = hasPermission(role, Permission.MANAGE_CATEGORIES);
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
             const res = await fetch("/api/admin/categories");
             if (res.ok) {
@@ -83,7 +79,11 @@ export default function CategoriesPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [t]);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
 
     const handleCreate = () => {
         setEditingCategory(null);

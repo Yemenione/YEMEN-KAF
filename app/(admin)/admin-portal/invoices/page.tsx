@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, Search, FileText, Calendar, DollarSign, User } from 'lucide-react';
+import { Download, Search, FileText, Calendar } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface Invoice {

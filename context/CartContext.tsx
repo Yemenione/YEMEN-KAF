@@ -34,20 +34,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const { isAuthenticated } = useAuth();
     const isInitialMount = useRef(true);
+    const [isHydrated, setIsHydrated] = useState(false);
     const prevAuthRef = useRef(isAuthenticated);
     const { showToast } = useToast();
 
-    // 1. Initial Load from localStorage
+    // 1. Initial Load from localStorage (after hydration to avoid mismatches)
     useEffect(() => {
         const stored = localStorage.getItem("cart_items");
         if (stored) {
             try {
-                setItems(JSON.parse(stored));
+                const parsed = JSON.parse(stored) as CartItem[];
+                setItems(parsed);
             } catch (e) {
                 console.error("Failed to parse cart items", e);
             }
         }
+        setIsHydrated(true);
     }, []);
+
+
 
     // 2. Sync with Server on Auth Change
     useEffect(() => {

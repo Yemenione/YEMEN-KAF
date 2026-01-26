@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Save, Store, Mail, Phone, Facebook, Instagram, Image as ImageIcon, CreditCard, ShieldCheck, Calendar, List, Truck, DollarSign } from 'lucide-react';
 import ImageUploader from '@/components/admin/ImageUploader';
 import CarriersManager from '@/components/admin/CarriersManager';
@@ -16,11 +16,7 @@ export default function SettingsPage() {
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
 
-    useEffect(() => {
-        fetchSettings();
-    }, []);
-
-    const fetchSettings = async () => {
+    const fetchSettings = useCallback(async () => {
         try {
             const res = await fetch('/api/admin/config?includeSecrets=true');
             const data = await res.json();
@@ -30,7 +26,11 @@ export default function SettingsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
 
     const handleChange = (key: string, value: string) => {
         setSettings(prev => ({ ...prev, [key]: value }));

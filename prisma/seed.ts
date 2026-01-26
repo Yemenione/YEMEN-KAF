@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+import mysql, { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import 'dotenv/config';
 
 async function main() {
@@ -306,13 +306,13 @@ async function main() {
             }
         ];
 
-        let zoneIds: Record<string, number> = {};
+        const zoneIds: Record<string, number> = {};
 
         for (const zone of zones) {
-            const [rows] = await connection.execute<any[]>('SELECT id FROM shipping_zones WHERE name = ?', [zone.name]);
+            const [rows] = await connection.execute<RowDataPacket[]>('SELECT id FROM shipping_zones WHERE name = ?', [zone.name]);
             let zoneId;
             if (rows.length === 0) {
-                const [res] = await connection.execute<any>('INSERT INTO shipping_zones (name, countries, is_active) VALUES (?, ?, 1)', [zone.name, zone.countries]);
+                const [res] = await connection.execute<ResultSetHeader>('INSERT INTO shipping_zones (name, countries, is_active) VALUES (?, ?, 1)', [zone.name, zone.countries]);
                 zoneId = res.insertId;
             } else {
                 zoneId = rows[0].id;
@@ -323,7 +323,7 @@ async function main() {
 
         // Get Carrier IDs
         async function getCarrierId(code: string): Promise<number> {
-            const [rows] = await connection.execute<any[]>('SELECT id FROM carriers WHERE code = ?', [code]);
+            const [rows] = await connection.execute<RowDataPacket[]>('SELECT id FROM carriers WHERE code = ?', [code]);
             return rows[0]?.id;
         }
 

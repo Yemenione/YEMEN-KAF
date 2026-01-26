@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+interface AppConfigRow {
+    key: string;
+    value: string;
+}
+
 export async function GET() {
     try {
-        const configs: any = await prisma.$queryRawUnsafe(`SELECT * FROM app_configs`);
+        const configs = await prisma.$queryRawUnsafe<AppConfigRow[]>(`SELECT * FROM app_configs`);
 
         // Transform array to object for easier consumption by App
-        const configMap: Record<string, any> = {};
-        configs.forEach((c: any) => {
+        const configMap: Record<string, string | object> = {};
+        configs.forEach((c) => {
             try {
                 let parsed = JSON.parse(c.value);
 
@@ -26,7 +31,8 @@ export async function GET() {
         });
 
         return NextResponse.json({ success: true, config: configMap });
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message || 'Failed to load config' }, { status: 500 });
+    } catch (e) {
+        const error = e as Error;
+        return NextResponse.json({ error: error.message || 'Failed to load config' }, { status: 500 });
     }
 }

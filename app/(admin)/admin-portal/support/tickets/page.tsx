@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
@@ -27,23 +27,23 @@ export default function SupportTicketsPage() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All');
 
-    useEffect(() => {
-        const fetchTickets = async () => {
-            setLoading(true);
-            try {
-                const query = filter !== 'All' ? `?status=${filter}` : '';
-                const res = await fetch(`/api/admin/tickets${query}`);
-                const data = await res.json();
-                setTickets(data);
-            } catch {
-                console.error(t('admin.support.loadFailed') || 'Failed to fetch tickets');
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchTickets = useCallback(async () => {
+        setLoading(true);
+        try {
+            const query = filter !== 'All' ? `?status=${filter}` : '';
+            const res = await fetch(`/api/admin/tickets${query}`);
+            const data = await res.json();
+            setTickets(data);
+        } catch {
+            console.error(t('admin.support.loadFailed') || 'Failed to fetch tickets');
+        } finally {
+            setLoading(false);
+        }
+    }, [filter, t]);
 
+    useEffect(() => {
         fetchTickets();
-    }, [filter]);
+    }, [fetchTickets]);
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {

@@ -13,6 +13,8 @@ export async function GET(req: Request) {
         const search = searchParams.get('search') || undefined;
         const categoryId = searchParams.get('category');
         const sort = searchParams.get('sort');
+        const orderby = searchParams.get('orderby');
+        const order = searchParams.get('order');
         const minPrice = searchParams.get('min_price');
         const maxPrice = searchParams.get('max_price');
 
@@ -50,10 +52,20 @@ export async function GET(req: Request) {
         };
 
         let orderBy: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] = { createdAt: 'desc' };
+
+        // Handle 'sort' parameter (legacy or alternative)
         if (sort === 'price_asc') orderBy = { price: 'asc' };
         else if (sort === 'price_desc') orderBy = { price: 'desc' };
         else if (sort === 'featured') orderBy = [{ isFeatured: 'desc' }, { createdAt: 'desc' }];
         else if (sort === 'discounted') orderBy = { createdAt: 'desc' };
+        // Handle 'orderby' and 'order' parameters (from Shop page)
+        else if (orderby === 'price') {
+            orderBy = { price: order === 'desc' ? 'desc' : 'asc' };
+        } else if (orderby === 'title') {
+            orderBy = { name: order === 'desc' ? 'desc' : 'asc' };
+        } else if (orderby === 'date') {
+            orderBy = { createdAt: order === 'asc' ? 'asc' : 'desc' };
+        }
 
         const products = await prisma.product.findMany({
             where,

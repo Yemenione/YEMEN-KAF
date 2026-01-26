@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner";
 import { MapPin, Save, Plus, Trash2 } from "lucide-react";

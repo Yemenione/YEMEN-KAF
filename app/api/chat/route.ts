@@ -6,6 +6,11 @@ const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY,
 });
 
+interface ChatHistoryItem {
+    isUser: boolean;
+    text: string;
+}
+
 export async function POST(req: NextRequest) {
     try {
         const { message, history, sessionId, userId } = await req.json();
@@ -68,7 +73,7 @@ export async function POST(req: NextRequest) {
 
         const messages = [
             { role: 'system', content: systemPrompt },
-            ...(history || []).map((msg: any) => ({
+            ...(history || []).map((msg: ChatHistoryItem) => ({
                 role: msg.isUser ? 'user' : 'assistant',
                 content: msg.text
             })),
@@ -77,8 +82,7 @@ export async function POST(req: NextRequest) {
 
         // 5. Call AI
         const completion = await groq.chat.completions.create({
-            // @ts-ignore
-            messages: messages,
+            messages: messages as { role: 'system' | 'user' | 'assistant'; content: string }[],
             model: 'llama-3.3-70b-versatile',
             temperature: 0.3, // Lower temperature for more factual responses
             max_tokens: 400,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Plus, Trash2, Tag, Edit2, Calendar, DollarSign, Percent, Check } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner";
@@ -37,11 +37,7 @@ export default function CouponsPage() {
     });
     const [editId, setEditId] = useState<number | null>(null);
 
-    useEffect(() => {
-        fetchCoupons();
-    }, []);
-
-    const fetchCoupons = async () => {
+    const fetchCoupons = useCallback(async () => {
         setLoading(true);
         try {
             const res = await fetch('/api/admin/marketing/coupons');
@@ -52,7 +48,11 @@ export default function CouponsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [t]);
+
+    useEffect(() => {
+        fetchCoupons();
+    }, [fetchCoupons]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -154,8 +154,8 @@ export default function CouponsPage() {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={`flex-1 px-3 py-2 text-xs font-semibold rounded-md transition-all duration-200 ${activeTab === tab
-                                            ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                                        ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
                                         }`}
                                 >
                                     {t(`admin.marketing.coupons.tabs.${tab}`)}

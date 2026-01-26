@@ -8,10 +8,30 @@ import { calculateTotalWeight } from '@/lib/shipping/colissimo';
  * Calculate shipping rates based on Database Rules (Prisma)
  * with DB-first approach, falling back to static logic only if needed.
  */
+interface ShippingItem {
+    id: string | number;
+    quantity: number;
+}
+
+interface ShippingDestination {
+    country: string;
+    postalCode?: string;
+    city?: string;
+}
+
+interface ShippingRateResponse {
+    cost: number;
+    deliveryDays: number;
+    serviceCode: string;
+    serviceName: string;
+    carrierLogo: string;
+    carrierId: number | string;
+}
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { items, destination, country } = body;
+        const { items, destination, country }: { items: ShippingItem[], destination?: ShippingDestination, country?: string } = body;
 
         // Normalize destination
         const dest = destination || {
@@ -29,7 +49,7 @@ export async function POST(req: Request) {
         }
 
         // 1. Fetch Product Weights using Prisma
-        const productIds = items.map((item: any) => item.id);
+        const productIds = items.map((item) => Number(item.id));
         const products = await prisma.product.findMany({
             where: { id: { in: productIds } },
             select: {
@@ -42,7 +62,7 @@ export async function POST(req: Request) {
         });
 
         // 2. Calculate Total Weight
-        const itemsWithWeight = items.map((item: any) => {
+        const itemsWithWeight = items.map((item) => {
             const product = products.find((p) => p.id === item.id);
             return {
                 weight: product?.weight ? Number(product.weight) : 0.5,
@@ -95,7 +115,7 @@ export async function POST(req: Request) {
                 }
             }
 
-            rates.push(...Array.from(uniqueRatesMap.values()).map((rate: any) => ({
+            rates.push(...Array.from(uniqueRatesMap.values()).map((rate): ShippingRateResponse => ({
                 cost: Number(rate.price),
                 deliveryDays: rate.carrier.code === 'dhl' ? 1 : (rate.carrier.code === 'colissimo' ? 2 : 4),
                 serviceCode: rate.carrier.code || 'STANDARD',

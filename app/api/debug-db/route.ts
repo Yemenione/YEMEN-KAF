@@ -9,12 +9,13 @@ export async function GET() {
             database_url_present: !!process.env.DATABASE_URL,
             result: rows
         });
-    } catch (error: any) {
+    } catch (error) {
+        const err = error as Error & { code?: string };
         return NextResponse.json({
             status: 'Failed ❌',
-            error: error.message,
-            code: error.code,
-            stack: error.stack
+            error: err.message,
+            code: err.code,
+            stack: err.stack
         }, { status: 500 });
     }
 }

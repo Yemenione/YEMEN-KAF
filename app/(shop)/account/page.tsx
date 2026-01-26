@@ -4,10 +4,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Settings } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function AccountDashboard() {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const { t } = useLanguage();
 
     return (

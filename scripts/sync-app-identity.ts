@@ -13,7 +13,7 @@ async function sync() {
         }
     });
 
-    const webMap = webConfigs.reduce((acc: any, curr) => {
+    const webMap = webConfigs.reduce((acc: Record<string, string>, curr) => {
         acc[curr.key] = curr.value;
         return acc;
     }, {});

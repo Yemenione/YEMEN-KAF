@@ -13,7 +13,7 @@ interface CartItemRow extends RowDataPacket {
     name: string;
     price: string;
     slug: string;
-    image_url: string;
+    images: string;
 }
 
 interface ExistingItemRow extends RowDataPacket {
@@ -38,7 +38,7 @@ export async function GET() {
         }
 
         // Fetch cart items with product details
-        const [cartItemsRaw] = await pool.execute<any[]>(
+        const [cartItemsRaw] = await pool.execute<CartItemRow[]>(
             `SELECT 
                 ci.id,
                 ci.quantity,

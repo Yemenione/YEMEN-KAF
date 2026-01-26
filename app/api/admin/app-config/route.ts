@@ -6,8 +6,9 @@ export async function GET() {
     try {
         const configs = await prisma.$queryRawUnsafe(`SELECT * FROM app_configs`);
         return NextResponse.json({ success: true, configs });
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+        const error = e as Error;
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
@@ -26,8 +27,9 @@ export async function POST(req: Request) {
         );
 
         return NextResponse.json({ success: true });
-    } catch (e: any) {
-        console.error('AppConfig Update Error:', e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+        const error = e as Error;
+        console.error('AppConfig Update Error:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

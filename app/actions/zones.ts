@@ -45,7 +45,7 @@ export async function createZone(data: { name: string, countries: string[] }) {
         });
         revalidatePath("/admin-portal/settings/shipping");
         return { success: true, data: zone };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to create zone" };
     }
 }
@@ -61,7 +61,7 @@ export async function updateZone(id: number, data: { name?: string, countries?: 
         });
         revalidatePath("/admin-portal/settings/shipping");
         return { success: true, data: zone };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to update zone" };
     }
 }
@@ -71,7 +71,7 @@ export async function deleteZone(id: number) {
         await prisma.shippingZone.delete({ where: { id } });
         revalidatePath("/admin-portal/settings/shipping");
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to delete zone" };
     }
 }
@@ -96,7 +96,7 @@ export async function createRate(data: { zoneId: number, carrierId: number, minW
                 price: Number(rate.price)
             }
         };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to create rate" };
     }
 }
@@ -106,7 +106,7 @@ export async function deleteRate(id: number) {
         await prisma.shippingRate.delete({ where: { id } });
         revalidatePath("/admin-portal/settings/shipping");
         return { success: true };
-    } catch (error) {
+    } catch {
         return { success: false, error: "Failed to delete rate" };
     }
 }

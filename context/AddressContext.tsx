@@ -38,7 +38,7 @@ export function AddressProvider({ children }: { children: React.ReactNode }) {
             if (stored) {
                 try {
                     setAddresses(JSON.parse(stored));
-                } catch (e) {
+                } catch {
                     setAddresses([]);
                 }
             } else {
@@ -54,7 +54,18 @@ export function AddressProvider({ children }: { children: React.ReactNode }) {
             if (res.ok) {
                 const data = await res.json();
                 if (data.addresses) {
-                    const mappedAddresses = data.addresses.map((a: any) => ({
+                    interface DBAddress {
+                        id: number | string;
+                        street_address?: string;
+                        street?: string;
+                        city?: string;
+                        state?: string;
+                        postal_code?: string;
+                        postalCode?: string;
+                        country?: string;
+                        is_default?: number;
+                    }
+                    const mappedAddresses = data.addresses.map((a: DBAddress) => ({
                         id: a.id,
                         street: a.street_address || a.street || '',
                         city: a.city || '',

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import Image from "next/image";
-import { Plus, Heart } from "lucide-react";
+import { Plus, Heart, RefreshCw } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCompare } from "@/context/CompareContext";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
@@ -37,11 +38,13 @@ export default function ProductCard({
     const { isAuthenticated } = useAuth();
     const { t, locale } = useLanguage();
     const { isInWishlist, toggleWishlist } = useWishlist();
+    const { addToCompare, isInCompare } = useCompare();
     const { addToCart } = useCart();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
 
     const isWishlisted = id ? isInWishlist(id) : false;
+    const isCompared = id ? isInCompare(id) : false;
 
     // Calculate Discount
     const numericPrice = parseFloat(price.replace(/[^\d.]/g, ''));
@@ -65,6 +68,22 @@ export default function ProductCard({
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCompareToggle = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!id) return;
+
+        addToCompare({
+            id,
+            name: title,
+            price: numericPrice,
+            image,
+            category,
+            slug: title.toLowerCase().replace(/ /g, '-'), // Approximation, slug props wasn't passed but we can fix if needed
+        });
     };
 
     const handleQuickAdd = (e: React.MouseEvent) => {
@@ -109,12 +128,24 @@ export default function ProductCard({
                             <span className="text-[9px] uppercase tracking-[0.2em] text-gray-400 font-black">
                                 {category}
                             </span>
-                            <button
-                                onClick={handleWishlistToggle}
-                                className="text-gray-400 hover:text-red-500 transition-colors"
-                            >
-                                <Heart size={18} className={isWishlisted ? "fill-red-500 text-red-500" : ""} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleCompareToggle}
+                                    title={t('shop.compare')}
+                                    className={clsx(
+                                        "w-8 h-8 flex items-center justify-center rounded-full transition-all",
+                                        isCompared ? "bg-black text-white" : "text-gray-400 hover:text-black hover:bg-gray-100"
+                                    )}
+                                >
+                                    <RefreshCw size={14} />
+                                </button>
+                                <button
+                                    onClick={handleWishlistToggle}
+                                    className="text-gray-400 hover:text-red-500 transition-colors"
+                                >
+                                    <Heart size={18} className={isWishlisted ? "fill-red-500 text-red-500" : ""} />
+                                </button>
+                            </div>
                         </div>
                         <h3 className="text-lg md:text-xl font-medium text-gray-900 mb-3 group-hover:text-[var(--coffee-brown)] transition-colors">
                             {title}
@@ -188,20 +219,35 @@ export default function ProductCard({
                     )}
                 </div>
 
-                {/* Wishlist Button */}
-                <button
-                    onClick={handleWishlistToggle}
-                    disabled={loading}
-                    className="absolute top-2 end-2 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-all shadow-sm group/wish"
-                >
-                    <Heart
-                        size={16}
+                {/* Top Action Buttons (Wishlist & Compare) */}
+                <div className="absolute top-2 end-2 z-20 flex flex-col gap-2">
+                    {/* Wishlist Button */}
+                    <button
+                        onClick={handleWishlistToggle}
+                        disabled={loading}
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-all shadow-sm group/wish"
+                    >
+                        <Heart
+                            size={16}
+                            className={clsx(
+                                "transition-all duration-300",
+                                isWishlisted ? "fill-black text-black scale-110" : "text-black group-hover/wish:text-gray-600"
+                            )}
+                        />
+                    </button>
+
+                    {/* Compare Button */}
+                    <button
+                        onClick={handleCompareToggle}
                         className={clsx(
-                            "transition-all duration-300",
-                            isWishlisted ? "fill-black text-black scale-110" : "text-black group-hover/wish:text-gray-600"
+                            "w-8 h-8 flex items-center justify-center rounded-full backdrop-blur-sm transition-all shadow-sm",
+                            isCompared ? "bg-black text-white" : "bg-white/90 hover:bg-white text-black group-hover:opacity-100"
                         )}
-                    />
-                </button>
+                        title={t('shop.compare')}
+                    >
+                        <RefreshCw size={14} className={isCompared ? "animate-spin-slow" : ""} />
+                    </button>
+                </div>
 
                 {/* 'Quick Add' Button */}
                 <button

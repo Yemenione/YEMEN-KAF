@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface OurStoryContentProps {
     hero: {
@@ -35,10 +36,12 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
             {/* Hero Section with Parallax Effect */}
             <div className="relative h-[90vh] w-full overflow-hidden">
                 <div className="absolute inset-0">
-                    <img
+                    <Image
                         src={hero.image}
                         alt={t('story.title') || "Our Story"}
-                        className="object-cover w-full h-full scale-105 animate-slow-zoom"
+                        fill
+                        className="object-cover scale-105 animate-slow-zoom"
+                        priority
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent" />
                 </div>
@@ -100,11 +103,11 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
                                             transition={{ duration: 0.7 }}
                                         >
                                             <div className="relative aspect-[3/4] overflow-hidden rounded-sm shadow-2xl">
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img
-                                                    src={section.image}
+                                                <Image
+                                                    src={section.image || '/placeholder.png'}
                                                     alt={sectionTitle}
-                                                    className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                                                 />
                                                 <div className="absolute inset-0 border-[1px] border-white/20 m-4 pointer-events-none" />
                                             </div>

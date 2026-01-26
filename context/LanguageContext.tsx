@@ -54,7 +54,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const t = (key: string, options?: { returnObjects?: boolean } & Record<string, any>): any => {
         const keys = key.split(".");
         let value: TranslationValue | undefined = dynamicTranslations[locale];

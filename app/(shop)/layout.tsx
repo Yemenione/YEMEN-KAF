@@ -8,6 +8,7 @@ import { ToastProvider } from "@/context/ToastContext";
 import CookieBanner from "@/components/layout/CookieBanner";
 import CartDrawer from "@/components/cart/CartDrawer";
 import WishlistDrawer from "@/components/wishlist/WishlistDrawer";
+import CompareDrawer from "@/components/shop/CompareDrawer";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
@@ -15,6 +16,7 @@ import NewsletterPopup from "@/components/NewsletterPopup";
 import ScrollToTop from "@/components/ScrollToTop";
 import { AddressProvider } from "@/context/AddressContext";
 import { SettingsProvider } from "@/context/SettingsContext";
+import { CompareProvider } from "@/context/CompareContext";
 import "../globals.css";
 
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
@@ -93,15 +95,18 @@ export default function ShopLayout({
                 <AddressProvider>
                   <CartProvider>
                     <WishlistProvider>
-                      <Navbar />
-                      {children}
-                      <Footer />
-                      <CartDrawer />
-                      <WishlistDrawer />
-                      <MobileBottomNav />
-                      <ScrollToTop />
-                      <CookieBanner />
-                      <NewsletterPopup />
+                      <CompareProvider>
+                        <Navbar />
+                        {children}
+                        <Footer />
+                        <CartDrawer />
+                        <WishlistDrawer />
+                        <CompareDrawer />
+                        <MobileBottomNav />
+                        <ScrollToTop />
+                        <CookieBanner />
+                        <NewsletterPopup />
+                      </CompareProvider>
                     </WishlistProvider>
                   </CartProvider>
                 </AddressProvider>

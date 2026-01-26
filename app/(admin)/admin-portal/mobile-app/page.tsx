@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
     Smartphone,
     Save,
@@ -25,8 +26,47 @@ interface AppConfig {
     value: string;
 }
 
+interface Banner {
+    id: number;
+    placement: string;
+    imageUrl: string;
+    action: string;
+    target: string;
+}
+
+interface Identity {
+    splashUrl: string;
+    logoUrl: string;
+    primaryColor: string;
+}
+
+interface StripeConfig {
+    publicKey: string;
+    secretKey: string;
+}
+
+interface MaintenanceMode {
+    enabled: boolean;
+    message: string;
+}
+
+interface VersionConfig {
+    minVersion: string;
+}
+
+interface ForceUpdate {
+    android: VersionConfig;
+    ios: VersionConfig;
+}
+
+interface ContactInfo {
+    whatsapp?: string;
+    email?: string;
+}
+
+
 export default function MobileAppAdminPage() {
-    const [configs, setConfigs] = useState<Record<string, any>>({});
+    const [configs, setConfigs] = useState<Record<string, unknown>>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [activeTab, setActiveTab] = useState<'banners' | 'notifications' | 'identity' | 'payments' | 'settings' | 'contact'>('banners');
@@ -41,7 +81,7 @@ export default function MobileAppAdminPage() {
             const res = await fetch('/api/admin/app-config');
             const data = await res.json();
             if (data.success) {
-                const configMap: Record<string, any> = {};
+                const configMap: Record<string, unknown> = {};
                 data.configs.forEach((c: AppConfig) => {
                     try {
                         configMap[c.key] = JSON.parse(c.value);
@@ -51,14 +91,14 @@ export default function MobileAppAdminPage() {
                 });
                 setConfigs(configMap);
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to load app configurations");
         } finally {
             setLoading(false);
         }
     };
 
-    const saveConfig = async (key: string, value: any) => {
+    const saveConfig = async (key: string, value: unknown) => {
         setSaving(true);
         try {
             const res = await fetch('/api/admin/app-config', {
@@ -73,7 +113,7 @@ export default function MobileAppAdminPage() {
             } else {
                 toast.error(data.error || "Save failed");
             }
-        } catch (error) {
+        } catch {
             toast.error("Communication error with server");
         } finally {
             setSaving(false);
@@ -113,7 +153,7 @@ export default function MobileAppAdminPage() {
             }));
 
             toast.success("Synchronisé avec succès depuis les réglages du site !");
-        } catch (error) {
+        } catch {
             toast.error("Échec de la synchronisation");
         } finally {
             setLoading(false);
@@ -137,8 +177,8 @@ export default function MobileAppAdminPage() {
                         </div>
                         <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Centre de Contrôle</span>
                     </div>
-                    <h2 className="text-3xl font-black text-gray-900 dark:text-white mt-2">Contrôle Global de l'App</h2>
-                    <p className="text-gray-500 text-sm mt-1">Gérez tous les aspects de l'expérience de votre application mobile.</p>
+                    <h2 className="text-3xl font-black text-gray-900 dark:text-white mt-2">Contrôle Global de l&apos;App</h2>
+                    <p className="text-gray-500 text-sm mt-1">Gérez tous les aspects de l&apos;expérience de votre application mobile.</p>
                 </div>
                 <button onClick={fetchConfigs} className="p-3 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-2xl transition-all">
                     <RefreshCw className="w-5 h-5" />
@@ -157,7 +197,7 @@ export default function MobileAppAdminPage() {
                 ].map((tab) => (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id as 'banners' | 'notifications' | 'identity' | 'payments' | 'settings' | 'contact')}
                         className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab.id
                             ? "bg-white dark:bg-zinc-800 text-[var(--coffee-brown)] shadow-sm shadow-black/5"
                             : "text-gray-500 hover:text-gray-700 dark:hover:text-zinc-300"
@@ -173,15 +213,15 @@ export default function MobileAppAdminPage() {
             <div className="bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden min-h-[400px]">
                 {activeTab === 'banners' && (
                     <BannersManager
-                        banners={configs.app_banners || []}
+                        banners={Array.isArray(configs.app_banners) ? (configs.app_banners as Banner[]) : []}
                         onSave={(newBanners) => saveConfig('app_banners', newBanners)}
                         saving={saving}
                     />
                 )}
                 {activeTab === 'identity' && (
                     <IdentityManager
-                        identity={configs.app_identity || { splashUrl: '', logoUrl: '', primaryColor: '#C0A080' }}
-                        onSave={(i: any) => saveConfig('app_identity', i)}
+                        identity={((configs.app_identity && typeof configs.app_identity === 'object') ? configs.app_identity : { splashUrl: '', logoUrl: '', primaryColor: '#C0A080' }) as Identity}
+                        onSave={(i: Identity) => saveConfig('app_identity', i)}
                         saving={saving}
                         syncWithWebsite={syncWithWebsite}
                         loading={loading}
@@ -189,25 +229,25 @@ export default function MobileAppAdminPage() {
                 )}
                 {activeTab === 'payments' && (
                     <PaymentsManager
-                        stripe={configs.stripe_config || { publicKey: '', secretKey: '' }}
-                        onSave={(s: any) => saveConfig('stripe_config', s)}
+                        stripe={((configs.stripe_config && typeof configs.stripe_config === 'object') ? configs.stripe_config : { publicKey: '', secretKey: '' }) as StripeConfig}
+                        onSave={(s: StripeConfig) => saveConfig('stripe_config', s)}
                         saving={saving}
                     />
                 )}
                 {activeTab === 'notifications' && <NotificationsManager />}
                 {activeTab === 'settings' && (
                     <GlobalSettingsManager
-                        maintenance={configs.maintenance_mode || { enabled: false, message: '' }}
-                        forceUpdate={configs.force_update || { android: { minVersion: '1.0.0' }, ios: { minVersion: '1.0.0' } }}
-                        onSaveMaintenance={(m: any) => saveConfig('maintenance_mode', m)}
-                        onSaveUpdate={(u: any) => saveConfig('force_update', u)}
+                        maintenance={((configs.maintenance_mode && typeof configs.maintenance_mode === 'object') ? configs.maintenance_mode : { enabled: false, message: '' }) as MaintenanceMode}
+                        forceUpdate={((configs.force_update && typeof configs.force_update === 'object') ? configs.force_update : { android: { minVersion: '1.0.0' }, ios: { minVersion: '1.0.0' } }) as ForceUpdate}
+                        onSaveMaintenance={(m: MaintenanceMode) => saveConfig('maintenance_mode', m)}
+                        onSaveUpdate={(u: ForceUpdate) => saveConfig('force_update', u)}
                         saving={saving}
                     />
                 )}
                 {activeTab === 'contact' && (
                     <ContactInfoManager
-                        contact={configs.contact_info || {}}
-                        onSave={(c: any) => saveConfig('contact_info', c)}
+                        contact={((configs.contact_info && typeof configs.contact_info === 'object') ? configs.contact_info : {}) as ContactInfo}
+                        onSave={(c: ContactInfo) => saveConfig('contact_info', c)}
                         saving={saving}
                     />
                 )}
@@ -218,7 +258,7 @@ export default function MobileAppAdminPage() {
 
 // --- SUB-COMPONENTS ---
 
-function FileUploadButton({ onUpload, label, icon: Icon = Plus, folder = 'app' }: { onUpload: (url: string) => void, label: string, icon?: any, folder?: string }) {
+function FileUploadButton({ onUpload, label, icon: Icon = Plus, folder = 'app' }: { onUpload: (url: string) => void, label: string, icon?: React.ElementType, folder?: string }) {
     const [uploading, setUploading] = useState(false);
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,23 +282,25 @@ function FileUploadButton({ onUpload, label, icon: Icon = Plus, folder = 'app' }
             } else {
                 toast.error("Upload failed");
             }
-        } catch (error) {
+        } catch {
             toast.error("Error uploading image");
         } finally {
             setUploading(false);
         }
     };
 
+    const TypedIcon = Icon as React.ElementType;
+    const displayText = (uploading ? "..." : label) as string;
     return (
         <label className="flex items-center gap-2 px-3 py-1 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-lg text-[10px] font-bold transition-all cursor-pointer border border-gray-200 dark:border-zinc-700">
-            {uploading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Icon className="w-3 h-3" />}
-            {uploading ? "..." : label}
+            {uploading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <TypedIcon className="w-3 h-3" />}
+            {displayText}
             <input type="file" className="hidden" accept="image/*" onChange={handleUpload} disabled={uploading} />
         </label>
     );
 }
 
-function BannersManager({ banners, onSave, saving }: { banners: any[], onSave: (b: any[]) => void, saving: boolean }) {
+function BannersManager({ banners, onSave, saving }: { banners: Banner[], onSave: (b: Banner[]) => void, saving: boolean }) {
     const [localBanners, setLocalBanners] = useState(banners);
 
     const addBanner = () => {
@@ -284,7 +326,7 @@ function BannersManager({ banners, onSave, saving }: { banners: any[], onSave: (
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-xl font-bold">Bannières Intelligentes</h3>
-                    <p className="text-sm text-gray-500">Gérez les bannières sur les différentes pages de l'application.</p>
+                    <p className="text-sm text-gray-500">Gérez les bannières sur les différentes pages de l&apos;application.</p>
                 </div>
                 <button onClick={addBanner} className="flex items-center gap-2 px-4 py-2 bg-[var(--coffee-brown)] text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all">
                     <Plus size={18} /> Ajouter Nouveau
@@ -313,7 +355,7 @@ function BannersManager({ banners, onSave, saving }: { banners: any[], onSave: (
                             </div>
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center px-1">
-                                    <label className="text-xs font-bold text-gray-400">URL de l'image</label>
+                                    <label className="text-xs font-bold text-gray-400">URL de l&apos;image</label>
                                     <FileUploadButton label="Upload" onUpload={(url) => updateBanner(banner.id, 'imageUrl', url)} folder="banners" />
                                 </div>
                                 <input
@@ -353,7 +395,12 @@ function BannersManager({ banners, onSave, saving }: { banners: any[], onSave: (
 
                         {banner.imageUrl && (
                             <div className="mt-4 rounded-xl overflow-hidden aspect-[21/9] bg-gray-200 dark:bg-zinc-800 relative group-hover:ring-2 ring-[var(--coffee-brown)] transition-all">
-                                <img src={banner.imageUrl} alt="Banner Preview" className="w-full h-full object-cover" />
+                                <Image
+                                    src={banner.imageUrl}
+                                    alt={`Banner ${banner.placement}`}
+                                    fill
+                                    className="object-cover"
+                                />
                                 <div className="absolute top-2 left-2 px-2 py-1 bg-black/50 text-[10px] text-white rounded-md uppercase font-bold backdrop-blur-sm">
                                     {banner.placement}
                                 </div>
@@ -373,7 +420,7 @@ function BannersManager({ banners, onSave, saving }: { banners: any[], onSave: (
     );
 }
 
-function IdentityManager({ identity, onSave, saving, syncWithWebsite, loading }: any) {
+function IdentityManager({ identity, onSave, saving, syncWithWebsite, loading }: { identity: Identity, onSave: (i: Identity) => void, saving: boolean, syncWithWebsite: () => void, loading: boolean }) {
     const [local, setLocal] = useState(identity);
 
     useEffect(() => {
@@ -384,7 +431,7 @@ function IdentityManager({ identity, onSave, saving, syncWithWebsite, loading }:
         <div className="p-8 space-y-12">
             <div className="text-center max-w-xl mx-auto space-y-4">
                 <h3 className="text-2xl font-black">Identité Visuelle</h3>
-                <p className="text-gray-500">Personnalisez l'apparence de l'application, y compris l'écran de démarrage (Splash) et les couleurs.</p>
+                <p className="text-gray-500">Personnalisez l&apos;apparence de l&apos;application, y compris l&apos;écran de démarrage (Splash) et les couleurs.</p>
                 <div className="flex justify-center">
                     <button
                         onClick={syncWithWebsite}
@@ -436,13 +483,24 @@ function IdentityManager({ identity, onSave, saving, syncWithWebsite, loading }:
                     <div className="text-[10px] text-zinc-500 absolute top-4 uppercase font-bold tracking-widest">Aperçu en direct</div>
                     <div className="w-48 h-96 bg-black rounded-[2rem] ring-4 ring-zinc-800 relative overflow-hidden flex items-center justify-center">
                         {local.splashUrl ? (
-                            <img src={local.splashUrl} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                            <Image
+                                src={local.splashUrl}
+                                alt="Splash Background"
+                                fill
+                                className="object-cover opacity-60"
+                            />
                         ) : (
                             <div className="absolute inset-0 bg-gradient-to-b from-zinc-800 to-black" />
                         )}
                         <div className="relative z-10 flex flex-col items-center gap-4">
                             {local.logoUrl ? (
-                                <img src={local.logoUrl} className="w-16 h-16 rounded-2xl shadow-xl" />
+                                <Image
+                                    src={local.logoUrl}
+                                    alt="Logo Preview"
+                                    width={64}
+                                    height={64}
+                                    className="rounded-2xl shadow-xl"
+                                />
                             ) : (
                                 <div className="w-16 h-16 bg-zinc-700 rounded-2xl" />
                             )}
@@ -456,13 +514,13 @@ function IdentityManager({ identity, onSave, saving, syncWithWebsite, loading }:
 
             <button onClick={() => onSave(local)} disabled={saving} className="w-full py-4 bg-zinc-900 dark:bg-zinc-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all font-black uppercase tracking-widest">
                 {saving ? <RefreshCw className="animate-spin" /> : <Save size={20} />}
-                Mettre à jour l'identité
+                Mettre à jour l&apos;identité
             </button>
         </div>
     );
 }
 
-function PaymentsManager({ stripe, onSave, saving }: any) {
+function PaymentsManager({ stripe, onSave, saving }: { stripe: StripeConfig, onSave: (s: StripeConfig) => void, saving: boolean }) {
     const [local, setLocal] = useState(stripe);
     const [showKeys, setShowKeys] = useState(false);
 
@@ -470,7 +528,7 @@ function PaymentsManager({ stripe, onSave, saving }: any) {
         <div className="p-8 space-y-12">
             <div className="text-center max-w-xl mx-auto space-y-2">
                 <h3 className="text-2xl font-black">Intégration des Paiements</h3>
-                <p className="text-gray-500">Configurez les clés Stripe pour les paiements directs et web. Elles seront automatiquement synchronisées avec l'application.</p>
+                <p className="text-gray-500">Configurez les clés Stripe pour les paiements directs et web. Elles seront automatiquement synchronisées avec l&apos;application.</p>
             </div>
 
             <div className="max-w-2xl mx-auto p-8 bg-gray-50 dark:bg-zinc-800/50 rounded-[2.5rem] border border-gray-100 dark:border-zinc-800 space-y-6">
@@ -518,6 +576,13 @@ function PaymentsManager({ stripe, onSave, saving }: any) {
     );
 }
 
+interface NotificationHistoryItem {
+    id: string | number;
+    title: string;
+    body: string;
+    createdAt: string;
+}
+
 // ... Notifications, GlobalSettings, ContactInfo same as before ...
 function NotificationsManager() {
     const [title, setTitle] = useState('');
@@ -525,11 +590,12 @@ function NotificationsManager() {
     const [imageUrl, setImageUrl] = useState('');
     const [target, setTarget] = useState('');
     const [sending, setSending] = useState(false);
-    const [history, setHistory] = useState<any[]>([]);
+    const [history, setHistory] = useState<NotificationHistoryItem[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(true);
 
     useEffect(() => {
         fetchHistory();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchHistory = async () => {
@@ -538,8 +604,8 @@ function NotificationsManager() {
             const res = await fetch('/api/admin/notifications');
             const data = await res.json();
             if (data.success) setHistory(data.notifications);
-        } catch (e) {
-            console.error(e);
+        } catch {
+            // Error logged if needed
         } finally {
             setLoadingHistory(false);
         }
@@ -564,7 +630,7 @@ function NotificationsManager() {
             } else {
                 toast.error(data.error);
             }
-        } catch (e) {
+        } catch {
             toast.error("Échec de l'envoi de la notification");
         } finally {
             setSending(false);
@@ -595,7 +661,7 @@ function NotificationsManager() {
     );
 }
 
-function GlobalSettingsManager({ maintenance, forceUpdate, onSaveMaintenance, onSaveUpdate, saving }: any) {
+function GlobalSettingsManager({ maintenance, forceUpdate, onSaveMaintenance, onSaveUpdate, saving }: { maintenance: MaintenanceMode, forceUpdate: ForceUpdate, onSaveMaintenance: (m: MaintenanceMode) => void, onSaveUpdate: (u: ForceUpdate) => void, saving: boolean }) {
     const [localMaintenance, setLocalMaintenance] = useState(maintenance);
     const [localUpdate, setLocalUpdate] = useState(forceUpdate);
 
@@ -629,7 +695,7 @@ function GlobalSettingsManager({ maintenance, forceUpdate, onSaveMaintenance, on
     );
 }
 
-function ContactInfoManager({ contact, onSave, saving }: any) {
+function ContactInfoManager({ contact, onSave, saving }: { contact: ContactInfo, onSave: (c: ContactInfo) => void, saving: boolean }) {
     const [local, setLocal] = useState(contact);
     return (
         <div className="p-12 max-w-xl mx-auto space-y-6">

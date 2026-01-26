@@ -25,7 +25,7 @@ interface Log {
     action: string;
     entityType: string;
     entityId: string | null;
-    details: any;
+    details: Record<string, unknown> | null;
     ipAddress: string | null;
     createdAt: string;
     admin: {

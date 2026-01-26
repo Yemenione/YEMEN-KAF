@@ -11,8 +11,9 @@ export async function GET() {
              ORDER BY sent_at DESC LIMIT 50`
         );
         return NextResponse.json({ success: true, notifications });
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+        const error = e as Error;
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
 
@@ -42,7 +43,8 @@ export async function POST(req: Request) {
             success: true,
             message: 'Notification sent and saved to history. (FCM Mocked)'
         });
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+        const error = e as Error;
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

@@ -293,7 +293,7 @@ export default function ShippingSettingsPage() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Paramètres de Livraison</h1>
-                    <p className="text-gray-500">Gérez les transporteurs, les zones et les tarifs d'expédition.</p>
+                    <p className="text-gray-500">Gérez les transporteurs, les zones et les tarifs d&apos;expédition.</p>
                 </div>
             </div>
 
@@ -406,7 +406,7 @@ export default function ShippingSettingsPage() {
                     {isAddingZone && (
                         <div className="bg-white border rounded-xl p-6 shadow-sm space-y-4 animate-in fade-in slide-in-from-top-4">
                             <div className="flex justify-between items-center">
-                                <h3 className="font-bold">Nouvelle Zone d'Expédition</h3>
+                                <h3 className="font-bold">Nouvelle Zone d&apos;Expédition</h3>
                                 <button onClick={() => setIsAddingZone(false)}><X size={18} /></button>
                             </div>
                             <div>
