@@ -312,10 +312,10 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
                                             <Image
                                                 src={logoSrc}
                                                 alt={`${siteName} Logo`}
-                                                fill
+                                                width={logoWidth}
+                                                height={logoWidth}
                                                 className="object-contain"
                                                 priority
-                                                sizes={`${logoWidth}px`}
                                             />
                                         </div>
                                     </Link>
