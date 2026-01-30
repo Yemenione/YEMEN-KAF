@@ -14,6 +14,7 @@ const nextConfig: any = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000,
     formats: ["image/webp"],
+    disableStaticImages: true, // Disable static image optimization to prevent hydration mismatches
   },
   experimental: {
     optimizePackageImports: [
