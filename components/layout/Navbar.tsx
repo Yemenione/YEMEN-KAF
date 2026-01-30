@@ -228,14 +228,16 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
 
     return (
         <>
-            <header className={clsx(
-                isSticky ? "fixed" : "absolute",
-                "top-0 start-0 end-0 z-50 flex flex-col transition-all duration-500",
-                // Transparent ONLY on homepage when not scrolled
-                isHomePage && !isScrolled
-                    ? "bg-transparent py-4 md:py-6"
-                    : "bg-white/90 backdrop-blur-xl shadow-lg border-b border-black/5 py-0"
-            )}>
+            <header
+                suppressHydrationWarning
+                className={clsx(
+                    isSticky ? "fixed" : "absolute",
+                    "top-0 start-0 end-0 z-50 flex flex-col transition-all duration-500",
+                    // Transparent ONLY on homepage when not scrolled
+                    isHomePage && !isScrolled
+                        ? "bg-transparent py-4 md:py-6"
+                        : "bg-white/90 backdrop-blur-xl shadow-lg border-b border-black/5 py-0"
+                )}>
 
                 {/* Main Navbar Container */}
                 <nav className="relative z-[60] w-full">
@@ -309,15 +311,14 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
                                             className="relative transition-all duration-300"
                                             style={{ width: `${logoWidth}px`, height: `${logoWidth}px` }}
                                         >
-                                            <Image
-                                                key="navbar-logo"
+                                            {/* Logo - Standard img tag for absolute hydration stability */}
+                                            <img
                                                 src={logoSrc}
                                                 alt={`${siteName} Logo`}
                                                 width={logoWidth}
                                                 height={logoWidth}
                                                 className="object-contain"
-                                                priority
-                                                unoptimized={true}
+                                                loading="eager"
                                             />
                                         </div>
                                     </Link>
