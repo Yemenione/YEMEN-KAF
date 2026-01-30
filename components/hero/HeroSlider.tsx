@@ -84,6 +84,7 @@ export default function HeroSlider() {
                             className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-[10s] ease-linear"
                             priority
                             sizes="100vw"
+                            unoptimized
                         />
                         {/* Gradient Overlay for Text Readability */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />

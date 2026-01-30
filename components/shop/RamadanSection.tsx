@@ -131,6 +131,7 @@ export default function RamadanSection() {
                                                 fill
                                                 className="object-cover group-hover:scale-110 transition-transform duration-700"
                                                 sizes="(max-width: 768px) 50vw, 25vw"
+                                                unoptimized
                                             />
                                         </div>
                                     </div>

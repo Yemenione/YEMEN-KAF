@@ -132,6 +132,7 @@ export default function BlogSection({ articles = [] }: { articles?: Article[] })
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                                     sizes="(max-width: 768px) 280px, 33vw"
+                                    unoptimized
                                 />
                             </div>
                             <div className="p-6 space-y-3 md:space-y-4">

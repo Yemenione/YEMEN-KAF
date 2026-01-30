@@ -319,6 +319,7 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
                                                 height={logoWidth}
                                                 className="object-contain"
                                                 loading="eager"
+                                                data-hydration-fix="logo-v2"
                                             />
                                         </div>
                                     </Link>
@@ -468,6 +469,7 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
                                                     fill
                                                     sizes="(max-width: 1200px) 25vw, 20vw"
                                                     className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    unoptimized
                                                 />
                                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300"></div>
                                             </div>

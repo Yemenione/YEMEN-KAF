@@ -132,6 +132,7 @@ export default function PromoGrid({ categories }: PromoGridProps) {
                                     className="object-cover"
                                     sizes="(max-width: 768px) 85vw, 33vw"
                                     priority={idx === 0}
+                                    unoptimized
                                 />
                             </div>
 
