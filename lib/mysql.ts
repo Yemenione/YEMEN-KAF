@@ -14,7 +14,7 @@ export const pool =
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
         waitForConnections: true,
-        connectionLimit: 10,
+        connectionLimit: 1, // Only 1 connection to prevent shared hosting limits
         queueLimit: 0,
     });
 
