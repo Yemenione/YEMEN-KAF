@@ -10,8 +10,10 @@ const nextConfig: any = {
         hostname: '**',
       },
     ],
-    deviceSizes: [640, 750, 1080], // Minimized for shared hosting CPU
-    imageSizes: [16, 32, 48, 64, 96, 128, 256],
+    deviceSizes: [320, 480, 640, 1080],
+    imageSizes: [16, 32, 64, 128],
+    minimumCacheTTL: 31536000,
+    formats: ["image/webp"],
   },
   experimental: {
     optimizePackageImports: [
@@ -22,8 +24,14 @@ const nextConfig: any = {
       'three',
       'recharts',
       'jspdf',
-      'xlsx'
+      'xlsx',
+      'clsx',
+      'date-fns',
+      'stripe'
     ],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
   },
   async headers() {
     return [

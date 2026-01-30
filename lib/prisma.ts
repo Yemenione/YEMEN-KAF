@@ -1,9 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 
-/**
- * Prisma Client Singleton
- * We use connection_limit=2 to survive strict provider limits (e.g. 500 conn/hour)
- */
+// Prisma Client Singleton
+// On shared hosting, we MUST strictly limit connections. 
+// We append ?connection_limit=1 manually if not present in the URL.
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 export const prisma =
