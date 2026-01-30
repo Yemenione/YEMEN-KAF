@@ -310,12 +310,14 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
                                             style={{ width: `${logoWidth}px`, height: `${logoWidth}px` }}
                                         >
                                             <Image
+                                                key="navbar-logo"
                                                 src={logoSrc}
                                                 alt={`${siteName} Logo`}
                                                 width={logoWidth}
                                                 height={logoWidth}
                                                 className="object-contain"
                                                 priority
+                                                unoptimized={true}
                                             />
                                         </div>
                                     </Link>
