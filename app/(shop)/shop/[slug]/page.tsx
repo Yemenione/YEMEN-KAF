@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import ProductDetails from '@/components/shop/ProductDetails';
 import ProductSpecs from '@/components/shop/ProductSpecs';
 import ProductCarousel from '@/components/shop/ProductCarousel';
-import { prisma } from '@/lib/prisma';
+import { getProductBySlug, getRelatedProductsCached, getProducts, getCarriersCached } from "@/app/actions/products";
 import { getMainImage } from '@/lib/image-utils';
 
 // Enable ISR for product pages
@@ -12,26 +12,7 @@ export const dynamicParams = true;
 
 async function getProduct(slug: string) {
     try {
-        const product = await prisma.product.findUnique({
-            where: { slug, isActive: true },
-            include: {
-                category: true,
-                variants: {
-                    include: {
-                        attributeValues: {
-                            include: {
-                                attributeValue: {
-                                    include: {
-                                        attribute: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
+        const product = await getProductBySlug(slug);
         if (!product) return null;
 
         // Map Prisma product to the shape expected by components
@@ -79,18 +60,14 @@ async function getProduct(slug: string) {
             category_translations: (product.category as any)?.translations || {}
         };
     } catch (error) {
-        console.error("Error fetching product from Prisma:", error);
+        console.error("Error fetching product from Cache:", error);
         return null;
     }
 }
 
 async function getRelatedProducts(categoryId: number | null, currentId: number) {
     if (!categoryId) return [];
-    const products = await prisma.product.findMany({
-        where: { categoryId, id: { not: currentId }, isActive: true },
-        take: 8,
-        include: { category: true }
-    });
+    const products = await getRelatedProductsCached(categoryId, currentId);
     return products.map(p => ({
         id: p.id,
         name: p.name,
@@ -104,12 +81,7 @@ async function getRelatedProducts(categoryId: number | null, currentId: number) 
 }
 
 async function getNewArrivals() {
-    const products = await prisma.product.findMany({
-        where: { isActive: true },
-        orderBy: { createdAt: 'desc' },
-        take: 8,
-        include: { category: true }
-    });
+    const products = await getProducts(8);
     return products.map(p => ({
         id: p.id,
         name: p.name,
@@ -123,15 +95,7 @@ async function getNewArrivals() {
 }
 
 async function getCarriers() {
-    try {
-        return await prisma.carrier.findMany({
-            where: { isActive: true },
-            orderBy: { createdAt: 'asc' }
-        });
-    } catch (error) {
-        console.error("Error fetching carriers:", error);
-        return [];
-    }
+    return await getCarriersCached();
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

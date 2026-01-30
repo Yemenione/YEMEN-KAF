@@ -1,5 +1,5 @@
 import { getFeaturedCategories } from "@/app/actions/categories";
-import { prisma } from "@/lib/prisma";
+import { getProducts } from "@/app/actions/products";
 import ShopClient from "./ShopClient";
 
 // Enable ISR for the shop page
@@ -9,15 +9,7 @@ export default async function ShopPage() {
     // Initial data fetch on server for faster first paint and SEO
     const [categories, initialProducts] = await Promise.all([
         getFeaturedCategories(),
-        prisma.product.findMany({
-            where: { isActive: true },
-            take: 20,
-            orderBy: { createdAt: 'desc' },
-            include: {
-                category: true,
-                brand: true,
-            }
-        })
+        getProducts(20)
     ]);
 
     // Format products to match client expectation
