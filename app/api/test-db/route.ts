@@ -1,43 +1,18 @@
 import { NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
-    const config = {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        database: process.env.DB_NAME,
-        passwordLength: process.env.DB_PASSWORD ? process.env.DB_PASSWORD.length : 0,
-        hasUrl: !!process.env.DATABASE_URL
-    };
-
     try {
-        // Try connecting using the same logic as lib/mysql
-        const connection = await mysql.createConnection({
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
-        });
-
-        await connection.end();
-
-        return NextResponse.json({
-            status: 'success',
-            message: 'Successfully connected to database!',
-            config_seen: config
-        });
-    } catch (error: unknown) {
-        const err = error as { message?: string; code?: string };
+        // Just try a simple query
+        await prisma.$queryRaw`SELECT 1`;
+        return NextResponse.json({ status: 'connected', message: 'Database connection successful' });
+    } catch (error: any) {
+        console.error('Database Connection Error:', error);
         return NextResponse.json({
             status: 'error',
-            message: err.message || 'Unknown error',
-            code: err.code || 'UNKNOWN',
-            config_seen: config,
-            env_vars_loaded: {
-                DB_HOST: !!process.env.DB_HOST,
-                DB_USER: !!process.env.DB_USER,
-                DB_PASSWORD: !!process.env.DB_PASSWORD,
-            }
+            message: error.message,
+            code: error.code,
+            meta: error.meta
         }, { status: 500 });
     }
 }

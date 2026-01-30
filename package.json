@@ -10,7 +10,8 @@
     "build": "next build",
     "db:build": "node scripts/debug_prisma.js",
     "start": "node server.js",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
