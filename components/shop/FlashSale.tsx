@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Clock, Zap, ArrowRight } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -32,19 +33,6 @@ export default function FlashSale() {
     const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
     const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
-
-    // Helper for main image (reusing logic for safety)
-    const getMainImage = (product: Product): string => {
-        try {
-            if (!product.images) return '/images/honey-jar.jpg';
-            if (Array.isArray(product.images)) return product.images[0] || '/images/honey-jar.jpg';
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) return product.images;
-            const parsed = JSON.parse(product.images as string);
-            return (Array.isArray(parsed) && parsed.length > 0) ? parsed[0] : '/images/honey-jar.jpg';
-        } catch {
-            return '/images/honey-jar.jpg';
-        }
-    };
 
     useEffect(() => {
         const calculateTimeLeft = () => {
@@ -140,7 +128,7 @@ export default function FlashSale() {
                                     price={`€${Number(product.price).toFixed(2)}`}
                                     startingPrice={product.starting_price?.toString()}
                                     compareAtPrice={`€${Number(product.compare_at_price || product.regular_price).toFixed(2)}`}
-                                    image={getMainImage(product)}
+                                    image={getMainImage(product.images)}
                                     category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || "Flash Sale"}
                                     colors={product.colors}
                                     hasVariants={product.has_variants}

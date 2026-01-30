@@ -2,6 +2,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -26,32 +27,6 @@ export default function ProductShowcase() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const { t, getLocalizedValue } = useLanguage();
-
-    // Helper to extract main image from JSON or Array
-    const getMainImage = (product: Product): string => {
-        try {
-            if (!product.images) return '/images/honey-jar.jpg';
-
-            // If it's already an array, return the first item
-            if (Array.isArray(product.images)) {
-                return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
-            }
-
-            // Check if it's already a clean URL (legacy/csv import support)
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-
-            const parsed = JSON.parse(product.images);
-            return parsed[0] || '/images/honey-jar.jpg';
-        } catch {
-            // Fallback for non-JSON strings
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-        }
-        return '/images/honey-jar.jpg';
-    };
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -99,7 +74,7 @@ export default function ProductShowcase() {
                                     price={`€${Number(product.price).toFixed(2)}`}
                                     startingPrice={product.starting_price}
                                     compareAtPrice={`€${Number(product.regular_price).toFixed(2)}`}
-                                    image={getMainImage(product)}
+                                    image={getMainImage(product.images)}
                                     category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || 'Collection'}
                                     colors={product.colors}
                                     hasVariants={product.has_variants}

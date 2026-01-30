@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -30,29 +31,6 @@ export default function BestSellers() {
     const [products, setProducts] = useState<Product[]>([]);
     const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
-
-    // Helper to extract main image from JSON or Array
-    const getMainImage = (product: Product): string => {
-        try {
-            if (!product.images) return '/images/honey-jar.jpg';
-
-            if (Array.isArray(product.images)) {
-                return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
-            }
-
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-
-            const parsed = JSON.parse(product.images);
-            return parsed[0] || '/images/honey-jar.jpg';
-        } catch {
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-        }
-        return '/images/honey-jar.jpg';
-    };
 
     useEffect(() => {
         const fetchBestSellers = async () => {
@@ -86,9 +64,9 @@ export default function BestSellers() {
     if (products.length === 0) return null;
 
     return (
-        <section className="py-16 bg-gray-50/50 border-t border-black/5">
+        <section className="py-8 bg-gray-50/50 border-t border-black/5">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center mb-12">
+                <div className="text-center mb-6">
                     <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold flex items-center justify-center gap-2">
                         <TrendingUp className="w-4 h-4" />
                         {t('home.bestSellers.badge')}
@@ -107,7 +85,7 @@ export default function BestSellers() {
                                 price={`€${Number(product.price).toFixed(2)}`}
                                 startingPrice={product.starting_price}
                                 compareAtPrice={`€${Number(product.regular_price).toFixed(2)}`}
-                                image={getMainImage(product)}
+                                image={getMainImage(product.images)}
                                 category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || t('home.bestSellers.topSale')}
                                 colors={product.colors}
                                 hasVariants={product.has_variants}

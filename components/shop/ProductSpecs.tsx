@@ -90,14 +90,14 @@ export default function ProductSpecs({
 
     return (
 
-        <div className="mt-20 border-t border-gray-100 pt-16">
-            {/* Premium Tabs */}
-            <div className="flex justify-center mb-12">
-                <div className="inline-flex bg-gray-100 p-1.5 rounded-full">
+        <div className="mt-12 md:mt-20 border-t border-gray-100 pt-10 md:pt-16">
+            {/* Premium Tabs - Mobile Scrollable */}
+            <div className="flex justify-center mb-8 md:mb-12">
+                <div className="inline-flex bg-gray-100 p-1 rounded-full max-w-full overflow-x-auto no-scrollbar">
                     <button
                         onClick={() => setActiveTab('description')}
-                        className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 ${activeTab === 'description'
-                            ? 'bg-black text-white shadow-lg'
+                        className={`px-6 md:px-8 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === 'description'
+                            ? 'bg-white text-black shadow-sm'
                             : 'text-gray-500 hover:text-black'
                             }`}
                     >
@@ -105,8 +105,8 @@ export default function ProductSpecs({
                     </button>
                     <button
                         onClick={() => setActiveTab('specs')}
-                        className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 ${activeTab === 'specs'
-                            ? 'bg-black text-white shadow-lg'
+                        className={`px-6 md:px-8 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === 'specs'
+                            ? 'bg-white text-black shadow-sm'
                             : 'text-gray-500 hover:text-black'
                             }`}
                     >
@@ -114,8 +114,8 @@ export default function ProductSpecs({
                     </button>
                     <button
                         onClick={() => setActiveTab('shipping')}
-                        className={`px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 ${activeTab === 'shipping'
-                            ? 'bg-black text-white shadow-lg'
+                        className={`px-6 md:px-8 py-2.5 md:py-3 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === 'shipping'
+                            ? 'bg-white text-black shadow-sm'
                             : 'text-gray-500 hover:text-black'
                             }`}
                     >
@@ -124,8 +124,8 @@ export default function ProductSpecs({
                 </div>
             </div>
 
-            {/* Tab Content */}
-            <div className="bg-white rounded-3xl p-8 md:p-12 border border-gray-100 shadow-sm min-h-[400px]">
+            {/* Tab Content - Responsive Padding */}
+            <div className="bg-white rounded-[2rem] md:rounded-3xl p-6 md:p-12 border border-gray-100 shadow-sm min-h-[300px] md:min-h-[400px]">
                 {/* Description Tab */}
                 {activeTab === 'description' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">

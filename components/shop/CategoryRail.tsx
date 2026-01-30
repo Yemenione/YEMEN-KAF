@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
+import { useSettings } from "@/context/SettingsContext";
 
 interface Category {
     id: number;
@@ -18,11 +19,14 @@ interface Category {
 
 import { useSearchParams } from "next/navigation";
 // ... imports
+import { getMainImage } from "@/lib/image-utils";
 
 export default function CategoryRail() {
     const { t, getLocalizedValue } = useLanguage();
     const [categories, setCategories] = useState<Category[]>([]);
     const searchParams = useSearchParams();
+    const { settings } = useSettings();
+    const siteLogo = settings.logo_url || "/images/logo-circle.png";
     const activeCategory = searchParams.get('category') || 'all';
 
     // ... categoryImages mapping ...
@@ -31,7 +35,7 @@ export default function CategoryRail() {
         'coffee': '/images/coffee-beans.jpg',
         'spices': '/images/yemen-heritage.jpg',
         'beauty': '/images/honey-comb.jpg',
-        'all': '/images/logo.png'
+        'all': siteLogo
     };
 
     useEffect(() => {
@@ -43,7 +47,7 @@ export default function CategoryRail() {
                     const data = await res.json();
 
                     // Add "All" category at start
-                    const allCat = { id: 0, name: t('shop.allProducts') || 'All', slug: 'all', image_url: '/images/logo.png' };
+                    const allCat = { id: 0, name: t('shop.allProducts') || 'All', slug: 'all', image_url: siteLogo };
                     setCategories([allCat, ...(data.categories || [])]);
                 }
             } catch (error) {
@@ -54,16 +58,17 @@ export default function CategoryRail() {
     }, [t]);
 
     const getImageForCategory = (cat: Category) => {
-        // Priority 1: API provided image (real data)
-        if (cat.image_url) return cat.image_url;
-        // Priority 2: Manual mapping (fallback)
+        const img = getMainImage(cat);
+        if (img && img !== '/images/honey-jar.jpg') return img;
+
+        // Manual mapping (fallback)
         if (categoryImages[cat.slug]) return categoryImages[cat.slug];
+
         // Priority 3: Dynamic defaults (Only if very specific)
         if (cat.slug === 'honey' || cat.slug === 'miel') return '/images/honey-jar.jpg';
         if (cat.slug === 'coffee' || cat.slug === 'cafe') return '/images/coffee-beans.jpg';
 
-        // If no image found, return null to filter it out
-        return null;
+        return img || siteLogo;
     };
 
     // Filter categories that have valid images
@@ -89,7 +94,7 @@ export default function CategoryRail() {
                         )}>
                             <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-50">
                                 <Image
-                                    src={getImageForCategory(cat) || '/images/logo.png'}
+                                    src={getImageForCategory(cat) || siteLogo}
                                     alt={cat.name}
                                     fill
                                     sizes="(max-width: 768px) 64px, 96px"

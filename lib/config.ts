@@ -12,7 +12,7 @@ export async function getStoreConfig(key: string): Promise<string | undefined> {
             'SELECT value FROM app_configs WHERE `key` = ? LIMIT 1',
             [key]
         );
-        if (appRows && appRows.length > 0) return appRows[0].value;
+        if (appRows && appRows.length > 0) return appRows[0].value ? appRows[0].value.trim() : '';
 
         // 2. Try store_config table (Original system)
         const [rows] = await pool.execute<RowDataPacket[]>(
@@ -21,7 +21,7 @@ export async function getStoreConfig(key: string): Promise<string | undefined> {
         );
 
         if (rows && rows.length > 0) {
-            return rows[0].value;
+            return rows[0].value ? rows[0].value.trim() : '';
         }
 
         // Special check for nested stripe_config
@@ -35,9 +35,25 @@ export async function getStoreConfig(key: string): Promise<string | undefined> {
             }
         }
 
+        // ... DB lookups ...
+
+        // 3. Fallback to Environment Variables
+        const envKey = key.toUpperCase();
+        if (process.env[envKey]) {
+            return process.env[envKey];
+        }
+
+        // Handle specific mappings
+        if (key === 'stripe_publishable_key' && process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
+            return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+        }
+
         return undefined;
     } catch (error) {
         console.error(`Error fetching config for key: ${key}`, error);
+        // Fallback on error too
+        const envKey = key.toUpperCase();
+        if (process.env[envKey]) return process.env[envKey];
         return undefined;
     }
 }

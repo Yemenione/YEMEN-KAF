@@ -30,8 +30,8 @@ export const CompareProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (savedCompare) {
             try {
                 setCompareItems(JSON.parse(savedCompare));
-            } catch (e) {
-                console.error("Failed to parse compare items", e);
+            } catch {
+                console.error("Failed to parse compare items");
             }
         }
     }, []);

@@ -54,8 +54,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
 
                         // Clear guest wishlist after sync
                         localStorage.removeItem('guest_wishlist');
-                    } catch (e) {
-                        console.error("Failed to merge guest wishlist", e);
+                    } catch {
+                        console.error("Failed to merge guest wishlist");
                     }
                 }
             } else {
@@ -64,7 +64,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
                 if (stored) {
                     try {
                         setWishlistIds(JSON.parse(stored));
-                    } catch (e) {
+                    } catch {
                         setWishlistIds([]);
                     }
                 } else {
@@ -74,6 +74,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         };
 
         syncWishlist();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated]);
 
     const fetchWishlistIds = async () => {

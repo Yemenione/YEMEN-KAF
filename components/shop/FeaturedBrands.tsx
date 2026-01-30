@@ -26,9 +26,9 @@ export default function FeaturedBrands() {
     if (brands.length === 0) return null;
 
     return (
-        <section className="py-16 bg-white border-t border-black/5">
+        <section className="py-8 bg-white border-t border-black/5">
             <div className="max-w-7xl mx-auto px-6">
-                <h2 className="text-2xl font-serif text-black mb-10 text-center">Nos Marques Partenaires</h2>
+                <h2 className="text-2xl font-serif text-black mb-6 text-center">Nos Marques Partenaires</h2>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center opacity-80 hover:opacity-100 transition-opacity">
                     {brands.map(brand => (
@@ -39,6 +39,7 @@ export default function FeaturedBrands() {
                                     alt={brand.name}
                                     fill
                                     className="object-contain p-2"
+                                    sizes="(max-width: 768px) 33vw, 15vw"
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center border border-dashed rounded text-xs text-gray-400">

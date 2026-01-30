@@ -2,6 +2,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -29,31 +30,6 @@ export default function NewArrivals() {
     const [products, setProducts] = useState<Product[]>([]);
     const { t, getLocalizedValue } = useLanguage();
 
-    // Helper to extract main image from JSON or Array
-    const getMainImage = (product: Product): string => {
-        try {
-            if (!product.images) return '/images/honey-jar.jpg';
-
-            if (Array.isArray(product.images)) {
-                return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
-            }
-
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-
-            const parsed = JSON.parse(product.images as string);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                return parsed[0];
-            }
-        } catch {
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-        }
-        return '/images/honey-jar.jpg';
-    };
-
     useEffect(() => {
         const fetchNewArrivals = async () => {
             try {
@@ -73,9 +49,9 @@ export default function NewArrivals() {
     if (products.length === 0) return null;
 
     return (
-        <section className="py-20 bg-white border-t border-black/5">
+        <section className="py-8 bg-white border-t border-black/5">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center mb-12">
+                <div className="text-center mb-6">
                     <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold flex items-center justify-center gap-2">
                         <Sparkles className="w-4 h-4" />
                         {t('home.newArrivals.badge')}
@@ -94,7 +70,7 @@ export default function NewArrivals() {
                                 price={`€${Number(product.price).toFixed(2)}`}
                                 startingPrice={product.starting_price}
                                 compareAtPrice={`€${Number(product.regular_price).toFixed(2)}`}
-                                image={getMainImage(product)}
+                                image={getMainImage(product.images)}
                                 category={getLocalizedValue({ name: product.category_name, translations: product.category_translations }, 'name') || t('home.newArrivals.newBadge')}
                                 colors={product.colors}
                                 hasVariants={product.has_variants}

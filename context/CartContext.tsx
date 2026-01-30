@@ -45,11 +45,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
             try {
                 const parsed = JSON.parse(stored) as CartItem[];
                 setItems(parsed);
-            } catch (e) {
-                console.error("Failed to parse cart items", e);
+            } catch {
+                console.error("Failed to parse cart items");
             }
         }
         setIsHydrated(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 

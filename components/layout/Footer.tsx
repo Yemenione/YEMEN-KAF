@@ -164,7 +164,7 @@ export default function Footer() {
                     <ul className="space-y-4 text-sm text-[var(--coffee-brown)]/70">
                         <li className="flex items-start gap-3">
                             <MapPin size={18} className="text-[var(--honey-gold)] mt-0.5" />
-                            <span>{t('footer.address')}</span>
+                            <span>{settings.store_address || t('footer.address')}</span>
                         </li>
                         <li className="flex items-center gap-3">
                             <Phone size={18} className="text-[var(--honey-gold)]" />
@@ -179,7 +179,13 @@ export default function Footer() {
             </div>
 
             {/* Bottom Bar */}
-            <div className="border-t border-[var(--coffee-brown)]/10 py-8 text-center text-xs text-[var(--coffee-brown)]/40 uppercase tracking-widest">
+            <div className="border-t border-[var(--coffee-brown)]/10 py-8 text-center text-xs text-[var(--coffee-brown)]/40 uppercase tracking-widest px-6">
+                <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">
+                    <Link href="/mentions-legales" className="hover:text-[var(--coffee-brown)] transition-colors">{t('footer.legal.mentions') || 'Mentions Légales'}</Link>
+                    <Link href="/cgv" className="hover:text-[var(--coffee-brown)] transition-colors">{t('footer.legal.cgv') || 'CGV'}</Link>
+                    <Link href="/privacy" className="hover:text-[var(--coffee-brown)] transition-colors">{t('footer.privacy')}</Link>
+                    <Link href="/terms" className="hover:text-[var(--coffee-brown)] transition-colors">{t('footer.terms')}</Link>
+                </div>
                 <p>&copy; {new Date().getFullYear()} {t('footer.rights')}</p>
             </div>
         </footer>

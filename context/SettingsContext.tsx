@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 
 interface Settings {
     site_name: string;
@@ -26,7 +26,7 @@ const defaultSettings: Settings = {
     support_phone: "+33 6 12 34 56 78",
     social_facebook: "https://facebook.com",
     social_instagram: "https://instagram.com",
-    logo_url: "/images/logo.png",
+    logo_url: "/images/logo-circle.png",
     primary_color: "#cfb160"
 };
 
@@ -42,7 +42,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const res = await fetch('/api/admin/config');
+                const res = await fetch('/api/admin/config', { cache: 'no-store' });
                 if (res.ok) {
                     const data = await res.json();
                     setSettings(prev => ({ ...prev, ...data }));
@@ -57,8 +57,11 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         fetchSettings();
     }, []);
 
+    // Memoize context value to prevent unnecessary re-renders
+    const contextValue = useMemo(() => ({ settings, loading }), [settings, loading]);
+
     return (
-        <SettingsContext.Provider value={{ settings, loading }}>
+        <SettingsContext.Provider value={contextValue}>
             <style jsx global>{`
                 :root {
                     --honey-gold: ${settings.primary_color};

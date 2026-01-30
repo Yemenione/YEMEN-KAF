@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { History } from "lucide-react";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -19,18 +20,6 @@ interface Product {
 export default function RecentlyViewed() {
     const [products, setProducts] = useState<Product[]>([]);
     const { t, locale, getLocalizedValue } = useLanguage();
-
-    const getMainImage = (product: Product): string => {
-        try {
-            if (!product.images) return '/images/honey-jar.jpg';
-            if (Array.isArray(product.images)) return product.images[0] || '/images/honey-jar.jpg';
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) return product.images;
-            const parsed = JSON.parse(product.images as string);
-            return (Array.isArray(parsed) && parsed.length > 0) ? parsed[0] : '/images/honey-jar.jpg';
-        } catch {
-            return '/images/honey-jar.jpg';
-        }
-    };
 
     useEffect(() => {
         const fetchRecentlyViewed = async () => {
@@ -58,9 +47,9 @@ export default function RecentlyViewed() {
     if (products.length === 0) return null;
 
     return (
-        <section className="py-16 bg-white">
+        <section className="py-8 bg-white">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                         <History className="text-[var(--honey-gold)] w-6 h-6" />
                         <h2 className="text-2xl md:text-3xl font-serif text-[var(--coffee-brown)]">
@@ -78,7 +67,7 @@ export default function RecentlyViewed() {
                         >
                             <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 mb-4 border border-gray-100 group-hover:border-[var(--honey-gold)] transition-all">
                                 <Image
-                                    src={getMainImage(product)}
+                                    src={getMainImage(product.images)}
                                     alt={product.name}
                                     fill
                                     className="object-cover transition-transform duration-500 group-hover:scale-110"

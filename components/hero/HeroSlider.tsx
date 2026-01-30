@@ -8,6 +8,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import clsx from "clsx";
 import { ArrowRight } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -25,25 +26,6 @@ export default function HeroSlider() {
     const [slides, setSlides] = useState<Product[]>([]);
     const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
-
-    const getMainImage = (product: Product): string => {
-        try {
-            if (!product.images) return product.image_url || '/images/honey-jar.jpg';
-            if (Array.isArray(product.images)) {
-                return product.images.length > 0 ? product.images[0] : (product.image_url || '/images/honey-jar.jpg');
-            }
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-            const parsed = JSON.parse(product.images as string);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
-        } catch {
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-        }
-        return product.image_url || '/images/honey-jar.jpg';
-    };
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -83,20 +65,20 @@ export default function HeroSlider() {
     );
 
     return (
-        <section className="relative w-full px-4 pt-32 pb-12 lg:px-8 bg-white min-h-[700px]">
+        <section className="relative w-full bg-black h-screen overflow-hidden">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentSlide}
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="relative w-full max-w-[1400px] mx-auto aspect-[4/5] lg:aspect-[21/9] bg-black rounded-[3rem] overflow-hidden shadow-2xl group border border-white/50"
+                    transition={{ duration: 1.2, ease: "easeInOut" }}
+                    className="relative w-full h-full bg-black overflow-hidden"
                 >
                     {/* Background Image */}
                     <div className="absolute inset-0">
                         <Image
-                            src={getMainImage(slides[currentSlide])}
+                            src={getMainImage(slides[currentSlide].images || slides[currentSlide].image_url)}
                             alt={getLocalizedValue(slides[currentSlide], 'name')}
                             fill
                             className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-[10s] ease-linear"
@@ -108,24 +90,27 @@ export default function HeroSlider() {
                     </div>
 
                     {/* Content */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-8 lg:p-20 z-20 pb-16 lg:pb-24">
-                        <div className="max-w-xl space-y-6">
+                    <div className="absolute inset-0 flex flex-col justify-end p-8 lg:p-24 lg:pb-32 z-20">
+                        <div className="max-w-2xl space-y-8">
                             <motion.div
-                                initial={{ y: 20, opacity: 0 }}
+                                initial={{ y: 30, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.2, duration: 0.8 }}
-                                className="space-y-4"
+                                transition={{ delay: 0.2, duration: 1, ease: "easeOut" }}
+                                className="space-y-6"
                             >
                                 {/* Badge from Mockup */}
-                                <span className="inline-block px-4 py-1.5 bg-[#E3C069] text-black text-[10px] font-black uppercase tracking-[0.2em] rounded-full mb-2 shadow-lg">
-                                    HÉRITAGE MILLÉNAIRE
-                                </span>
+                                <div className="flex items-center gap-3">
+                                    <span className="inline-block px-4 py-1.5 bg-[var(--honey-gold)] text-black text-[10px] font-black uppercase tracking-[0.25em] rounded-sm shadow-xl">
+                                        HÉRITAGE MILLÉNAIRE
+                                    </span>
+                                    <div className="h-px w-12 bg-white/30 hidden md:block"></div>
+                                </div>
 
-                                <h1 className="text-4xl md:text-6xl font-serif text-white leading-tight mb-4 drop-shadow-md">
+                                <h1 className="text-4xl md:text-7xl font-serif text-white leading-[1.1] mb-4 drop-shadow-2xl">
                                     {getLocalizedValue(slides[currentSlide], 'name') || "L'excellence du café Yéménite"}
                                 </h1>
 
-                                <p className="text-white/80 line-clamp-2 text-sm md:text-lg font-light max-w-md hidden lg:block">
+                                <p className="text-white/90 line-clamp-2 text-sm md:text-xl font-light max-w-lg hidden lg:block leading-relaxed">
                                     {getLocalizedValue(slides[currentSlide], 'description')}
                                 </p>
                             </motion.div>
@@ -133,14 +118,19 @@ export default function HeroSlider() {
                             <motion.div
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.4, duration: 0.5 }}
+                                transition={{ delay: 0.6, duration: 0.8 }}
+                                className="flex items-center gap-6"
                             >
                                 <Link href={`/shop/${slides[currentSlide].slug}`}>
-                                    <button className="px-8 py-4 bg-[#E3C069] text-black font-bold uppercase tracking-[0.1em] hover:bg-white transition-all rounded-full text-xs shadow-[0_4px_14px_rgba(227,192,105,0.4)] hover:shadow-white/20 flex items-center gap-3">
+                                    <button className="px-10 py-5 bg-[var(--honey-gold)] text-black font-black uppercase tracking-[0.15em] hover:bg-white transition-all rounded-sm text-[11px] shadow-[0_10px_30px_rgba(227,192,105,0.4)] hover:shadow-white/20 flex items-center gap-4 group/btn">
                                         {t("home.hero.cta") || "Découvrir la collection"}
-                                        <ArrowRight size={16} />
+                                        <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
                                     </button>
                                 </Link>
+                                <div className="hidden md:flex flex-col items-start gap-1">
+                                    <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Origine</span>
+                                    <span className="text-xs text-white uppercase tracking-widest font-bold">Yémen 🇾🇪</span>
+                                </div>
                             </motion.div>
                         </div>
                     </div>

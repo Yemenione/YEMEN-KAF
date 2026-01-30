@@ -43,3 +43,13 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+deploy/
+
+*.zip
+*.log
+*.sql
+*.bak
+config_dump.json
+lint.json
+!/.env.example

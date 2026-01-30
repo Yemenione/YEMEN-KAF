@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import clsx from 'clsx';
 import ProductVariantsManager from "@/components/admin/products/ProductVariantsManager";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface ProductFormProps {
     initialData?: Partial<Product>; // Use Partial<Product> or define a proper shape
@@ -47,6 +48,7 @@ interface Product {
 
 export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
     const router = useRouter();
+    const { t } = useLanguage();
     const [loading, setLoading] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [activeTab, setActiveTab] = useState("general");
@@ -260,7 +262,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             meta_description: getValue('meta_description')
         };
 
-        if (!currentContent.name) return alert(`Please fill in ${activeLang.toUpperCase()} name first.`);
+        if (!currentContent.name) return alert(t('admin.products.form.fillNameFirst', { lang: activeLang.toUpperCase() }));
 
         setLoading(true);
         try {
@@ -303,7 +305,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             }
         } catch (e) {
             console.error(e);
-            alert("Translation failed");
+            alert(t('admin.categories.translationFailed') || "Translation failed");
         } finally {
             setLoading(false);
         }
@@ -338,22 +340,22 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                 router.refresh();
             } else {
                 const err = await res.json();
-                alert(`Error: ${err.error || 'Failed to save product'}`);
+                alert(`${t('admin.common.error')}: ${err.error || t('admin.settings.error')}`);
             }
         } catch {
-            alert("Something went wrong");
+            alert(t('admin.categories.operationFailed') || "Something went wrong");
         } finally {
             setLoading(false);
         }
     };
 
     const tabs: { id: string; label: string; icon: React.ComponentType<{ size?: number }>; hidden?: boolean }[] = [
-        { id: "general", label: "General", icon: FileText },
-        { id: "pricing", label: "Pricing", icon: DollarSign },
-        { id: "logistics", label: "Shipping", icon: Truck },
-        { id: "seo", label: "SEO", icon: Globe },
-        { id: "associations", label: "Connections", icon: Layers },
-        { id: "variants", label: "Variants", icon: Box },
+        { id: "general", label: t('admin.products.form.tabs.general'), icon: FileText },
+        { id: "pricing", label: t('admin.products.form.tabs.pricing'), icon: DollarSign },
+        { id: "logistics", label: t('admin.products.form.tabs.logistics'), icon: Truck },
+        { id: "seo", label: t('admin.products.form.tabs.seo'), icon: Globe },
+        { id: "associations", label: t('admin.products.form.tabs.associations'), icon: Layers },
+        { id: "variants", label: t('admin.products.form.tabs.variants'), icon: Box },
     ];
 
     return (
@@ -363,10 +365,10 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-sm p-4 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm sticky top-20 z-[30]">
                 <div className="flex flex-col gap-1">
                     <Link href="/admin-portal/products" className="flex items-center gap-1.5 text-xs font-bold text-gray-400 hover:text-[var(--coffee-brown)] dark:hover:text-[var(--honey-gold)] transition-colors uppercase tracking-widest">
-                        <ArrowLeft size={14} /> Back to Catalog
+                        <ArrowLeft size={14} /> {t('admin.products.form.backToCatalog')}
                     </Link>
                     <h2 className="text-xl font-black text-gray-900 dark:text-white">
-                        {isEdit ? 'Modify Product' : 'Create New Product'}
+                        {isEdit ? t('admin.products.form.modifyProduct') : t('admin.products.form.createNewProduct')}
                     </h2>
                 </div>
                 <div className="flex items-center gap-3">
@@ -375,14 +377,14 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                         onClick={() => router.back()}
                         className="px-5 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
                     >
-                        Discard
+                        {t('admin.products.form.discard')}
                     </button>
                     <button
                         type="submit"
                         disabled={loading}
                         className="px-8 py-2.5 bg-gradient-to-r from-[var(--coffee-brown)] to-zinc-800 dark:from-[var(--honey-gold)] dark:to-amber-500 text-white dark:text-black font-black text-sm rounded-xl hover:shadow-lg hover:shadow-black/10 dark:hover:shadow-amber-500/20 transition-all flex items-center gap-2 disabled:opacity-50 active:scale-95"
                     >
-                        {loading ? 'Processing...' : <><Save size={18} /> Save Changes</>}
+                        {loading ? t('admin.products.form.processing') : <><Save size={18} /> {t('admin.products.form.saveChanges')}</>}
                     </button>
                 </div>
             </div>
@@ -429,7 +431,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     {activeTab === "general" && (
                         <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
                             <div className="flex items-center justify-between border-b pb-4 dark:border-zinc-800">
-                                <h3 className="text-lg font-semibold">Basic Information</h3>
+                                <h3 className="text-lg font-semibold">{t('admin.products.form.basicInfo')}</h3>
                                 <div className="flex items-center gap-2">
                                     {languages.map(lang => (
                                         <button
@@ -452,7 +454,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                             disabled={loading}
                                             className="ml-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold uppercase tracking-wide hover:bg-purple-200 transition-colors flex items-center gap-1"
                                         >
-                                            ✨ AI Translate
+                                            ✨ {t('admin.products.form.aiTranslate')}
                                         </button>
                                     )}
                                 </div>
@@ -460,7 +462,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
 
                             <div className="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Product Name ({activeLang.toUpperCase()}) *</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.namePlaceholder', { lang: activeLang.toUpperCase() })}</label>
                                     <input
                                         required={activeLang === 'en'}
                                         type="text"
@@ -473,7 +475,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">SKU / Reference *</label>
+                                        <label className="block text-sm font-medium mb-1">{t('admin.products.form.sku')} *</label>
                                         <div className="relative">
                                             <input
                                                 required
@@ -488,7 +490,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                                 onClick={generateAutoSku}
                                                 className="absolute right-1 top-1 bottom-1 px-3 text-[10px] font-bold uppercase bg-gray-100 dark:bg-zinc-700 rounded-md hover:bg-gray-200"
                                             >
-                                                Generate
+                                                {t('admin.common.generate') || 'Generate'}
                                             </button>
                                         </div>
                                     </div>
@@ -500,7 +502,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                                 onChange={e => setFormData({ ...formData, is_active: e.target.checked })}
                                                 className="w-4 h-4 text-[var(--coffee-brown)] rounded focus:ring-[var(--honey-gold)]"
                                             />
-                                            <span className="font-medium">Active (Visible)</span>
+                                            <span className="font-medium">{t('admin.products.form.activeVisible')}</span>
                                         </label>
                                         <label className="flex items-center gap-2 cursor-pointer bg-gray-50 dark:bg-zinc-800 px-4 py-2 rounded-lg border dark:border-zinc-700 w-full">
                                             <input
@@ -509,19 +511,19 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                                 onChange={e => setFormData({ ...formData, is_featured: e.target.checked })}
                                                 className="w-4 h-4 text-[var(--coffee-brown)] rounded focus:ring-[var(--honey-gold)]"
                                             />
-                                            <span className="font-medium">Featured</span>
+                                            <span className="font-medium">{t('admin.products.form.featured')}</span>
                                         </label>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Description ({activeLang.toUpperCase()})</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.description')} ({activeLang.toUpperCase()})</label>
                                     <div className="relative">
                                         <textarea
                                             className="w-full px-3 py-2 border rounded-lg h-40 dark:bg-zinc-800 dark:border-zinc-700 pb-10"
                                             value={getValue('description')}
                                             onChange={e => setValue('description', e.target.value)}
-                                            placeholder={`Enter product description in ${activeLang}...`}
+                                            placeholder={t('admin.products.form.descAiPlaceholder', { lang: activeLang })}
                                             dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                         />
                                         <button
@@ -549,14 +551,14 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                             disabled={loading}
                                             className="absolute bottom-3 right-3 text-xs bg-[var(--honey-gold)] text-black px-3 py-1.5 rounded-full font-bold flex items-center gap-1 hover:brightness-110 shadow-sm transition-all disabled:opacity-50"
                                         >
-                                            {loading ? 'Thinking...' : <>✨ Generate with AI</>}
+                                            {loading ? t('admin.products.form.thinking') : <>✨ {t('admin.products.form.generateWithAi')}</>}
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Images Section (Main Images) */}
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Product Images</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.images')}</label>
                                     <div className="space-y-3">
                                         <div className="flex flex-wrap gap-4">
                                             {formData.images.map((img, idx) => (
@@ -571,7 +573,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                                     </button>
                                                     {idx === 0 && (
                                                         <span className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] text-center py-0.5">
-                                                            Main
+                                                            {t('admin.products.form.main')}
                                                         </span>
                                                     )}
                                                 </div>
@@ -583,7 +585,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                                 ) : (
                                                     <>
                                                         <UploadCloud size={24} className="text-gray-400 mb-1" />
-                                                        <span className="text-[10px] text-gray-500">Upload</span>
+                                                        <span className="text-[10px] text-gray-500">{t('admin.products.form.upload')}</span>
                                                     </>
                                                 )}
                                                 <input
@@ -597,7 +599,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                             </label>
                                         </div>
                                         <p className="text-xs text-gray-500">
-                                            First image will be the main cover. Drag to reorder (coming soon).
+                                            {t('admin.products.form.imageDesc')}
                                             Suggested size: 1000x1000px.
                                         </p>
                                     </div>
@@ -609,10 +611,10 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     {/* Pricing Tab */}
                     {activeTab === "pricing" && (
                         <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
-                            <h3 className="text-lg font-semibold border-b pb-4 dark:border-zinc-800">Pricing Strategy</h3>
+                            <h3 className="text-lg font-semibold border-b pb-4 dark:border-zinc-800">{t('admin.products.form.pricingStrategy')}</h3>
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Retail Price (Tax Incl.) *</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.retailPrice')} *</label>
                                     <div className="relative">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                         <input
@@ -626,7 +628,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Compare at Price (Original Price)</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.compareAtPrice')}</label>
                                     <div className="relative">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                         <input
@@ -637,10 +639,10 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                             onChange={e => setFormData({ ...formData, compare_at_price: e.target.value === "" ? 0 : parseFloat(e.target.value) })}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">If set, the main price will appear as a sale price.</p>
+                                    <p className="text-xs text-gray-500 mt-1">{t('admin.products.form.compareAtPriceDesc')}</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Cost Price (Excl. Tax)</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.costPrice')}</label>
                                     <div className="relative">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                         <input
@@ -651,10 +653,10 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                             onChange={e => setFormData({ ...formData, cost_price: e.target.value === "" ? 0 : parseFloat(e.target.value) })}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">For internal margin calculations.</p>
+                                    <p className="text-xs text-gray-500 mt-1">{t('admin.products.form.costPriceDesc')}</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Tax Rule</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.taxRule')}</label>
                                     <div className="relative">
                                         <Percent className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                         <select
@@ -662,7 +664,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                             value={formData.tax_rule_id}
                                             onChange={e => setFormData({ ...formData, tax_rule_id: e.target.value })}
                                         >
-                                            <option value="">No Tax (0%)</option>
+                                            <option value="">{t('admin.products.form.noTax')}</option>
                                             {taxRules.map((rule) => (
                                                 <option key={rule.id} value={rule.id}>
                                                     {rule.name} ({rule.rate}%) - {rule.country}
@@ -671,9 +673,9 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                         </select>
                                     </div>
                                     <div className="text-xs text-gray-500 mt-1 flex justify-between">
-                                        <span>Applied to sales price.</span>
+                                        <span>{t('admin.products.form.taxRuleNote')}</span>
                                         <Link href="/admin-portal/settings/taxes" className="text-blue-500 hover:underline">
-                                            Manage Rules
+                                            {t('admin.products.form.manageRules')}
                                         </Link>
                                     </div>
                                 </div>
@@ -684,11 +686,11 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     {/* Logistics Tab */}
                     {activeTab === "logistics" && (
                         <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
-                            <h3 className="text-lg font-semibold border-b pb-4 dark:border-zinc-800">Shipping & Logistics</h3>
+                            <h3 className="text-lg font-semibold border-b pb-4 dark:border-zinc-800">{t('admin.products.form.shippingLogistics')}</h3>
 
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Stock Quantity</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.stockQty')}</label>
                                     <input
                                         type="number"
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
@@ -697,7 +699,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Weight (kg)</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.weightKg')}</label>
                                     <input
                                         type="number"
                                         step="0.001"
@@ -709,10 +711,10 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                             </div>
 
                             <div>
-                                <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">Dimensions (cm)</h4>
+                                <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">{t('admin.products.form.dimensionsCm')}</h4>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-xs text-gray-500 mb-1">Width</label>
+                                        <label className="block text-xs text-gray-500 mb-1">{t('admin.products.form.width')}</label>
                                         <input
                                             type="number"
                                             step="0.1"
@@ -722,7 +724,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-gray-500 mb-1">Height</label>
+                                        <label className="block text-xs text-gray-500 mb-1">{t('admin.products.form.height')}</label>
                                         <input
                                             type="number"
                                             step="0.1"
@@ -732,7 +734,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-gray-500 mb-1">Depth</label>
+                                        <label className="block text-xs text-gray-500 mb-1">{t('admin.products.form.depth') || 'Depth'}</label>
                                         <input
                                             type="number"
                                             step="0.1"
@@ -746,11 +748,11 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
 
                             <div className="pt-6 border-t dark:border-zinc-800 space-y-6">
                                 <h4 className="text-sm font-medium text-[var(--coffee-brown)] dark:text-[var(--honey-gold)] flex items-center gap-2">
-                                    <Globe size={16} /> International & Customs (Colissimo Required)
+                                    <Globe size={16} /> {t('admin.products.form.intlCustoms')}
                                 </h4>
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">HS Code (Customs Tariff)</label>
+                                        <label className="block text-sm font-medium mb-1">{t('admin.products.form.hsCode')}</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. 0409.00.00 (Honey)"
@@ -758,10 +760,10 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                             value={formData.hs_code}
                                             onChange={e => setFormData({ ...formData, hs_code: e.target.value })}
                                         />
-                                        <p className="text-xs text-gray-500 mt-1">Required for international Colissimo labels.</p>
+                                        <p className="text-xs text-gray-500 mt-1">{t('admin.products.form.hsCodeDesc')}</p>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium mb-1">Country of Origin</label>
+                                        <label className="block text-sm font-medium mb-1">{t('admin.products.form.countryOrigin')}</label>
                                         <input
                                             type="text"
                                             className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
@@ -774,7 +776,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
 
                             <div className="pt-6 border-t dark:border-zinc-800 space-y-6">
                                 <h4 className="text-sm font-medium text-[var(--coffee-brown)] dark:text-[var(--honey-gold)] flex items-center gap-2">
-                                    <Truck size={16} /> Allowed Carriers
+                                    <Truck size={16} /> {t('admin.products.form.allowedCarriers')}
                                 </h4>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                     {carriers.map(carrier => (
@@ -803,7 +805,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                         </label>
                                     ))}
                                 </div>
-                                <p className="text-xs text-gray-500">Select which carriers can ship this product. If none selected, all active carriers will be available.</p>
+                                <p className="text-xs text-gray-500">{t('admin.products.form.carrierDesc')}</p>
                             </div>
                         </div>
                     )}
@@ -812,7 +814,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     {activeTab === "seo" && (
                         <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
                             <div className="flex items-center justify-between border-b pb-4 dark:border-zinc-800">
-                                <h3 className="text-lg font-semibold">Search Engine Optimization</h3>
+                                <h3 className="text-lg font-semibold">{t('admin.products.form.searchEngineOpt')}</h3>
                                 <div className="flex items-center gap-2">
                                     {languages.map(lang => (
                                         <button
@@ -831,7 +833,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Meta Title ({activeLang.toUpperCase()})</label>
+                                <label className="block text-sm font-medium mb-1">{t('admin.products.form.metaTitle')} ({activeLang.toUpperCase()})</label>
                                 <input
                                     type="text"
                                     className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
@@ -840,28 +842,28 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                     onChange={e => setValue('meta_title', e.target.value)}
                                     dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Ideally 50-60 characters.</p>
+                                <p className="text-xs text-gray-500 mt-1">{t('admin.products.form.metaTitleDesc')}</p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Meta Description ({activeLang.toUpperCase()})</label>
+                                <label className="block text-sm font-medium mb-1">{t('admin.products.form.metaDescription')} ({activeLang.toUpperCase()})</label>
                                 <textarea
                                     className="w-full px-3 py-2 border rounded-lg h-24 dark:bg-zinc-800 dark:border-zinc-700"
                                     value={getValue('meta_description')}
                                     onChange={e => setValue('meta_description', e.target.value)}
                                     dir={activeLang === 'ar' ? 'rtl' : 'ltr'}
                                 />
-                                <p className="text-xs text-gray-500 mt-1"> Ideally 150-160 characters.</p>
+                                <p className="text-xs text-gray-500 mt-1">{t('admin.products.form.metaDescDesc')}</p>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Friendly URL (Slug)</label>
+                                <label className="block text-sm font-medium mb-1">{t('admin.products.form.friendlyUrl')}</label>
                                 <input
                                     type="text"
                                     className="w-full px-3 py-2 border rounded-lg bg-gray-50 dark:bg-zinc-800 dark:border-zinc-700 text-gray-500"
                                     value={formData.slug}
                                     onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                                    placeholder="auto-generated-from-name"
+                                    placeholder={t('admin.products.form.slugPlaceholder')}
                                 />
                             </div>
                         </div>
@@ -870,17 +872,17 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                     {/* Associations Tab */}
                     {activeTab === "associations" && (
                         <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm space-y-6 animate-fade-in">
-                            <h3 className="text-lg font-semibold border-b pb-4 dark:border-zinc-800">Associations</h3>
+                            <h3 className="text-lg font-semibold border-b pb-4 dark:border-zinc-800">{t('admin.products.form.associations')}</h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Category</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.category')}</label>
                                     <select
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
                                         value={formData.category_id}
                                         onChange={e => setFormData({ ...formData, category_id: e.target.value })}
                                     >
-                                        <option value="">Select Category</option>
+                                        <option value="">{t('admin.products.form.selectCategory')}</option>
                                         {categories.map((cat) => (
                                             <option key={cat.id} value={cat.id}>{cat.name}</option>
                                         ))}
@@ -888,13 +890,13 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Brand</label>
+                                    <label className="block text-sm font-medium mb-1">{t('admin.products.form.brand') || 'Brand'}</label>
                                     <select
                                         className="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800 dark:border-zinc-700"
                                         value={formData.brand_id}
                                         onChange={e => setFormData({ ...formData, brand_id: e.target.value })}
                                     >
-                                        <option value="">Select Brand</option>
+                                        <option value="">{t('admin.products.form.selectBrand')}</option>
                                         {brands.map((brand) => (
                                             <option key={brand.id} value={brand.id}>{brand.name}</option>
                                         ))}
@@ -903,7 +905,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                             </div>
 
                             <div className="pt-6 border-t dark:border-zinc-800">
-                                <label className="block text-sm font-medium mb-3">Related Products / Accessories</label>
+                                <label className="block text-sm font-medium mb-3">{t('admin.products.form.relatedProducts')}</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {allProducts.filter(p => p.id !== initialData?.id).map((prod) => {
                                         const relatedIds = JSON.parse(formData.related_ids || "[]");
@@ -959,7 +961,7 @@ export default function ProductForm({ initialData, isEdit }: ProductFormProps) {
                             }}
                             className="px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-black font-medium rounded-lg hover:opacity-90 transition-opacity"
                         >
-                            Next Step &rarr;
+                            {t('admin.products.form.nextStep')} &rarr;
                         </button>
                     </div>
                 )}

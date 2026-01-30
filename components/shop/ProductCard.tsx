@@ -8,6 +8,7 @@ import { useCompare } from "@/context/CompareContext";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
+import { getMainImage } from "@/lib/image-utils";
 
 interface ProductCardProps {
     id?: number;
@@ -113,6 +114,7 @@ export default function ProductCard({
                         alt={title}
                         fill
                         className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                        sizes="(max-width: 768px) 100vw, 30vw"
                     />
                     {hasDiscount && (
                         <div className="absolute top-3 start-3 bg-red-600 text-white px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg z-10">
@@ -198,22 +200,22 @@ export default function ProductCard({
     return (
         <div className="group relative w-full cursor-pointer overflow-hidden animate-in fade-in duration-700">
             {/* Image Container */}
-            <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F9F6F1] rounded-xl md:rounded-2xl mb-2 md:mb-4">
+            <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#F9F6F1] rounded-xl md:rounded-2xl mb-2 md:mb-4 shadow-sm group-hover:shadow-md transition-shadow duration-500">
                 <Image
-                    src={image}
+                    src={getMainImage(image)}
                     alt={title}
                     fill
-                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
                 />
 
                 {/* Badges */}
                 <div className="absolute top-2 start-2 flex flex-col gap-1.5 z-10">
-                    <span className="inline-block px-2 py-1 text-[8px] uppercase tracking-widest bg-[#E3C069] text-black font-black rounded-md shadow-sm">
-                        {hasVariants ? 'RARE' : (String(category) !== '0' ? category : '')}
+                    <span className="inline-block px-2 py-0.5 text-[8px] md:text-[9px] uppercase tracking-widest bg-[var(--honey-gold)] text-black font-black rounded-sm shadow-sm">
+                        {hasVariants ? 'RARE' : (category && category !== '0' ? category : 'EXCLUSIF')}
                     </span>
                     {hasDiscount && (discountPercentage ?? 0) > 0 && (
-                        <span className="inline-block px-1.5 py-0.5 text-[8px] uppercase tracking-widest bg-red-600 text-white font-bold rounded-md shadow-sm self-start">
+                        <span className="inline-block px-2 py-0.5 text-[8px] md:text-[9px] uppercase tracking-widest bg-red-600 text-white font-bold rounded-sm shadow-sm self-start">
                             -{discountPercentage}%
                         </span>
                     )}

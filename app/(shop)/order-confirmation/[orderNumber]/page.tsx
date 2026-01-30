@@ -6,6 +6,8 @@ import Image from "next/image";
 import { CheckCircle, ShoppingBag, ArrowRight, Package, Truck, CreditCard } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import { useParams } from "next/navigation";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable'; // Import side effects
 
 interface OrderItem {
     id: number;
@@ -103,6 +105,68 @@ export default function OrderConfirmationPage() {
 
     const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+    const handleDownloadInvoice = () => {
+        if (!order) return;
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(20);
+        doc.setTextColor(212, 175, 55); // Gold
+        doc.text("YEMEN KAF", 105, 20, { align: "center" });
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text("PRODUITS YEMENITES DE LUXE", 105, 26, { align: "center" });
+
+        // Invoice Info
+        doc.setFontSize(14);
+        doc.setTextColor(0);
+        doc.text("FACTURE", 14, 40);
+
+        doc.setFontSize(10);
+        doc.text(`N de commande: ${order.orderNumber}`, 14, 48);
+        doc.text(`Date: ${new Date(order.createdAt).toLocaleDateString('fr-FR')}`, 14, 54);
+
+        // Customer Info
+        doc.text("Facture a:", 140, 40);
+        doc.text(`${order.shippingAddress?.firstName} ${order.shippingAddress?.lastName}`, 140, 46);
+        doc.text(order.shippingAddress?.address || '', 140, 52);
+        doc.text(`${order.shippingAddress?.city || ''}, ${order.shippingAddress?.country || ''}`, 140, 58);
+
+        // Table
+        const tableColumn = ["Article", "Qte", "Prix Unit.", "Total"];
+        // @ts-ignore
+        const tableRows = order.items.map(item => [
+            item.name,
+            item.quantity,
+            `${item.price.toFixed(2)} EUR`,
+            `${(item.price * item.quantity).toFixed(2)} EUR`
+        ]);
+
+        // @ts-ignore
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 70,
+            theme: 'grid',
+            headStyles: { fillColor: [26, 26, 26], textColor: [255, 255, 255] },
+            alternateRowStyles: { fillColor: [249, 249, 249] }
+        });
+
+        // Totals
+        // @ts-ignore
+        const finalY = doc.lastAutoTable.finalY + 10;
+        const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        doc.text(`Sous-total: ${subtotal.toFixed(2)} EUR`, 140, finalY);
+        doc.text(`Livraison: ${order.shippingCost.toFixed(2)} EUR`, 140, finalY + 6);
+        doc.setFontSize(12);
+        doc.setTextColor(212, 175, 55);
+        doc.text(`Total: ${order.totalAmount.toFixed(2)} EUR`, 140, finalY + 14);
+
+        doc.save(`Facture-${order.orderNumber}.pdf`);
+    };
+
     return (
         <main className="min-h-screen bg-white">
             <Navbar />
@@ -115,10 +179,10 @@ export default function OrderConfirmationPage() {
                             <CheckCircle size={40} />
                         </div>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-serif text-black mb-4">Order Confirmed!</h1>
-                    <p className="text-lg text-gray-600 mb-2">Thank you for your purchase.</p>
+                    <h1 className="text-4xl md:text-5xl font-serif text-black mb-4">Commande Confirmée !</h1>
+                    <p className="text-lg text-gray-600 mb-2">Merci pour votre achat.</p>
                     <p className="text-sm text-gray-500">
-                        Order Number: <span className="text-black font-bold font-mono">{order.orderNumber}</span>
+                        Numéro de commande : <span className="text-black font-bold font-mono">{order.orderNumber}</span>
                     </p>
                 </div>
 
@@ -128,7 +192,7 @@ export default function OrderConfirmationPage() {
                     <div className="bg-gray-50 rounded-xl p-6 border border-black/5">
                         <div className="flex items-center gap-3 mb-4">
                             <Truck className="text-[var(--honey-gold)]" size={24} />
-                            <h2 className="text-lg font-bold text-black">Shipping Address</h2>
+                            <h2 className="text-lg font-bold text-black">Adresse de Livraison</h2>
                         </div>
                         <div className="text-sm text-gray-700 space-y-1">
                             <p className="font-semibold">{order.shippingAddress?.firstName} {order.shippingAddress?.lastName}</p>
@@ -145,19 +209,19 @@ export default function OrderConfirmationPage() {
                     <div className="bg-gray-50 rounded-xl p-6 border border-black/5">
                         <div className="flex items-center gap-3 mb-4">
                             <CreditCard className="text-[var(--honey-gold)]" size={24} />
-                            <h2 className="text-lg font-bold text-black">Payment & Delivery</h2>
+                            <h2 className="text-lg font-bold text-black">Paiement & Livraison</h2>
                         </div>
                         <div className="text-sm text-gray-700 space-y-3">
                             <div>
-                                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Payment Method</p>
+                                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Mode de Paiement</p>
                                 <p className="font-semibold capitalize">{order.paymentMethod?.replace('_', ' ')}</p>
                             </div>
                             <div>
-                                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Shipping Method</p>
+                                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Mode de Livraison</p>
                                 <p className="font-semibold capitalize">{order.shippingMethod}</p>
                             </div>
                             <div>
-                                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Order Status</p>
+                                <p className="text-gray-500 text-xs uppercase tracking-wide mb-1">Statut</p>
                                 <p className="font-semibold capitalize text-[var(--honey-gold)]">{order.status}</p>
                             </div>
                         </div>
@@ -168,7 +232,7 @@ export default function OrderConfirmationPage() {
                 <div className="bg-white border border-black/10 rounded-xl p-6 mb-8">
                     <div className="flex items-center gap-3 mb-6">
                         <Package className="text-[var(--honey-gold)]" size={24} />
-                        <h2 className="text-lg font-bold text-black">Order Items</h2>
+                        <h2 className="text-lg font-bold text-black">Articles Commandés</h2>
                     </div>
 
                     <div className="space-y-4">
@@ -191,11 +255,11 @@ export default function OrderConfirmationPage() {
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="font-semibold text-black mb-1">{item.name}</h3>
-                                    <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                                    <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
                                 </div>
                                 <div className="text-right">
                                     <p className="font-bold text-black">€{(item.price * item.quantity).toFixed(2)}</p>
-                                    <p className="text-xs text-gray-500">€{item.price.toFixed(2)} each</p>
+                                    <p className="text-xs text-gray-500">€{item.price.toFixed(2)} l'unité</p>
                                 </div>
                             </div>
                         ))}
@@ -204,13 +268,13 @@ export default function OrderConfirmationPage() {
                     {/* Order Summary */}
                     <div className="mt-6 pt-6 border-t border-gray-200 space-y-2">
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Subtotal</span>
+                            <span className="text-gray-600">Sous-total</span>
                             <span className="text-black">€{subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Shipping</span>
+                            <span className="text-gray-600">Livraison</span>
                             <span className="text-black">
-                                {order.shippingCost > 0 ? `€${order.shippingCost.toFixed(2)}` : 'Free'}
+                                {order.shippingCost > 0 ? `€${order.shippingCost.toFixed(2)}` : 'Gratuit'}
                             </span>
                         </div>
                         <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
@@ -223,26 +287,26 @@ export default function OrderConfirmationPage() {
                 {/* Info Box */}
                 <div className="bg-[var(--honey-gold)]/10 rounded-xl p-6 mb-8 border border-[var(--honey-gold)]/20">
                     <p className="text-sm text-gray-700 mb-2">
-                        📧 A confirmation email has been sent to <strong>{order.shippingAddress?.email}</strong>
+                        📧 Un email de confirmation a été envoyé à <strong>{order.shippingAddress?.email}</strong>
                     </p>
                     <p className="text-sm text-gray-700">
-                        Your authentic Yemeni treasures are being prepared with care and will be shipped soon.
+                        Vos trésors yéménites authentiques sont préparés avec soin et seront expédiés bientôt.
                     </p>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                    <button
+                        onClick={handleDownloadInvoice}
+                        className="w-full md:w-auto px-8 py-4 border border-[var(--honey-gold)] text-[var(--honey-gold)] font-bold uppercase tracking-widest hover:bg-[var(--honey-gold)] hover:text-white transition-all rounded-xl flex items-center justify-center gap-2"
+                    >
+                        Télécharger la Facture <ArrowRight size={18} />
+                    </button>
                     <Link
                         href="/shop"
                         className="w-full md:w-auto px-8 py-4 bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 transition-all rounded-xl flex items-center justify-center gap-2"
                     >
-                        Continue Shopping <ArrowRight size={18} />
-                    </Link>
-                    <Link
-                        href="/account/orders"
-                        className="w-full md:w-auto px-8 py-4 border border-black text-black font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-all rounded-xl flex items-center justify-center gap-2"
-                    >
-                        View My Orders <ShoppingBag size={18} />
+                        Continuer vos achats <ArrowRight size={18} />
                     </Link>
                 </div>
             </div>

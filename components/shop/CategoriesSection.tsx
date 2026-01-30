@@ -57,7 +57,7 @@ export default function CategoriesSection() {
     if (categories.length === 0) return null;
 
     return (
-        <section className="py-24 bg-white overflow-hidden relative group/section">
+        <section className="py-8 bg-white overflow-hidden relative group/section">
             {/* Desktop Navigation Arrows */}
             <div className="hidden md:block">
                 <button
@@ -74,7 +74,7 @@ export default function CategoriesSection() {
                 </button>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 mb-12 flex justify-between items-end">
+            <div className="max-w-7xl mx-auto px-6 mb-6 flex justify-between items-end">
                 <div>
                     <span className="text-gray-400 uppercase tracking-[0.4em] text-xs font-semibold block mb-4">{t('home.categories.discover')}</span>
                     <h2 className="text-4xl md:text-5xl font-serif text-black leading-tight">{t('home.categories.title')}</h2>

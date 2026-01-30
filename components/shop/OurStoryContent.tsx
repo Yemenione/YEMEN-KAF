@@ -3,6 +3,7 @@
 import { useLanguage } from "@/context/LanguageContext";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { getMainImage } from "@/lib/image-utils";
 
 interface OurStoryContentProps {
     hero: {
@@ -37,7 +38,7 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
             <div className="relative h-[90vh] w-full overflow-hidden">
                 <div className="absolute inset-0">
                     <Image
-                        src={hero.image}
+                        src={getMainImage(hero?.image)}
                         alt={t('story.title') || "Our Story"}
                         fill
                         className="object-cover scale-105 animate-slow-zoom"
@@ -57,11 +58,11 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
                             {t('common.est') || 'Est. 2024'}
                         </span>
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white leading-[1.1] tracking-tight drop-shadow-lg">
-                            {t('story.origin') || hero.title}
+                            {t('story.origin') || hero?.title || "Notre Histoire"}
                         </h1>
                         <div className="w-24 h-1 bg-[var(--honey-gold)] mx-auto mt-8 mb-8" />
                         <p className="text-lg md:text-2xl text-white/90 font-light leading-relaxed max-w-2xl mx-auto drop-shadow-md">
-                            {t('story.philosophy') || hero.subtitle}
+                            {t('story.philosophy') || hero?.subtitle}
                         </p>
                     </motion.div>
                 </div>
@@ -91,7 +92,7 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
 
                     return (
                         <div key={idx}>
-                            {section.type === 'image-text' && (
+                            {section?.type === 'image-text' && (
                                 <div className={`flex flex-col md:flex-row gap-12 lg:gap-24 items-center ${section.imagePosition === 'left' ? 'md:flex-row' : 'md:flex-row-reverse'}`}>
 
                                     {/* Image with Decorative Frame */}
@@ -104,10 +105,11 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
                                         >
                                             <div className="relative aspect-[3/4] overflow-hidden rounded-sm shadow-2xl">
                                                 <Image
-                                                    src={section.image || '/placeholder.png'}
+                                                    src={getMainImage(section.image)}
                                                     alt={sectionTitle}
                                                     fill
                                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                                    sizes="(max-width: 768px) 100vw, 50vw"
                                                 />
                                                 <div className="absolute inset-0 border-[1px] border-white/20 m-4 pointer-events-none" />
                                             </div>
@@ -124,7 +126,7 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
                                             viewport={{ once: true, margin: "-100px" }}
                                             transition={{ duration: 0.7, delay: 0.2 }}
                                         >
-                                            <div className="flex items-center gap-4 mb-4">
+                                            <div className="items-center gap-4 mb-4 hidden md:flex">
                                                 <span className="w-12 h-[1px] bg-[var(--coffee-brown)]"></span>
                                                 <span className="text-[var(--coffee-brown)] text-xs font-bold uppercase tracking-widest opacity-60">Chapter 0{idx + 1}</span>
                                             </div>
@@ -139,7 +141,7 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
                                 </div>
                             )}
 
-                            {section.type === 'grid' && (
+                            {section?.type === 'grid' && (
                                 <div className="space-y-20">
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
@@ -153,7 +155,7 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
                                     </motion.div>
 
                                     <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-                                        {(t('story.steps', { returnObjects: true }) as unknown as Array<{ title: string; desc: string }> || []).map((step, i) => (
+                                        {(t('story.steps', { returnObjects: true }) as unknown as Array<{ title: string; desc: string }> || section.items || []).map((step, i) => (
                                             <motion.div
                                                 key={i}
                                                 initial={{ opacity: 0, y: 30 }}
@@ -167,7 +169,7 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
                                                 </div>
                                                 <h3 className="text-2xl font-serif text-[var(--coffee-brown)] mb-4">{step.title}</h3>
                                                 <p className="text-[var(--coffee-brown)]/70 leading-relaxed font-light text-sm">
-                                                    {step.desc}
+                                                    {step.desc || (step as any).content}
                                                 </p>
                                             </motion.div>
                                         ))}
@@ -190,9 +192,9 @@ export default function OurStoryContent({ hero, sections, conclusion }: OurStory
                     <div className="absolute bottom-0 right-0 w-40 h-40 bg-[var(--honey-gold)]/10 rounded-full blur-3xl" />
 
                     <div className="relative z-10 space-y-10">
-                        <h2 className="text-4xl md:text-5xl font-serif text-[var(--honey-gold)]">{t('story.uncompromising') || conclusion.title}</h2>
+                        <h2 className="text-4xl md:text-5xl font-serif text-[var(--honey-gold)]">{t('story.uncompromising') || conclusion?.title || "Excellence"}</h2>
                         <p className="text-xl md:text-2xl font-light leading-relaxed opacity-90 italic">
-                            &quot;{t('story.philosophy')}&quot;
+                            &quot;{t('story.philosophy') || conclusion?.content}&quot;
                         </p>
                         <div className="pt-8">
                             <span className="font-serif text-3xl opacity-50 block mb-2">{t('story.signature') || 'Yem Kaf'}</span>

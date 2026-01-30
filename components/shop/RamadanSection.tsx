@@ -7,6 +7,8 @@ import { Moon, Star } from "lucide-react";
 import { getRamadanProducts } from "@/app/actions/ramadan";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import Image from "next/image";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -55,16 +57,8 @@ export default function RamadanSection() {
     if (settingsLoading || !isRamadanEnabled) return null;
     if (!products || products.length === 0) return null;
 
-    // Helper to get image (duplicated for safety)
-    const getMainImage = (product: Product): string => {
-        if (product.images && product.images.length > 0) {
-            return product.images[0];
-        }
-        return '/images/placeholder.jpg';
-    };
-
     return (
-        <section className="relative w-full py-24 overflow-hidden bg-[#FCF9F5]">
+        <section className="relative w-full py-10 overflow-hidden bg-[#FCF9F5]">
             {/* Background Pattern - Arabian Geometric (Subtle) */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
 
@@ -98,7 +92,7 @@ export default function RamadanSection() {
 
             <div className="relative max-w-7xl mx-auto px-6 z-10">
                 {/* Header */}
-                <div className="text-center mb-16 space-y-4">
+                <div className="text-center mb-8 space-y-4">
                     <div className="inline-flex items-center justify-center gap-3 text-[#cfb160] mb-2">
                         <span className="h-[1px] w-8 bg-[#cfb160]"></span>
                         <Star className="w-4 h-4 fill-current animate-spin-slow" />
@@ -131,14 +125,13 @@ export default function RamadanSection() {
                                         </div>
 
                                         <div className="w-full h-full relative">
-                                            <div className="relative w-full h-full">
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img
-                                                    src={getMainImage(product)}
-                                                    alt={product.name}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                />
-                                            </div>
+                                            <Image
+                                                src={getMainImage(product.images)}
+                                                alt={product.name}
+                                                fill
+                                                className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                                sizes="(max-width: 768px) 50vw, 25vw"
+                                            />
                                         </div>
                                     </div>
 

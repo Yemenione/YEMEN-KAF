@@ -58,3 +58,52 @@
 - [x] Implement Dynamic Shipping Rates in Checkout <!-- id: 102 -->
 - [x] One-Click Label & Customs Form Generation <!-- id: 103 -->
 - [x] Automated Tracking Emails (Resend Integration) <!-- id: 104 -->
+
+## Phase 11: Application Deployment & Migration
+
+- [x] Database Migration (Hostinger -> LWS) <!-- id: 110 -->
+  - [x] Verify connectivity to old database <!-- id: 111 -->
+  - [x] Dump data from old database <!-- id: 112 -->
+  - [x] Import data to new database <!-- id: 113 -->
+- [/] Application Deployment <!-- id: 120 -->
+  - [/] Build application for production <!-- id: 121 -->
+  - [/] Configure Node.js environment on LWS <!-- id: 122 -->
+  - [/] Upload and start application <!-- id: 123 -->
+
+## Phase 12: UI Polish & Adjustments
+
+- [x] Relocating Marquee Below Navbar <!-- id: 130 -->
+  - [x] Research current `TopMarquee` positioning in `Navbar.tsx` <!-- id: 131 -->
+  - [x] Create implementation plan for relocation <!-- id: 132 -->
+  - [x] Move `TopMarquee` component below `<nav>` in `Navbar.tsx` <!-- id: 133 -->
+  - [x] Verify marquee positioning and behavior during scroll <!-- id: 134 -->
+- [x] Improving UI and Product Display <!-- id: 135 -->
+  - [x] Research image path inconsistencies and UI bottlenecks <!-- id: 136 -->
+  - [x] Create implementation plan for UI polish <!-- id: 137 -->
+  - [x] Standardize image resolution logic in `ProductCard` and `HeroSlider` <!-- id: 138 -->
+  - [x] Enhance aesthetics of `HeroSlider` and `ProductCard` <!-- id: 139 -->
+  - [x] Final visual audit and spacing adjustments <!-- id: 140 -->
+- [x] Global UI Synchronization <!-- id: 141 -->
+  - [x] Create shared `getMainImage` utility <!-- id: 142 -->
+  - [x] Sync Navbar MegaMenu with shared utility <!-- id: 143 -->
+  - [x] Refactor all shop components to use shared utility <!-- id: 144 -->
+  - [x] Standardize Product Detail and Shop Listing pages <!-- id: 145 -->
+  - [x] Final site-wide consistency check <!-- id: 146 -->
+- [x] Full-Screen Hero and Transparent Header <!-- id: 147 -->
+  - [x] Research current layout and constraints <!-- id: 148 -->
+  - [x] Implement transparent header logic <!-- id: 149 -->
+  - [x] Refactor `HeroSlider` for full-screen display <!-- id: 150 -->
+  - [x] Fix LanguageSelector visibility and ReferenceError <!-- id: 151 -->
+
+## Phase 13: Housekeeping & Cleanup
+
+- [x] Remove redundant documentation and temp files <!-- id: 161 -->
+  - [x] Delete `menu_task.md` <!-- id: 162 -->
+  - [x] Delete `README_DEPLOY.md` <!-- id: 163 -->
+
+## Phase 14: Optimization & Health Check
+
+- [ ] Fix Linting Errors (App & Scripts) <!-- id: 170 -->
+- [ ] Verify Production Build (`npm run build`) <!-- id: 171 -->
+- [ ] Performance Optimization (Images, Caching) <!-- id: 172 -->
+- [ ] Comprehensive Functional Testing <!-- id: 173 -->

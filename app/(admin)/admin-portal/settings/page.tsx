@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Save, Store, Mail, Phone, Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, Music, Ghost, Image as ImageIcon, CreditCard, ShieldCheck, Calendar, List, Truck, DollarSign } from 'lucide-react';
+import { Save, Store, Mail, Phone, Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, Music, Ghost, Image as ImageIcon, CreditCard, ShieldCheck, Calendar, List, Truck, DollarSign, Megaphone } from 'lucide-react';
 import ImageUploader from '@/components/admin/ImageUploader';
 import CarriersManager from '@/components/admin/CarriersManager';
 import MenuEditor from '@/components/admin/MenuEditor';
@@ -86,6 +86,7 @@ export default function SettingsPage() {
         { id: 'contact', label: t('admin.settings.tabs.contact'), icon: Mail },
         { id: 'social', label: t('admin.settings.tabs.social'), icon: Facebook },
         { id: 'theme', label: t('admin.settings.tabs.theme'), icon: ImageIcon },
+        { id: 'ads', label: t('admin.settings.tabs.ads') || 'Ads & Marquee', icon: Megaphone },
         { id: 'payment', label: t('admin.settings.tabs.payment'), icon: CreditCard },
         { id: 'shipping', label: t('admin.settings.tabs.shipping'), icon: Truck },
         { id: 'taxes', label: t('admin.settings.tabs.taxes'), icon: DollarSign },
@@ -207,6 +208,82 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Homepage Configuration */}
+                            <div className="border-t border-gray-100 dark:border-zinc-800 pt-6">
+                                <h3 className="text-lg font-medium mb-4">{t('admin.settings.general.homepage')}</h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.general.promoCategories')}</label>
+                                        <input
+                                            type="text"
+                                            value={settings['homepage_promo_category_ids'] || '[]'}
+                                            onChange={(e) => handleChange('homepage_promo_category_ids', e.target.value)}
+                                            className="w-full px-4 py-2 border rounded-md font-mono text-sm dark:bg-zinc-800 dark:border-zinc-700 focus:ring-[var(--coffee-brown)]"
+                                            placeholder="[1, 2, 3]"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            {t('admin.settings.general.promoCategoriesDesc')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'ads' && (
+                        <div className="space-y-6 animate-in fade-in duration-300">
+                            <div className="flex items-center justify-between border-b pb-4">
+                                <div>
+                                    <h3 className="text-lg font-medium">{t('admin.settings.ads.title')}</h3>
+                                    <p className="text-sm text-gray-500">{t('admin.settings.ads.subtitle')}</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('admin.settings.ads.enable')}</span>
+                                    <button
+                                        onClick={() => handleChange('marquee_enabled', settings['marquee_enabled'] === 'false' ? 'true' : 'false')}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${settings['marquee_enabled'] !== 'false' ? 'bg-[var(--coffee-brown)]' : 'bg-gray-200'}`}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${settings['marquee_enabled'] !== 'false' ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.ads.textEn')}</label>
+                                    <input
+                                        type="text"
+                                        value={settings['marquee_text_en'] || ''}
+                                        onChange={(e) => handleChange('marquee_text_en', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="Free Worldwide Shipping over $150 | Authentic Yemeni Products"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.ads.textFr')}</label>
+                                    <input
+                                        type="text"
+                                        value={settings['marquee_text_fr'] || ''}
+                                        onChange={(e) => handleChange('marquee_text_fr', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700"
+                                        placeholder="Livraison Gratuite dès 150€ | Produits Yéménites Authentiques"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.ads.textAr')}</label>
+                                    <input
+                                        type="text"
+                                        value={settings['marquee_text_ar'] || ''}
+                                        onChange={(e) => handleChange('marquee_text_ar', e.target.value)}
+                                        className="w-full px-4 py-2 border rounded-md dark:bg-zinc-800 dark:border-zinc-700 text-right"
+                                        placeholder="شحن مجاني للطلبات فوق 150 دولار | منتجات يمنية أصيلة"
+                                    />
+                                </div>
+                                <p className="text-xs text-gray-500">
+                                    {t('admin.settings.ads.tip')}
+                                </p>
+                            </div>
                         </div>
                     )}
 
@@ -295,7 +372,7 @@ export default function SettingsPage() {
                     {activeTab === 'contact' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Support Email</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.contact.supportEmail')}</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -308,7 +385,7 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Support Phone</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.contact.supportPhone')}</label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -321,7 +398,7 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Email (Public Display)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.contact.storeEmail')}</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -334,7 +411,7 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Phone (Public Display)</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.contact.storePhone')}</label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -347,7 +424,7 @@ export default function SettingsPage() {
                                 </div>
                             </div>
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Store Address</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('admin.settings.contact.storeAddress')}</label>
                                 <div className="relative">
                                     <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
@@ -361,6 +438,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     )}
+
 
                     {activeTab === 'social' && (
                         <div className="space-y-4 animate-in fade-in duration-300">

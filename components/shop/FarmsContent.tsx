@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/context/LanguageContext";
 import { motion } from "framer-motion";
+import { getMainImage } from "@/lib/image-utils";
 
 interface FarmsContentProps {
     sections: Array<{
@@ -54,16 +55,16 @@ export default function FarmsContent({ sections }: FarmsContentProps) {
             </div>
 
             {/* Regions */}
-            {sections.map((section, idx) => {
+            {(sections || []).map((section, idx) => {
                 const content = getSectionContent(idx);
 
                 return (
                     <section key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-0 min-h-[80vh] overflow-hidden">
                         {/* Image Side - Sticky Effect */}
-                        <div className={`relative min-h-[50vh] ${section.theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'} ${idx % 2 === 1 ? 'md:order-2' : 'md:order-1'}`}>
+                        <div className={`relative min-h-[50vh] ${section?.theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'} ${idx % 2 === 1 ? 'md:order-2' : 'md:order-1'}`}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                src={section.image}
+                                src={getMainImage(section?.image)}
                                 alt={content.title}
                                 className="object-cover w-full h-full"
                             />

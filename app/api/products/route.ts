@@ -138,7 +138,8 @@ export async function GET(req: Request) {
                 stock_quantity: p.stockQuantity,
                 in_stock: p.stockQuantity > 0,
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                translations: (p as any).translations || {}
+                // Parse translations
+                translations: p.translations ? (typeof p.translations === 'string' ? JSON.parse(p.translations) : p.translations) : {}
             };
         });
 
@@ -222,7 +223,7 @@ export async function POST(req: Request) {
                     taxRuleId: body.tax_rule_id ? parseInt(body.tax_rule_id) : null,
                     brandId: brand_id ? parseInt(brand_id) : null,
                     supplierId: supplier_id ? parseInt(supplier_id) : null,
-                    images: image_url ? JSON.stringify([image_url]) : null,
+                    images: image_url ? (Array.isArray(image_url) ? JSON.stringify(image_url) : JSON.stringify([image_url])) : (body.images ? (Array.isArray(body.images) ? JSON.stringify(body.images) : body.images) : "[]"),
                     isActive: is_active !== undefined ? is_active : true,
                     isFeatured: is_featured !== undefined ? is_featured : false,
                     costPrice: cost_price ? parseFloat(cost_price) : null,
@@ -232,13 +233,12 @@ export async function POST(req: Request) {
                     depth: depth ? parseFloat(depth) : null,
                     metaTitle: meta_title,
                     metaDescription: meta_description,
-                    relatedIds: related_ids || "[]",
+                    relatedIds: related_ids ? (typeof related_ids === 'string' ? related_ids : JSON.stringify(related_ids)) : "[]",
                     hsCode: hs_code,
                     originCountry: origin_country || "Yemen",
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    translations: (translations || Prisma.JsonNull) as any,
+                    translations: translations ? (typeof translations === 'string' ? translations : JSON.stringify(translations)) : "{}",
                     carriers: body.carriers && Array.isArray(body.carriers) ? {
-                        connect: body.carriers.map((id: number) => ({ id: parseInt(id.toString()) }))
+                        connect: body.carriers.map((id: number | string) => ({ id: parseInt(id.toString()) }))
                     } : undefined
                 }
             });

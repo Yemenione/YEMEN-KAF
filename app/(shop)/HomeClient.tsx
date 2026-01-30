@@ -1,22 +1,22 @@
 "use client";
 
-import Navbar from "@/components/layout/Navbar";
-import ProductShowcase from "@/components/shop/ProductShowcase";
+import dynamic from "next/dynamic";
 import HeroSlider from "@/components/hero/HeroSlider";
-import CategoriesSection from "@/components/shop/CategoriesSection";
-import SpecialOffers from "@/components/shop/SpecialOffers";
-import BestSellers from "@/components/shop/BestSellers";
-import NewArrivals from "@/components/shop/NewArrivals";
-import Testimonials from "@/components/shop/Testimonials";
-import Newsletter from "@/components/shop/Newsletter";
-import FlashSale from "@/components/shop/FlashSale";
-import RecentlyViewed from "@/components/shop/RecentlyViewed";
 import PromoGrid from "@/components/shop/PromoGrid";
-import RamadanSection from "@/components/shop/RamadanSection";
-import FeaturedBrands from "@/components/shop/FeaturedBrands";
-import BlogSection from "@/components/shop/BlogSection";
-import { Truck, ShieldCheck, Star } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
+
+const CategoriesSection = dynamic(() => import("@/components/shop/CategoriesSection"));
+const SpecialOffers = dynamic(() => import("@/components/shop/SpecialOffers"));
+const BestSellers = dynamic(() => import("@/components/shop/BestSellers"));
+const NewArrivals = dynamic(() => import("@/components/shop/NewArrivals"));
+const Testimonials = dynamic(() => import("@/components/shop/Testimonials"));
+const Newsletter = dynamic(() => import("@/components/shop/Newsletter"));
+const FlashSale = dynamic(() => import("@/components/shop/FlashSale"));
+const RecentlyViewed = dynamic(() => import("@/components/shop/RecentlyViewed"));
+const RamadanSection = dynamic(() => import("@/components/shop/RamadanSection"));
+const FeaturedBrands = dynamic(() => import("@/components/shop/FeaturedBrands"));
+const BlogSection = dynamic(() => import("@/components/shop/BlogSection"));
+const TrustIndicators = dynamic(() => import("@/components/shop/TrustIndicators"));
+const ProductShowcase = dynamic(() => import("@/components/shop/ProductShowcase"));
 
 interface Review {
     id: number;
@@ -53,88 +53,81 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ reviews, posts, categories }: HomeClientProps) {
-    const { t } = useLanguage();
 
     return (
         <main className="min-h-screen bg-white">
-            {/* Navigation */}
-            <Navbar />
-
             {/* 2D Cinematic Hero */}
-            <HeroSlider />
-
+            <div className="">
+                <HeroSlider />
+            </div>
 
             {/* Promo Grid - Amazon Style v3 */}
-            <PromoGrid categories={categories} />
+            <div className="py-6 lg:py-10 bg-[#FBFBFB]">
+                <PromoGrid categories={categories} />
+            </div>
 
             {/* Ramadan Special Section */}
-            <RamadanSection />
+            <div className="py-6">
+                <RamadanSection />
+            </div>
 
             {/* Categories Grid */}
-            <CategoriesSection />
+            <div className="py-6 bg-white">
+                <CategoriesSection />
+            </div>
 
             {/* Best Sellers - NEW */}
-            <BestSellers />
+            <div className="py-6">
+                <BestSellers />
+            </div>
 
             {/* Special Offers */}
-            <SpecialOffers />
+            <div className="py-6 bg-[#FBFBFB]">
+                <SpecialOffers />
+            </div>
 
             {/* New Arrivals - NEW */}
-            <NewArrivals />
+            <div className="py-6">
+                <NewArrivals />
+            </div>
 
             {/* Flash Sale - Global Standard v3 */}
-            <FlashSale />
+            <div className="py-8 bg-black text-white">
+                <FlashSale />
+            </div>
 
             {/* Trust Indicators */}
-            <section className="w-full py-16 border-t border-black/5">
-                <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                    <div className="flex flex-col items-center gap-4 group">
-                        <div className="p-4 rounded-full bg-gray-50 group-hover:bg-black group-hover:text-white transition-colors duration-500">
-                            <Truck className="w-6 h-6" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('trust.shipping')}</h3>
-                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('product.freeShippingDesc') || 'Livraison gratuite dès 100€'}</p>
-                        </div>
-                    </div>
-                    <div className="flex flex-col items-center gap-4 group">
-                        <div className="p-4 rounded-full bg-gray-50 group-hover:bg-black group-hover:text-white transition-colors duration-500">
-                            <ShieldCheck className="w-6 h-6" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('trust.authentic') || 'Produits Authentiques'}</h3>
-                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('trust.quality') || 'Qualité Premium Garantie'}</p>
-                        </div>
-                    </div>
-                    <div className="flex flex-col items-center gap-4 group">
-                        <div className="p-4 rounded-full bg-gray-50 group-hover:bg-black group-hover:text-white transition-colors duration-500">
-                            <Star className="w-6 h-6" />
-                        </div>
-                        <div className="space-y-1">
-                            <h3 className="font-serif text-[var(--coffee-brown)] text-lg">{t('trust.excellence') || 'Excellence Yéménite'}</h3>
-                            <p className="text-sm text-[var(--coffee-brown)]/60">{t('trust.subtitle') || 'Le meilleur du Yémen à votre porte'}</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <TrustIndicators />
 
             {/* Product Showcase */}
-            <ProductShowcase />
+            <div className="py-8">
+                <ProductShowcase />
+            </div>
 
             {/* Testimonials - NEW */}
-            <Testimonials reviews={reviews} />
+            <div className="py-8">
+                <Testimonials reviews={reviews} />
+            </div>
 
             {/* Blog Section */}
-            <BlogSection articles={posts} />
+            <div className="py-8">
+                <BlogSection articles={posts} />
+            </div>
 
             {/* Recently Viewed - Global Standard v3 */}
-            <RecentlyViewed />
+            <div className="py-8">
+                <RecentlyViewed />
+            </div>
 
             {/* Featured Brands - NEW */}
-            <FeaturedBrands />
+            <div className="py-8">
+                <FeaturedBrands />
+            </div>
 
             {/* Newsletter - NEW */}
-            <Newsletter />
+            <div className="py-8">
+                <Newsletter />
+            </div>
         </main>
     );
 }

@@ -1,6 +1,7 @@
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "library"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  engineType    = "library"
 }
 
 datasource db {
@@ -15,10 +16,10 @@ model Admin {
   name         String
   role         AdminRole     @default(EDITOR)
   avatar       String?
-  firebaseUid  String?       @map("firebase_uid")
   lastLogin    DateTime?     @map("last_login")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
+  firebaseUid  String?       @map("firebase_uid")
   activityLogs ActivityLog[]
 
   @@map("admins")
@@ -46,20 +47,20 @@ model Customer {
   email           String         @unique
   passwordHash    String?        @map("password_hash")
   phone           String?
-  avatar          String?
-  loyaltyPoints   Int            @default(0) @map("loyalty_points")
-  newsletter      Boolean        @default(true)
-  firebaseUid     String?        @map("firebase_uid")
   createdAt       DateTime       @default(now()) @map("created_at")
   customerGroupId Int?           @map("customer_group_id")
+  avatar          String?
+  firebaseUid     String?        @map("firebase_uid")
+  loyaltyPoints   Int            @default(0) @map("loyalty_points")
+  newsletter      Boolean        @default(true)
   addresses       Address[]
   cartItems       CartItem[]
   customerGroup   CustomerGroup? @relation(fields: [customerGroupId], references: [id])
   orders          Order[]
+  reviews         Review[]
   rmas            RMA[]
   tickets         Ticket[]
   wishlists       Wishlist[]
-  reviews         Review[]
 
   @@index([customerGroupId], map: "customers_customer_group_id_fkey")
   @@map("customers")
@@ -95,12 +96,13 @@ model Category {
   metaDescription String?    @map("meta_description")
   metaTitle       String?    @map("meta_title")
   parentId        Int?       @map("parent_id")
+  translations    String?    @map("translations") @db.LongText
   parent          Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children        Category[] @relation("CategoryHierarchy")
   products        Product[]
-  translations    Json?      @map("translations")
 
   @@index([parentId], map: "categories_parent_id_fkey")
+  @@index([isActive, displayOrder])
   @@map("categories")
 }
 
@@ -128,31 +130,32 @@ model Product {
   ecotax          Decimal?         @default(0.000000) @db.Decimal(10, 6)
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
-  // Financials
   costPrice       Decimal?         @map("cost_price") @db.Decimal(10, 2)
-  taxRuleId       Int?             @map("tax_rule_id")
-  taxRule         TaxRule?         @relation(fields: [taxRuleId], references: [id])
   metaDescription String?          @map("meta_description")
   metaTitle       String?          @map("meta_title")
-  translations    Json?            @map("translations")
   relatedIds      String?          @map("related_ids") @db.Text
   hsCode          String?          @map("hs_code")
   originCountry   String?          @map("origin_country")
   compareAtPrice  Decimal?         @map("compare_at_price") @db.Decimal(10, 2)
+  taxRuleId       Int?             @map("tax_rule_id")
+  translations    String?          @map("translations") @db.LongText
   cartItems       CartItem[]
   orderItems      OrderItem[]
   variants        ProductVariant[]
   brand           Brand?           @relation(fields: [brandId], references: [id])
   category        Category?        @relation(fields: [categoryId], references: [id])
   supplier        Supplier?        @relation(fields: [supplierId], references: [id])
+  taxRule         TaxRule?         @relation(fields: [taxRuleId], references: [id])
+  reviews         Review[]
   stockMovements  StockMovement[]
   wishlists       Wishlist[]
-  reviews         Review[]
-  carriers        Carrier[]
+  carriers        Carrier[]        @relation("CarrierToProduct")
 
   @@index([brandId], map: "products_brand_id_fkey")
   @@index([categoryId], map: "products_category_id_fkey")
   @@index([supplierId], map: "products_supplier_id_fkey")
+  @@index([taxRuleId], map: "products_tax_rule_id_fkey")
+  @@index([isActive, isFeatured, createdAt])
   @@map("products")
 }
 
@@ -168,8 +171,8 @@ model ProductVariant {
   isbn            String?
   ean13           String?
   upc             String?
-  images          String?               @db.Text
   compareAtPrice  Decimal?              @map("compare_at_price") @db.Decimal(10, 2)
+  images          String?               @db.Text
   orderItems      OrderItem[]
   attributeValues ProductVariantValue[]
   product         Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -233,12 +236,12 @@ model StoreConfig {
 }
 
 model Attribute {
-  id         Int              @id @default(autoincrement())
-  name       String
-  publicName String?          @map("public_name")
-  type       String           @default("select")
-  translations Json?          @map("translations")
-  values     AttributeValue[]
+  id           Int              @id @default(autoincrement())
+  name         String
+  publicName   String?          @map("public_name")
+  type         String           @default("select")
+  translations String?          @map("translations") @db.LongText
+  values       AttributeValue[]
 
   @@map("attributes")
 }
@@ -249,7 +252,7 @@ model AttributeValue {
   name          String
   value         String?
   position      Int                   @default(0)
-  translations  Json?                 @map("translations")
+  translations  String?               @map("translations") @db.LongText
   attribute     Attribute             @relation(fields: [attributeId], references: [id], onDelete: Cascade)
   variantValues ProductVariantValue[]
 
@@ -512,15 +515,14 @@ model Currency {
 }
 
 model TaxRule {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  rate      Decimal  @db.Decimal(10, 4)
+  rate      Decimal   @db.Decimal(10, 4)
   country   String
-  priority  Int      @default(0)
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
+  priority  Int       @default(0)
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
   products  Product[]
 
   @@map("tax_rules")
@@ -548,17 +550,22 @@ model CartRule {
 }
 
 model Page {
-  id              Int      @id @default(autoincrement())
-  title           String
-  slug            String   @unique
-  content         String?  @db.LongText
-  structured_content Json? @map("structured_content")
-  metaTitle       String?  @map("meta_title")
-  metaDescription String?  @map("meta_description")
-  isActive        Boolean  @default(true) @map("is_active")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id                 Int      @id @default(autoincrement())
+  title              String
+  slug               String   @unique
+  content            String?  @db.LongText
+  metaTitle          String?  @map("meta_title")
+  metaDescription    String?  @map("meta_description")
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  displayOrder       Int      @default(0) @map("display_order")
+  showInFooter       Boolean  @default(false) @map("show_in_footer")
+  showInHeader       Boolean  @default(false) @map("show_in_header")
+  structured_content String?  @map("structured_content") @db.LongText
+  translations       String?  @map("translations") @db.LongText
 
+  @@index([isActive, displayOrder])
   @@map("cms_pages")
 }
 
@@ -569,6 +576,135 @@ model NewsletterSubscriber {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("newsletter_subscribers")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  rating     Int      @default(5)
+  comment    String?  @db.Text
+  isVerified Boolean  @default(false) @map("is_verified")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  customerId Int      @map("customer_id")
+  productId  Int      @map("product_id")
+  images     String?  @db.Text
+  patient    Customer @relation(fields: [customerId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+
+  @@index([customerId])
+  @@index([productId])
+  @@map("reviews")
+}
+
+model Carrier {
+  id           Int            @id @default(autoincrement())
+  name         String
+  logo         String?        @db.Text
+  deliveryTime String?        @map("delivery_time")
+  description  String?        @db.Text
+  isFree       Boolean        @default(false) @map("is_free")
+  isActive     Boolean        @default(true) @map("is_active")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  code         String?        @unique
+  maxWeight    Int            @default(30000) @map("max_weight")
+  trackingUrl  String?        @map("tracking_url")
+  type         String         @default("pudo")
+  rates        ShippingRate[]
+  products     Product[]      @relation("CarrierToProduct")
+
+  @@map("carriers")
+}
+
+model ShippingZone {
+  id        Int            @id @default(autoincrement())
+  name      String
+  countries String         @db.Text
+  isActive  Boolean        @default(true) @map("is_active")
+  rates     ShippingRate[]
+
+  @@map("shipping_zones")
+}
+
+model ShippingRate {
+  id        Int          @id @default(autoincrement())
+  carrierId Int          @map("carrier_id")
+  zoneId    Int          @map("zone_id")
+  minWeight Int          @map("min_weight")
+  maxWeight Int          @map("max_weight")
+  price     Decimal      @db.Decimal(10, 2)
+  carrier   Carrier      @relation(fields: [carrierId], references: [id], onDelete: Cascade)
+  zone      ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@index([carrierId])
+  @@index([zoneId])
+  @@map("shipping_rates")
+}
+
+model BlogPost {
+  id           Int            @id @default(autoincrement())
+  title        String
+  slug         String         @unique
+  content      String         @db.LongText
+  excerpt      String?        @db.Text
+  image        String?        @db.Text
+  category     String?        @default("General")
+  author       String?        @default("Yem Kaf")
+  status       BlogPostStatus @default(DRAFT)
+  views        Int            @default(0)
+  publishedAt  DateTime?      @map("published_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  translations String?        @map("translations") @db.LongText
+
+  @@index([status, publishedAt])
+  @@map("blog_posts")
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  status    String        @default("OPEN")
+  userId    String?       @map("user_id")
+  messages  ChatMessage[]
+
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  createdAt DateTime    @default(now())
+  text      String      @db.LongText
+  isUser    Boolean     @map("is_user")
+  sessionId String      @map("session_id")
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("chat_messages")
+}
+
+model AppConfig {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("app_configs")
+}
+
+model Notification {
+  id       Int      @id @default(autoincrement())
+  title    String
+  body     String   @db.Text
+  imageUrl String?  @map("image_url")
+  target   String?
+  sentAt   DateTime @default(now()) @map("sent_at")
+  sentBy   Int?     @map("sent_by")
+
+  @@map("notifications")
 }
 
 enum AdminRole {
@@ -599,137 +735,8 @@ enum TransactionStatus {
   REFUNDED
 }
 
-model Review {
-  id         Int      @id @default(autoincrement())
-  rating     Int      @default(5) // 1-5 stars
-  comment    String?  @db.Text
-  images     String?  @db.Text // JSON array of image URLs
-  isVerified Boolean  @default(false) @map("is_verified") // If user ordered the product
-  isActive   Boolean  @default(true) @map("is_active") // Admin moderation
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  customerId Int      @map("customer_id")
-  patient    Customer @relation(fields: [customerId], references: [id])
-
-  productId Int     @map("product_id")
-  product   Product @relation(fields: [productId], references: [id])
-
-  @@index([customerId])
-  @@index([productId])
-  @@map("reviews")
-}
-
-model Carrier {
-  id              Int            @id @default(autoincrement())
-  name            String
-  code            String?        @unique // e.g., "colissimo", "mondial_relay"
-  logo            String?        @db.Text
-  deliveryTime    String?        @map("delivery_time")
-  description     String?        @db.Text
-  trackingUrl     String?        @map("tracking_url")
-  isActive        Boolean        @default(true) @map("is_active")
-  isFree          Boolean        @default(false) @map("is_free")
-  type            String         @default("pudo") // 'home' or 'pudo' (Pick Up Drop Off)
-  maxWeight       Int            @default(30000) @map("max_weight") // in grams
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  rates           ShippingRate[]
-  products        Product[]      // Relation to Product kept for backward compatibility if needed
-  
-  @@map("carriers")
-}
-
-model ShippingZone {
-  id        Int            @id @default(autoincrement())
-  name      String         // e.g., "France", "Europe Zone 1"
-  countries String         @db.Text // JSON: ["FR", "MC"]
-  isActive  Boolean        @default(true) @map("is_active")
-  rates     ShippingRate[]
-
-  @@map("shipping_zones")
-}
-
-model ShippingRate {
-  id        Int          @id @default(autoincrement())
-  carrierId Int          @map("carrier_id")
-  zoneId    Int          @map("zone_id")
-  minWeight Int          @map("min_weight") // in grams
-  maxWeight Int          @map("max_weight") // in grams
-  price     Decimal      @db.Decimal(10, 2)
-  carrier   Carrier      @relation(fields: [carrierId], references: [id], onDelete: Cascade)
-  zone      ShippingZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-
-  @@index([carrierId])
-  @@index([zoneId])
-  @@map("shipping_rates")
-}
-model BlogPost {
-  id          Int            @id @default(autoincrement())
-  title       String
-  slug        String         @unique
-  content     String         @db.LongText
-  excerpt     String?        @db.Text
-  image       String?        @db.Text
-  category    String?        @default("General")
-  author      String?        @default("Yem Kaf")
-  status      BlogPostStatus @default(DRAFT)
-  views       Int            @default(0)
-  translations Json?          @map("translations")
-  publishedAt DateTime?      @map("published_at")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-
-  @@map("blog_posts")
-}
-
 enum BlogPostStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
-}
-
-model ChatSession {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  status    String   @default("OPEN")
-  userId    String?  @map("user_id")
-  messages  ChatMessage[]
-
-  @@map("chat_sessions")
-}
-
-model ChatMessage {
-  id        String      @id @default(cuid())
-  createdAt DateTime    @default(now())
-  text      String      @db.LongText
-  isUser    Boolean     @map("is_user")
-  sessionId String      @map("session_id")
-  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-
-  @@index([sessionId])
-  @@map("chat_messages")
-}
-
-model AppConfig {
-  id          Int      @id @default(autoincrement())
-  key         String   @unique
-  value       String   @db.Text
-  description String?
-  updatedAt   DateTime @updatedAt @map("updated_at") @default(now())
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  @@map("app_configs")
-}
-
-model Notification {
-  id        Int      @id @default(autoincrement())
-  title     String
-  body      String   @db.Text
-  imageUrl  String?  @map("image_url")
-  target    String?  // Target link/screen
-  sentAt    DateTime @default(now()) @map("sent_at")
-  sentBy    Int?     @map("sent_by")
-
-  @@map("notifications")
 }

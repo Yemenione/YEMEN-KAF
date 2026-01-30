@@ -48,9 +48,18 @@ export default async function OurStoryPage() {
 
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const structured = (page as any).structured_content as unknown as StructuredPageData;
+    let structured = (page as any).structured_content as unknown as StructuredPageData;
 
-    if (structured) {
+    // Handle case where structured_content might be a string (SQLite/older versions)
+    if (typeof structured === 'string') {
+        try {
+            structured = JSON.parse(structured);
+        } catch (e) {
+            console.error("Failed to parse structured_content:", e);
+        }
+    }
+
+    if (structured && structured.hero && Array.isArray(structured.sections)) {
         return (
             <OurStoryContent
                 hero={structured.hero}

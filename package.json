@@ -2,12 +2,15 @@
   "name": "yemeni-market",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "postinstall": "prisma generate"
+    "db:build": "node scripts/debug_prisma.js",
+    "start": "node server.js",
+    "lint": "eslint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -30,7 +33,7 @@
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.562.0",
-    "mysql2": "^3.16.0",
+    "mysql2": "^3.16.2",
     "next": "16.1.2",
     "nodemailer": "^7.0.12",
     "prisma": "5.22.0",
@@ -45,6 +48,8 @@
     "stripe": "^20.1.2",
     "tailwind-merge": "^3.4.0",
     "three": "^0.182.0",
+    "tsx": "^4.21.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.3.5"
   },
   "devDependencies": {
@@ -58,7 +63,6 @@
     "eslint-config-next": "16.1.2",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

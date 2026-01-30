@@ -41,7 +41,7 @@ export default function Newsletter() {
     };
 
     return (
-        <section className="py-16 bg-gradient-to-r from-[var(--honey-gold)] to-[var(--coffee-brown)]">
+        <section className="py-8 bg-gradient-to-r from-[var(--honey-gold)] to-[var(--coffee-brown)]">
             <div className="max-w-4xl mx-auto px-6 text-center">
                 <div className="flex items-center justify-center gap-3 mb-4">
                     <Mail className="w-8 h-8 text-white" />

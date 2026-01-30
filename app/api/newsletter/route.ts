@@ -1,46 +1,50 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/mysql';
-import { RowDataPacket } from 'mysql2';
+import { prisma } from '@/lib/prisma';
 import { sendWelcomeEmail } from '@/lib/email';
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
     try {
-        const { email } = await request.json();
+        const { email } = await req.json();
 
-        if (!email || !email.includes('@')) {
-            return NextResponse.json({ error: 'Valid email is required' }, { status: 400 });
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+            return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
         }
 
-        // Check if subscriber already exists
-        const [existing] = await pool.execute<RowDataPacket[]>(
-            'SELECT id FROM newsletter_subscribers WHERE email = ?',
-            [email]
-        );
+        // Check if already subscribed
+        const existing = await prisma.newsletterSubscriber.findUnique({
+            where: { email },
+        });
 
-        if (existing && existing.length > 0) {
+        if (existing) {
+            if (!existing.isActive) {
+                // Reactivate
+                await prisma.newsletterSubscriber.update({
+                    where: { email },
+                    data: { isActive: true },
+                });
+                // Send welcome email again on reactivation? Maybe.
+                await sendWelcomeEmail(email);
+                return NextResponse.json({ success: true, message: 'Subscribed successfully' });
+            }
             return NextResponse.json({ message: 'Already subscribed' });
         }
 
-        // Insert new subscriber
-        await pool.execute(
-            'INSERT INTO newsletter_subscribers (email, is_active, created_at) VALUES (?, ?, ?)',
-            [email, 1, new Date()]
-        );
+        // Create new
+        await prisma.newsletterSubscriber.create({
+            data: { email },
+        });
 
         // Send Welcome Email
-        console.log("Attempting to send welcome email to:", email);
-        console.log("RESEND_API_KEY present:", !!process.env.RESEND_API_KEY);
-
         const emailResult = await sendWelcomeEmail(email);
-        console.log("Email Result:", emailResult);
 
         if (!emailResult.success) {
-            console.error("Email sending failed:", emailResult.error);
+            console.error("Welcome email failed:", emailResult.error);
         }
 
-        return NextResponse.json({ message: 'Subscribed successfully', emailSent: emailResult.success });
+        return NextResponse.json({ success: true, message: 'Subscribed successfully', emailSent: emailResult.success });
+
     } catch (error) {
-        console.error('Newsletter error details:', error);
-        return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 });
+        console.error('Newsletter subscription error:', error);
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

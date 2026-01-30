@@ -1,6 +1,10 @@
 import { getAdminProfile } from "@/app/actions/profile";
-import ProfileForm from "./ProfileForm";
-import { redirect } from "next/navigation";
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import ProfileForm from './ProfileForm';
+
+export const dynamic = 'force-dynamic';
 
 export default async function AdminProfilePage() {
     const admin = await getAdminProfile();

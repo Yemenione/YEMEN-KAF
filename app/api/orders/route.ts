@@ -215,8 +215,10 @@ export async function POST(req: Request) {
 
         // Send order confirmation email
         try {
-            // Extract shipping address from the stored JSON
-            const shippingData = JSON.parse(shippingAddress);
+            // Extract shipping address (already an object from req.json())
+            const shippingData = typeof shippingAddress === 'string'
+                ? JSON.parse(shippingAddress)
+                : shippingAddress;
 
             await sendOrderConfirmationEmail({
                 orderNumber,

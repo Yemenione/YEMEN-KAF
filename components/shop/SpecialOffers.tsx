@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -20,34 +21,6 @@ export default function SpecialOffers() {
     const [offers, setOffers] = useState<Product[]>([]);
     const { t, locale, getLocalizedValue } = useLanguage();
     const { settings } = useSettings();
-
-    // Helper to extract main image from JSON or Array
-    const getMainImage = (product: Product): string => {
-        try {
-            if (!product.images) return '/images/honey-jar.jpg';
-
-            // If it's already an array, return the first item
-            if (Array.isArray(product.images)) {
-                return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
-            }
-
-            // Check if it's already a clean URL (legacy/csv import support)
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-
-            const parsed = JSON.parse(product.images);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                return parsed[0];
-            }
-        } catch {
-            // Fallback for non-JSON strings
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-        }
-        return '/images/honey-jar.jpg';
-    };
 
     useEffect(() => {
         const fetchOffers = async () => {
@@ -81,9 +54,9 @@ export default function SpecialOffers() {
     if (offers.length === 0) return null;
 
     return (
-        <section className="py-24 bg-white border-t border-black/5">
+        <section className="py-8 bg-white border-t border-black/5">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6">
                     <div className="space-y-4">
                         <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold block">{t('home.offers.exclusive')}</span>
                         <h2 className="text-4xl md:text-5xl font-serif text-[var(--coffee-brown)]">{t('home.offers.title')}</h2>
@@ -99,7 +72,7 @@ export default function SpecialOffers() {
                             {/* Image Part */}
                             <div className="relative aspect-[16/9] overflow-hidden bg-gray-100 mb-8">
                                 <Image
-                                    src={getMainImage(offer)}
+                                    src={getMainImage(offer.images)}
                                     alt={offer.name}
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-110"

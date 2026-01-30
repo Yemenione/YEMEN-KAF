@@ -4,6 +4,11 @@ import ProductDetails from '@/components/shop/ProductDetails';
 import ProductSpecs from '@/components/shop/ProductSpecs';
 import ProductCarousel from '@/components/shop/ProductCarousel';
 import { prisma } from '@/lib/prisma';
+import { getMainImage } from '@/lib/image-utils';
+
+// Enable ISR for product pages
+export const revalidate = 3600; // 1 hour
+export const dynamicParams = true;
 
 async function getProduct(slug: string) {
     try {
@@ -40,7 +45,7 @@ async function getProduct(slug: string) {
             compareAtPrice: product.compareAtPrice ? Number(product.compareAtPrice) : null,
             stock_quantity: product.stockQuantity || 0,
             images: product.images,
-            image_url: Array.isArray(product.images) ? product.images[0] : (typeof product.images === 'string' && product.images.startsWith('[') ? JSON.parse(product.images)[0] : product.images),
+            image_url: getMainImage(product.images),
             category_name: product.category?.name || 'Uncategorized',
             description: product.description || '',
             weight: product.weight ? Number(product.weight) : 0.5,
@@ -137,13 +142,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         return { title: 'Product Not Found | Yemeni Market' };
     }
 
-    let imageUrl = '/images/honey-jar.jpg';
-    if (product.images) {
-        try {
-            const parsed = JSON.parse(product.images);
-            if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
-        } catch { }
-    }
+    const imageUrl = getMainImage(product.images);
 
     return {
         title: `${product.name} | Yemeni Market`,

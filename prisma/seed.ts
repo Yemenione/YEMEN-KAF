@@ -1,5 +1,6 @@
 import mysql, { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import 'dotenv/config';
+import * as bcrypt from 'bcrypt';
 
 async function main() {
     console.log('Starting seed (aligned with Navbar)...');
@@ -19,26 +20,26 @@ async function main() {
         // Categories matched to Navbar links: honey, coffee, gifts, wholesale
         const categories = [
             {
-                name: 'Yemeni Honey',
-                slug: 'honey', // Was 'yemeni-honey'
-                description: 'Authentic Sidr and Sumur honey from the mountains of Yemen.',
-                image_url: '/images/honey-comb.jpg',
+                name: 'Royal Sidr Collection', // Was: Yemeni Honey
+                slug: 'honey',
+                description: 'Rare & Potent honey from the mountains of Yemen.',
+                image_url: '/images/honey-jar.jpg',
                 is_active: 1,
                 display_order: 1
             },
             {
-                name: 'Yemeni Coffee',
-                slug: 'coffee', // Was 'yemeni-coffee'
-                description: 'World-renowned coffee beans.',
+                name: 'Haraz Mocha Special', // Was: Yemeni Coffee
+                slug: 'coffee',
+                description: 'Estate Grown world-renowned coffee beans.',
                 image_url: '/images/coffee-beans.jpg',
                 is_active: 1,
                 display_order: 2
             },
             {
-                name: 'Gifts & Sets',
+                name: 'Luxury Gift Sets', // Was: Gifts & Sets
                 slug: 'gifts',
-                description: 'Beautiful gift sets for loved ones.',
-                image_url: '/images/products/encensoir.jpg', // Placeholder
+                description: 'Perfect for Ramadan and special occasions.',
+                image_url: '/images/products/encensoir.jpg',
                 is_active: 1,
                 display_order: 3
             },
@@ -275,12 +276,98 @@ async function main() {
                 ON DUPLICATE KEY UPDATE
                     code = VALUES(code),
                     delivery_time = VALUES(delivery_time),
-                    description = VALUES(description),
+                description = VALUES(description),
                     logo = VALUES(logo)
             `, [carrier.name, carrier.code, carrier.logo, carrier.delivery_time, carrier.description, carrier.is_active]);
         }
 
-        // Zones
+        // Seeding Attributes and Values
+        console.log('Seeding Attributes...');
+        const attributes = [
+            {
+                name: 'Weight',
+                type: 'select',
+                values: ['125g', '250g', '500g', '1kg']
+            },
+            {
+                name: 'Roast Level',
+                type: 'select',
+                values: ['Light', 'Medium', 'Medium-Dark', 'Dark']
+            },
+            {
+                name: 'Grind Type',
+                type: 'select',
+                values: ['Whole Bean', 'Fine (Espresso)', 'Medium (Drip)', 'Coarse (French Press)', 'Turkish']
+            },
+            {
+                name: 'Packaging',
+                type: 'select',
+                values: ['Glass Jar', 'Premium Box', 'Vacuum Sealed Bag']
+            },
+            {
+                name: 'Origin',
+                type: 'text',
+                values: ['Dawan', 'Haraz', 'Sana\'a', 'Socotra']
+            },
+            {
+                name: 'Size',
+                type: 'select',
+                values: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', 'One Size']
+            },
+            {
+                name: 'Shoe Size (EU)',
+                type: 'select',
+                values: ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46']
+            },
+            {
+                name: 'Color',
+                type: 'color',
+                values: ['Red', 'Blue', 'Green', 'Black', 'White', 'Beige', 'Brown', 'Navy', 'Gold', 'Silver', 'Grey']
+            },
+            {
+                name: 'Material',
+                type: 'text',
+                values: ['Cotton', 'Wool', 'Silk', 'Polyester', 'Leather', 'Linen', 'Velvet']
+            },
+            {
+                name: 'Gender',
+                type: 'select',
+                values: ['Men', 'Women', 'Unisex', 'Kids']
+            },
+            {
+                name: 'Season',
+                type: 'select',
+                values: ['Spring', 'Summer', 'Autumn', 'Winter', 'All Season']
+            }
+        ];
+
+        for (const attr of attributes) {
+            // Insert Attribute
+            const [attrResult] = await connection.execute<ResultSetHeader>(`
+                INSERT INTO attributes (name, type) 
+                VALUES (?, ?) 
+                ON DUPLICATE KEY UPDATE name=name
+            `, [attr.name, attr.type]); // Simple ignore if exists logic via ON DUPLICATE or select first
+
+            // Get Attribute ID (either inserted or existing)
+            let attributeId = attrResult.insertId;
+            if (attributeId === 0) {
+                const [existingAttr] = await connection.execute<RowDataPacket[]>('SELECT id FROM attributes WHERE name = ?', [attr.name]);
+                if (existingAttr.length > 0) attributeId = existingAttr[0].id;
+            }
+
+            if (attributeId) {
+                for (const val of attr.values) {
+                    await connection.execute(`
+                        INSERT INTO attribute_values (attribute_id, value)
+                        VALUES (?, ?)
+                        ON DUPLICATE KEY UPDATE value=value
+                    `, [attributeId, val]);
+                }
+            }
+        }
+
+        // Seeding Products (with variants/attributes logic conceptualized for later)
         console.log('Seeding Zones...');
         const zones = [
             {
@@ -389,6 +476,421 @@ async function main() {
                 INSERT INTO shipping_rates (zone_id, carrier_id, min_weight, max_weight, price)
                 VALUES (?, ?, ?, ?, ?)
             `, [rate.zoneId, rate.carrierId, rate.min, rate.max, rate.price]);
+        }
+
+
+        // --- NEW SEEDING LOGIC START ---
+
+        // Admins
+        console.log('Seeding Admins...');
+        const adminEmail = 'admin@yemkaf.com';
+        const [existingAdmins] = await connection.execute<RowDataPacket[]>('SELECT id FROM admins WHERE email = ?', [adminEmail]);
+
+        if (existingAdmins.length === 0) {
+            const hashedPassword = await bcrypt.hash('Admin123!', 10);
+            await connection.execute(`
+                INSERT INTO admins (email, password_hash, name, role, created_at, updated_at)
+                VALUES (?, ?, ?, ?, NOW(), NOW())
+            `, [adminEmail, hashedPassword, 'Super Admin', 'SUPER_ADMIN']);
+            console.log(`Created admin: ${adminEmail}`);
+        } else {
+            console.log(`Admin ${adminEmail} already exists. Skipping.`);
+        }
+
+        // Store Config
+        console.log('Seeding Store Config...');
+
+        // Fetch product IDs for config
+        const [allProducts] = await connection.execute<RowDataPacket[]>('SELECT id, slug FROM products');
+        const getProdId = (slug: string) => allProducts.find(p => p.slug === slug)?.id;
+
+        // ensure we have IDs, fallback to first available if specific slug not found
+        const p1 = getProdId('royal-sidr-honey') || allProducts[0]?.id;
+        const p2 = getProdId('ibini-coffee') || allProducts[1]?.id || p1;
+        const p3 = getProdId('honey-gift-box') || allProducts[2]?.id || p1;
+        const p4 = getProdId('sumur-honey') || allProducts[0]?.id;
+        const p5 = getProdId('hawaij-spice-mix') || allProducts[0]?.id;
+
+        const configs = [
+            { key: 'site_name', value: 'Yemeni Market (Yem Kaf)', group: 'general' },
+            { key: 'site_description', value: 'Authentic Yemeni Products - Honey, Coffee, & More', group: 'general' },
+            { key: 'contact_email', value: 'support@yemkaf.com', group: 'contact' },
+            { key: 'currency', value: 'EUR', group: 'localization' },
+            {
+                key: 'homepage_promo_category_ids',
+                value: JSON.stringify([honeyId, coffeeId, giftsId].filter(id => id !== undefined)),
+                group: 'homepage'
+            },
+            // NEW HOMEPAGE KEYS
+            {
+                key: 'homepage_hero_products',
+                value: JSON.stringify([p1, p3].filter(Boolean)),
+                group: 'homepage'
+            },
+            {
+                key: 'homepage_featured_categories',
+                value: JSON.stringify([honeyId, coffeeId, giftsId, spicesId].filter(id => id !== undefined)),
+                group: 'homepage'
+            },
+            {
+                key: 'homepage_flash_sale_product_ids',
+                value: JSON.stringify([p5].filter(Boolean)),
+                group: 'homepage'
+            },
+            {
+                key: 'homepage_best_sellers_ids',
+                value: JSON.stringify([p1, p2, p3, p4].filter(Boolean)),
+                group: 'homepage'
+            },
+            {
+                key: 'homepage_special_offers_ids',
+                value: JSON.stringify([p4, p2].filter(Boolean)),
+                group: 'homepage'
+            },
+            {
+                key: 'homepage_flash_sale_end_date',
+                value: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16), // 7 days from now
+                group: 'homepage'
+            },
+            {
+                key: 'homepage_flash_sale_ends_soon_text',
+                value: 'Offer ends soon!',
+                group: 'homepage'
+            },
+            {
+                key: 'homepage_promo_grid',
+                value: JSON.stringify([
+                    { title: "New Harvest", sub: "Fresh from Do'an", image: "/images/honey-jar.jpg", link: "/shop/honey" },
+                    { title: "Ramadan Essentials", sub: "Prepare for the holy month", image: "/images/products/encensoir.jpg", link: "/shop/gifts" },
+                    { title: "Spices of Yemen", sub: "Authentic flavors", image: "/images/products/henne-250.jpg", link: "/shop/spices" }
+                ]),
+                group: 'homepage'
+            },
+            {
+                key: 'menu_main',
+                value: JSON.stringify([
+                    { label: "nav.home", href: "/" },
+                    { label: "nav.shop", href: "/shop" },
+                    { label: "nav.ourStory", "href": "/our-story" },
+                    { label: "nav.farms", "href": "/the-farms" },
+                    { label: "nav.contact", "href": "/contact" }
+                ]),
+                group: 'menus'
+            },
+            // Header & Marquee Settings
+            { key: 'logo_url', value: '/images/logo.png', group: 'header' },
+            { key: 'show_marquee', value: 'true', group: 'header' },
+            { key: 'marquee_text_en', value: 'Authentic Yemeni Treasures • Free Shipping over $150 • Premium Sidr Honey', group: 'header' },
+            { key: 'marquee_text_fr', value: 'Trésors Yéménites Authentiques • Livraison Gratuite dès 150€ • Miel Sidr Premium', group: 'header' },
+            { key: 'marquee_text_ar', value: 'كنوز يمنية أصيلة • شحن مجاني للطلبات فوق 150 دولار • عسل السدر الفاخر', group: 'header' },
+            { key: 'header_sticky', value: 'true', group: 'header' },
+            { key: 'header_layout', value: 'logo-left', group: 'header' },
+            { key: 'logo_width_desktop', value: '48', group: 'header' }
+        ];
+
+        for (const config of configs) {
+            await connection.execute(`
+                INSERT INTO store_config (\`key\`, value, \`group\`, updated_at)
+                VALUES (?, ?, ?, NOW())
+                ON DUPLICATE KEY UPDATE
+                    value = VALUES(value),
+                    \`group\` = VALUES(\`group\`),
+                    updated_at = NOW()
+            `, [config.key, config.value, config.group]);
+        }
+
+        // Cart Rules (Discounts)
+        console.log('Seeding Cart Rules...');
+        const discounts = [
+            {
+                name: 'Welcome Discount',
+                code: 'WELCOME10',
+                description: '10% off for new customers',
+                reduction_percent: 10.00,
+                is_active: 1
+            }
+        ];
+
+        for (const discount of discounts) {
+            await connection.execute(`
+                INSERT INTO cart_rules (name, code, description, reduction_percent, is_active, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    name = VALUES(name),
+                    description = VALUES(description),
+                    reduction_percent = VALUES(reduction_percent),
+                    is_active = VALUES(is_active)
+            `, [discount.name, discount.code, discount.description, discount.reduction_percent, discount.is_active]);
+        }
+
+        // Customers (for Reviews)
+        console.log('Seeding Customers...');
+        const customers = [
+            { email: 'sarah.m@example.com', name: 'Sarah M.', firstName: 'Sarah', lastName: 'M.' },
+            { email: 'ahmed.k@example.com', name: 'Ahmed K.', firstName: 'Ahmed', lastName: 'K.' },
+            { email: 'sophie.l@example.com', name: 'Sophie L.', firstName: 'Sophie', lastName: 'L.' },
+            { email: 'david.b@example.com', name: 'David B.', firstName: 'David', lastName: 'B.' },
+            { email: 'fatima.r@example.com', name: 'Fatima R.', firstName: 'Fatima', lastName: 'R.' }
+        ];
+
+        const customerIds: number[] = [];
+
+        for (const cust of customers) {
+            const [existing] = await connection.execute<RowDataPacket[]>('SELECT id FROM customers WHERE email = ?', [cust.email]);
+            if (existing.length > 0) {
+                customerIds.push(existing[0].id);
+            } else {
+                const [res] = await connection.execute<ResultSetHeader>(`
+                    INSERT INTO customers (email, first_name, last_name, created_at)
+                    VALUES (?, ?, ?, NOW())
+                `, [cust.email, cust.firstName, cust.lastName]);
+                customerIds.push(res.insertId);
+            }
+        }
+
+        // Reviews
+        console.log('Seeding Reviews...');
+        // Randomly assign reviews to products (Honey, Coffee, Gifts)
+
+        // Note: Ideally we look up actual product IDs. 
+        // Let's get a few product IDs first.
+        const [prodRows] = await connection.execute<RowDataPacket[]>('SELECT id FROM products LIMIT 5');
+        const productIds = prodRows.map(r => r.id);
+
+        if (productIds.length > 0 && customerIds.length > 0) {
+            const reviews = [
+                {
+                    rating: 5,
+                    comment: "Absolutely the best honey I've ever tasted. The packaging was luxurious!",
+                    customerId: customerIds[0],
+                    productId: productIds[0]
+                },
+                {
+                    rating: 5,
+                    comment: "The aroma of this coffee fills the entire house. True Mocha quality.",
+                    customerId: customerIds[1],
+                    productId: productIds[1] || productIds[0]
+                },
+                {
+                    rating: 4,
+                    comment: "Fast shipping to Paris. The gift box is beautiful.",
+                    customerId: customerIds[2],
+                    productId: productIds[2] || productIds[0]
+                },
+                {
+                    rating: 5,
+                    comment: "Authentic taste, reminds me of home. Will order again.",
+                    customerId: customerIds[3],
+                    productId: productIds[0]
+                },
+                {
+                    rating: 5,
+                    comment: "Excellent customer service and premium quality.",
+                    customerId: customerIds[4],
+                    productId: productIds[1] || productIds[0]
+                }
+            ];
+
+            for (const review of reviews) {
+                await connection.execute(`
+                    INSERT INTO reviews (rating, comment, customer_id, product_id, is_active, is_verified, created_at)
+                    VALUES (?, ?, ?, ?, 1, 1, NOW())
+                `, [review.rating, review.comment, review.customerId, review.productId]);
+            }
+        }
+
+        // Blog Posts
+        console.log('Seeding Blog Posts...');
+        const blogPosts = [
+            {
+                title: 'The Ancient History of Sidr Honey',
+                slug: 'ancient-history-sidr-honey',
+                excerpt: 'Discover why Sidr honey has been treasured for centuries as liquid gold.',
+                content: 'Sidr honey comes from the Lote tree...',
+                image: '/images/honey-jar.jpg',
+                category: 'Education'
+            },
+            {
+                title: 'Brewing the Perfect Yemeni Coffee',
+                slug: 'brewing-perfect-yemeni-coffee',
+                excerpt: 'A step-by-step guide to making traditional Qahwa.',
+                content: 'Yemeni coffee is distinct...',
+                image: '/images/coffee-beans.jpg',
+                category: 'Guides'
+            },
+            {
+                title: 'Ramadan Gift Guide 2026',
+                slug: 'ramadan-gift-guide-2026',
+                excerpt: 'Curated selection of gifts for the holy month.',
+                content: 'Find the perfect gift...',
+                image: '/images/products/encensoir.jpg',
+                category: 'Lifestyle'
+            }
+        ];
+
+        for (const post of blogPosts) {
+            await connection.execute(`
+                INSERT INTO blog_posts (title, slug, excerpt, content, image, category, status, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, 'PUBLISHED', NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    title = VALUES(title),
+                    excerpt = VALUES(excerpt),
+                    image = VALUES(image),
+                    category = VALUES(category),
+                    status = 'PUBLISHED'
+            `, [post.title, post.slug, post.excerpt, post.content, post.image, post.category]);
+        }
+
+        // CMS Pages (Header Links)
+        console.log('Seeding CMS Pages...');
+        const pages = [
+            {
+                title: 'Our Story',
+                slug: 'our-story',
+                content: '<h1>Our Story</h1><p>Yemeni Market was founded with a single purpose: to bridge the gap between the ancient, untouched valleys of Yemen and the modern connoisseur.</p>',
+                structured_content: JSON.stringify({
+                    hero: {
+                        title: "Roots of Arabia",
+                        subtitle: "We believe in the power of origin. Our products are not just commodities; they are stories of heritage, resilience, and uncompromised quality.",
+                        image: "/images/yemen-landscape.jpg"
+                    },
+                    sections: [
+                        {
+                            type: 'image-text',
+                            title: 'The Legacy',
+                            content: "For centuries, the valleys of Yemen have produced the world's most prized honey and coffee. We work directly with generational farmers who have tended these lands for millennia.",
+                            image: "/images/honey-jar.jpg",
+                            imagePosition: 'left'
+                        },
+                        {
+                            type: 'grid',
+                            title: 'From Source to You',
+                            content: "Our process is simple: purity above all.",
+                            items: [
+                                { title: "Harvest", content: "Hand-picked at peak season." },
+                                { title: "Verify", content: "Lab-tested for 100% purity." },
+                                { title: "Deliver", content: "Directly to your doorstep." }
+                            ]
+                        }
+                    ],
+                    conclusion: {
+                        title: "Uncompromising Quality",
+                        content: "We promise to bring you only the authentic, pure, and untouched treasures of Yemen."
+                    }
+                }),
+                showInHeader: true,
+                showInFooter: true,
+                displayOrder: 1
+            },
+            {
+                title: 'Mentions Légales',
+                slug: 'mentions-legales',
+                content: `
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4 italic">1. Édition du site</h2>
+                        <p>En vertu de l'article 6 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, il est précisé aux utilisateurs du site internet <strong>yemenimarket.fr</strong> l'identité des différents intervenants dans le cadre de sa réalisation et de son suivi :</p>
+                        <ul class="list-none pl-0 space-y-2">
+                            <li><strong>Propriétaire du site :</strong> Yemen Kaf</li>
+                            <li><strong>Contact :</strong> support@yemenkaf.com | +33 6 66 33 68 60</li>
+                            <li><strong>Adresse :</strong> France</li>
+                        </ul>
+                    </section>
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4 italic">2. Hébergement</h2>
+                        <p>Le Site est hébergé par <strong>Hostinger International Ltd.</strong>, dont le siège social est situé 61 Lordou Vironos Street, 6023 Larnaca, Chypre. (Contact : https://www.hostinger.fr/contact).</p>
+                    </section>
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4 italic">3. Propriété intellectuelle</h2>
+                        <p>Yemen Kaf est propriétaire des droits de propriété intellectuelle ou détient les droits d’usage sur tous les éléments accessibles sur le site internet, notamment les textes, images, graphismes, logos, icônes, sons, logiciels.</p>
+                    </section>
+                `,
+                showInHeader: false,
+                showInFooter: true,
+                displayOrder: 10,
+                structured_content: null
+            },
+            {
+                title: 'Conditions Générales de Vente',
+                slug: 'cgv',
+                content: `
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4">1. Objet</h2>
+                        <p>Les présentes conditions générales de vente (CGV) régissent les relations contractuelles entre Yemen Kaf et toute personne effectuant un achat sur le site yemenimarket.fr.</p>
+                    </section>
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4">2. Produits</h2>
+                        <p>Yemen Kaf propose à la vente des produits yéménites authentiques (miel, café, encens, etc.). Les caractéristiques essentielles des produits sont présentées sur le site.</p>
+                    </section>
+                `,
+                showInHeader: false,
+                showInFooter: true,
+                displayOrder: 11,
+                structured_content: null
+            },
+            {
+                title: 'Privacy Policy',
+                slug: 'privacy',
+                content: `
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4">1. Introduction</h2>
+                        <p>We respect your privacy and are committed to protecting your personal data in accordance with GDPR. This policy explains how we collect, use, and safeguard your information.</p>
+                    </section>
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4">2. Data We Collect</h2>
+                        <p>We collect identity data, contact data, transaction data, and technical data to process your orders and improve our services.</p>
+                    </section>
+                `,
+                showInHeader: false,
+                showInFooter: true,
+                displayOrder: 12,
+                structured_content: null
+            },
+            {
+                title: 'Terms of Service',
+                slug: 'terms',
+                content: `
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4">1. Introduction</h2>
+                        <p>Welcome to Yemen Kaf. By accessing our website and purchasing our products, you agree to be bound by these Terms of Service.</p>
+                    </section>
+                `,
+                showInHeader: false,
+                showInFooter: true,
+                displayOrder: 13,
+                structured_content: null
+            },
+            {
+                title: 'Shipping Policy',
+                slug: 'shipping-policy',
+                content: `
+                    <section>
+                        <h2 class="text-2xl font-serif text-black mt-8 mb-4">Shipping Methods</h2>
+                        <ul class="list-disc pl-6">
+                            <li><strong>Standard Shipping:</strong> 5-7 business days</li>
+                            <li><strong>Express Shipping:</strong> 2-3 business days</li>
+                        </ul>
+                    </section>
+                `,
+                showInHeader: false,
+                showInFooter: true,
+                displayOrder: 14,
+                structured_content: null
+            }
+        ];
+
+        for (const page of pages) {
+            await connection.execute(`
+                INSERT INTO cms_pages (title, slug, content, structured_content, show_in_header, show_in_footer, display_order, is_active, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    title = VALUES(title),
+                    content = VALUES(content),
+                    structured_content = VALUES(structured_content),
+                    show_in_header = VALUES(show_in_header),
+                    show_in_footer = VALUES(show_in_footer),
+                    display_order = VALUES(display_order),
+                    updated_at = NOW()
+            `, [page.title, page.slug, page.content, page.structured_content, page.showInHeader, page.showInFooter, page.displayOrder]);
         }
 
         console.log('Seeding completed successfully.');

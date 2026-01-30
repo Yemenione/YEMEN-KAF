@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef } from "react";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Product {
     id: number;
@@ -30,28 +31,6 @@ export default function ProductCarousel({ title, products }: ProductCarouselProp
             const { scrollLeft, clientWidth } = scrollRef.current;
             const scrollTo = direction === 'left' ? scrollLeft - clientWidth : scrollLeft + clientWidth;
             scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-        }
-    };
-
-    const getMainImage = (product: Product): string => {
-        try {
-            if (!product.images) return '/images/honey-jar.jpg';
-
-            // If it's already an array, return the first item
-            if (Array.isArray(product.images)) {
-                return product.images.length > 0 ? product.images[0] : '/images/honey-jar.jpg';
-            }
-
-            // Check if it's already a clean URL (legacy/csv import support)
-            if (typeof product.images === 'string' && (product.images.startsWith('http') || product.images.startsWith('/'))) {
-                return product.images;
-            }
-
-            const parsed = JSON.parse(product.images as string);
-            if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
-            return typeof product.images === 'string' ? product.images : '/images/honey-jar.jpg';
-        } catch {
-            return (typeof product.images === 'string' ? product.images : '') || '/images/honey-jar.jpg';
         }
     };
 
@@ -88,15 +67,15 @@ export default function ProductCarousel({ title, products }: ProductCarouselProp
                         <Link
                             key={product.id}
                             href={`/shop/${product.slug}`}
-                            className="flex-shrink-0 w-[280px] snap-start group"
+                            className="flex-shrink-0 w-[240px] md:w-[280px] snap-start group"
                         >
-                            <div className="relative aspect-[4/5] bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 mb-4 transition-transform duration-500 group-hover:scale-[1.02]">
+                            <div className="relative aspect-[4/5] bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 mb-3 md:mb-4 transition-transform duration-500 group-hover:scale-[1.02]">
                                 <Image
-                                    src={getMainImage(product)}
+                                    src={getMainImage(product.images)}
                                     alt={product.name}
                                     fill
                                     className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                    sizes="280px"
+                                    sizes="(max-width: 768px) 240px, 280px"
                                 />
                                 {hasDiscount && (
                                     <div className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, RefreshCw, Save } from "lucide-react";
 import Image from "next/image";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Attribute {
     id: number;
@@ -32,6 +33,7 @@ interface ProductVariantsManagerProps {
 }
 
 export default function ProductVariantsManager({ productId, basePrice, baseSku, initialVariants = [], onChange }: ProductVariantsManagerProps) {
+    const { t } = useLanguage();
     const [attributes, setAttributes] = useState<Attribute[]>([]);
     const [selectedAttrs, setSelectedAttrs] = useState<number[]>([]);
     const [variants, setVariants] = useState<Variant[]>(initialVariants);
@@ -65,7 +67,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
     };
 
     const handleGenerate = () => {
-        if (selectedAttrs.length === 0) return alert("Select at least one attribute");
+        if (selectedAttrs.length === 0) return alert(t('admin.products.variants.selectAttribute'));
         setGenerating(true);
 
         // ... (existing logic)
@@ -118,7 +120,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
         }));
 
         if (variants.length > 0) {
-            if (!confirm("This will append new variants. Continue?")) {
+            if (!confirm(t('admin.products.variants.confirmAppend'))) {
                 setGenerating(false);
                 return;
             }
@@ -139,14 +141,14 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
             });
 
             if (res.ok) {
-                alert("Variants saved successfully!");
+                alert(t('admin.products.variants.savedSuccess'));
                 fetchVariants();
             } else {
-                alert("Failed to save variants");
+                alert(t('admin.products.variants.savedError'));
             }
         } catch (err) {
             console.error(err);
-            alert("Error saving variants");
+            alert(t('admin.products.variants.error'));
         } finally {
             setLoading(false);
         }
@@ -186,7 +188,7 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
                 updateVariant(index, 'images', JSON.stringify(newImages));
             }
         } catch {
-            alert('Upload failed');
+            alert(t('admin.products.variants.uploadError'));
         }
     };
 
@@ -210,12 +212,12 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
         <div className="space-y-6">
             <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-gray-200 dark:border-zinc-800 shadow-sm">
                 <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                    <RefreshCw size={18} /> Variant Generator
+                    <RefreshCw size={18} /> {t('admin.products.variants.generator')}
                 </h3>
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium mb-2">Select Attributes to Generate From:</label>
+                        <label className="block text-sm font-medium mb-2">{t('admin.products.variants.selectAttrsLabel')}</label>
                         <div className="flex flex-wrap gap-3">
                             {attributes.map(attr => (
                                 <label key={attr.id} className={`cursor-pointer px-3 py-2 border rounded-lg text-sm transition-colors ${selectedAttrs.includes(attr.id) ? 'bg-[var(--coffee-brown)] text-white border-[var(--coffee-brown)]' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}`}>
@@ -240,11 +242,11 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
                         disabled={generating || selectedAttrs.length === 0}
                         className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
                     >
-                        Generate Combinations
+                        {t('admin.products.variants.generateBtn')}
                     </button>
 
                     <p className="text-xs text-gray-500">
-                        Select attributes (e.g., Color, Size) to automatically create all possible combinations.
+                        {t('admin.products.variants.generatorDesc')}
                     </p>
                 </div>
             </div>
@@ -252,14 +254,14 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
             {variants.length > 0 && (
                 <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
                     <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex justify-between items-center bg-gray-50 dark:bg-zinc-800/50">
-                        <h3 className="font-semibold">Variants ({variants.length})</h3>
+                        <h3 className="font-semibold">{t('admin.products.variants.title', { count: variants.length })}</h3>
                         {productId && (
                             <button
                                 onClick={handleSave}
                                 disabled={loading}
                                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium flex items-center gap-2"
                             >
-                                <Save size={16} /> Save Changes
+                                <Save size={16} /> {t('admin.products.form.saveChanges')}
                             </button>
                         )}
                     </div>
@@ -268,12 +270,12 @@ export default function ProductVariantsManager({ productId, basePrice, baseSku, 
                         <table className="w-full text-sm text-left">
                             <thead className="bg-gray-50 dark:bg-zinc-800 text-gray-500 font-medium">
                                 <tr>
-                                    <th className="px-4 py-3">Variant Name</th>
-                                    <th className="px-4 py-3">SKU</th>
-                                    <th className="px-4 py-3 w-32">Price (€)</th>
-                                    <th className="px-4 py-3 w-32">Stock</th>
-                                    <th className="px-4 py-3">Image</th>
-                                    <th className="px-4 py-3 w-24">Active</th>
+                                    <th className="px-4 py-3">{t('admin.products.variants.name')}</th>
+                                    <th className="px-4 py-3">{t('admin.products.form.sku')}</th>
+                                    <th className="px-4 py-3 w-32">{t('admin.products.form.price')} (€)</th>
+                                    <th className="px-4 py-3 w-32">{t('admin.products.form.stock')}</th>
+                                    <th className="px-4 py-3">{t('admin.products.form.image')}</th>
+                                    <th className="px-4 py-3 w-24">{t('admin.common.active')}</th>
                                     <th className="px-4 py-3 w-16"></th>
                                 </tr>
                             </thead>

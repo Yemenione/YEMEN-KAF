@@ -41,9 +41,18 @@ export default async function TheFarmsPage() {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const structured = (page as any).structured_content as unknown as StructuredFarmsData;
+    let structured = (page as any).structured_content as unknown as StructuredFarmsData;
 
-    if (structured) {
+    // Handle case where structured_content might be a string (SQLite/older versions)
+    if (typeof structured === 'string') {
+        try {
+            structured = JSON.parse(structured);
+        } catch (e) {
+            console.error("Failed to parse structured_content:", e);
+        }
+    }
+
+    if (structured && Array.isArray(structured.sections)) {
         return (
             <FarmsContent sections={structured.sections.map(s => ({ image: s.image, theme: s.theme }))} />
         );

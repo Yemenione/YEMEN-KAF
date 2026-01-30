@@ -58,26 +58,48 @@ export async function GET(
             _count: { rating: true }
         });
 
+        // Robust Image Parsing
+        let images: string[] = [];
+        try {
+            images = product.images ? JSON.parse(product.images) : [];
+            if (!Array.isArray(images)) images = product.images ? [product.images] : [];
+        } catch {
+            images = product.images ? [product.images] : [];
+        }
+
         const responseProduct = {
             ...product,
-            price: product.price.toNumber(), // Decimal to Number
-            stock_quantity: product.stockQuantity, // camelCase vs snake_case mapping
+            price: Number(product.price),
+            compare_at_price: product.compareAtPrice ? Number(product.compareAtPrice) : null,
+            stock_quantity: product.stockQuantity,
             category_name: product.category?.name,
             category_slug: product.category?.slug,
-            image_url: product.images ? JSON.parse(product.images)[0] : null, // Helper
+            image_url: images[0] || null,
+            images: images,
             carriers: product.carriers,
-            average_rating: aggregations._avg.rating || 0,
+            average_rating: Number(aggregations._avg.rating || 0),
             rating_count: aggregations._count.rating || 0,
-            // Flatten variants for easier usage
-            variants: product.variants.map((v) => ({
-                ...v,
-                price: v.price.toNumber(),
-                attributes: v.attributeValues.map((av) => ({
-                    name: av.attributeValue.attribute.publicName || av.attributeValue.attribute.name,
-                    value: av.attributeValue.name,
-                    type: av.attributeValue.attribute.type
-                }))
-            }))
+            variants: product.variants.map((v) => {
+                let vImages: string[] = [];
+                try {
+                    vImages = v.images ? (typeof v.images === 'string' ? JSON.parse(v.images) : v.images) : [];
+                    if (!Array.isArray(vImages)) vImages = v.images ? [v.images as string] : [];
+                } catch {
+                    vImages = v.images ? [v.images as string] : [];
+                }
+
+                return {
+                    ...v,
+                    price: Number(v.price),
+                    compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : null,
+                    images: vImages,
+                    attributes: v.attributeValues.map((av) => ({
+                        name: av.attributeValue.attribute.publicName || av.attributeValue.attribute.name,
+                        value: av.attributeValue.name,
+                        type: av.attributeValue.attribute.type
+                    }))
+                };
+            })
         };
 
         return NextResponse.json({ product: responseProduct });
@@ -138,11 +160,11 @@ export async function PUT(
                 depth: depth !== undefined ? parseFloat(depth) : undefined,
                 metaTitle: meta_title,
                 metaDescription: meta_description,
-                relatedIds: related_ids,
+                relatedIds: related_ids ? (typeof related_ids === 'string' ? related_ids : JSON.stringify(related_ids)) : undefined,
                 compareAtPrice: compare_at_price !== undefined ? parseFloat(compare_at_price) : undefined,
                 hsCode: hs_code,
                 originCountry: origin_country,
-                translations: translations,
+                translations: translations ? (typeof translations === 'string' ? translations : JSON.stringify(translations)) : undefined,
                 taxRuleId: tax_rule_id ? parseInt(tax_rule_id) : null,
                 carriers: carriers ? {
                     set: Array.isArray(carriers) ? carriers.map((cid: string | number) => ({ id: parseInt(cid.toString()) })) : []

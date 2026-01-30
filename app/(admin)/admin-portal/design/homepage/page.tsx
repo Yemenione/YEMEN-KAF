@@ -344,7 +344,7 @@ function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = fa
     const [search, setSearch] = useState("");
 
     const { t } = useLanguage();
-    const available = all.filter(i => !items.includes(i.id));
+    const available = (Array.isArray(all) ? all : []).filter(i => !items.includes(i.id));
     const filtered = available.filter(i => i.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
@@ -352,7 +352,7 @@ function ListManager({ items, all, onAdd, onRemove, placeholder, isCategory = fa
             {/* Selected Items List */}
             <div className="space-y-2 min-h-[50px]">
                 {items.map(id => {
-                    const item = all.find(i => i.id === id);
+                    const item = (Array.isArray(all) ? all : []).find(i => i.id === id);
                     return (
                         <div key={id} className="group flex items-center justify-between p-3 bg-white border border-gray-100 dark:bg-zinc-800/50 dark:border-zinc-700 rounded-xl hover:shadow-sm transition-all">
                             <div className="flex items-center gap-3">

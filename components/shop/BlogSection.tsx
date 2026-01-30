@@ -108,9 +108,9 @@ export default function BlogSection({ articles = [] }: { articles?: Article[] })
     const text = titles[language as keyof typeof titles] || titles.en;
 
     return (
-        <section className="py-20 bg-gray-50 border-t border-black/5">
+        <section className="py-8 bg-gray-50 border-t border-black/5">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center mb-12">
+                <div className="text-center mb-6">
                     <span className="text-[var(--honey-gold)] uppercase tracking-[0.2em] text-xs font-bold">
                         {text.badge}
                     </span>

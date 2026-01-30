@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
+import { getMainImage } from "@/lib/image-utils";
 
 interface Category {
     id: number;
@@ -70,7 +71,7 @@ export default function PromoGrid({ categories }: PromoGridProps) {
         promos = categories.slice(0, 3).map((cat, idx) => ({
             title: getLocalizedValue(cat, 'name'),
             subtitle: t('home.categories.explore') || "Discover",
-            image: cat.imageUrl || cat.image_url || "/images/placeholder.jpg", // Handle casing from DB vs API
+            image: getMainImage(cat),
             link: `/shop?category=${cat.slug}`,
             color: idx === 0 ? "bg-amber-50" : idx === 1 ? "bg-stone-100" : "bg-gray-50"
         }));
@@ -130,6 +131,7 @@ export default function PromoGrid({ categories }: PromoGridProps) {
                                     fill
                                     className="object-cover"
                                     sizes="(max-width: 768px) 85vw, 33vw"
+                                    priority={idx === 0}
                                 />
                             </div>
 

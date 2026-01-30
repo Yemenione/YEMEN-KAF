@@ -72,10 +72,11 @@ export default function StripePaymentForm({ amount, onSuccess, isFormValid = tru
         });
 
         if (error) {
+            console.error("Stripe confirmPayment error:", error);
             if (error.type === "card_error" || error.type === "validation_error") {
                 setMessage(error.message || "An unexpected error occurred.");
             } else {
-                setMessage("An unexpected error occurred.");
+                setMessage(`Payment failed: ${error.message}`);
             }
         } else if (paymentIntent && paymentIntent.status === "succeeded") {
             onSuccess(paymentIntent.id);

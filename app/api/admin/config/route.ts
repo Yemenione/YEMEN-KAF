@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-
+import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
     try {
@@ -59,7 +61,8 @@ export async function POST(req: NextRequest) {
                 'homepage_flash_sale_ends_soon_text', 'homepage_promo_grid',
                 'homepage_special_offers_ids', 'homepage_best_sellers_ids',
                 'ramadan_mode_enabled', 'ramadan_title', 'ramadan_subtitle', 'ramadan_product_ids',
-                'menu_main', 'menu_footer_links',
+                'menu_main', 'menu_footer_links', 'show_marquee', 'marquee_content',
+                'header_sticky', 'header_layout', 'logo_width_desktop',
                 'marquee_text_en', 'marquee_text_fr', 'marquee_text_ar', 'marquee_enabled',
                 'support_faq_json', 'live_chat_url', 'terms_url', 'privacy_url', 'about_url',
                 'app_splash_url', 'app_banner_honey_url', 'app_banner_coffee_url'
@@ -82,6 +85,10 @@ export async function POST(req: NextRequest) {
         });
 
         await prisma.$transaction(updates);
+
+        // Revalidate all pages to reflect the new header settings
+        revalidatePath('/', 'layout');
+        revalidatePath('/admin-portal', 'layout');
 
         return NextResponse.json({ success: true });
 

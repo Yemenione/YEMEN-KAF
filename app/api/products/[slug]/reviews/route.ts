@@ -44,10 +44,24 @@ export async function GET(
             _count: { rating: true }
         });
 
+        // Parse images for each review
+        const normalizedReviews = reviews.map(r => {
+            let parsedImages: string[] = [];
+            try {
+                parsedImages = r.images ? JSON.parse(r.images) : [];
+            } catch {
+                parsedImages = r.images ? [r.images] : [];
+            }
+            return {
+                ...r,
+                images: parsedImages
+            };
+        });
+
         return NextResponse.json({
-            reviews,
-            average: aggregations._avg.rating || 0,
-            count: aggregations._count.rating || 0
+            reviews: normalizedReviews,
+            average: Number(aggregations._avg.rating || 0),
+            count: Number(aggregations._count.rating || 0)
         });
     } catch (error) {
         console.error("Error fetching reviews:", error);
