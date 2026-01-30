@@ -311,15 +311,15 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
                                             className="relative transition-all duration-300"
                                             style={{ width: `${logoWidth}px`, height: `${logoWidth}px` }}
                                         >
-                                            {/* Logo - Using next/image with unoptimized for hydration stability */}
+                                            {/* Logo - Using fill layout for consistent hydration */}
                                             <Image
                                                 src={logoSrc}
                                                 alt={`${siteName} Logo`}
-                                                width={logoWidth}
-                                                height={logoWidth}
+                                                fill
                                                 className="object-contain"
                                                 priority
                                                 unoptimized
+                                                sizes={`${logoWidth}px`}
                                             />
                                         </div>
                                     </Link>
