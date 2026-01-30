@@ -124,7 +124,7 @@ export default function PromoGrid({ categories }: PromoGridProps) {
                             href={promo.link}
                             className={`group relative flex-shrink-0 w-[85vw] md:w-auto overflow-hidden rounded-3xl ${promo.color} aspect-[4/3] flex flex-col justify-end p-6 md:p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 snap-center`}
                         >
-                            <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-110">
+                            <div suppressHydrationWarning className="absolute inset-0 transition-transform duration-700 group-hover:scale-110">
                                 <Image
                                     src={promo.image}
                                     alt={promo.title}

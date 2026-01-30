@@ -125,7 +125,7 @@ export default function BlogSection({ articles = [] }: { articles?: Article[] })
                             key={index}
                             className="flex-shrink-0 w-[280px] md:w-auto bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 group border border-gray-100"
                         >
-                            <div className="relative aspect-video overflow-hidden bg-gray-100">
+                            <div suppressHydrationWarning className="relative aspect-video overflow-hidden bg-gray-100">
                                 <Image
                                     src={article.image}
                                     alt={article.title}

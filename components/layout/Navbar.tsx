@@ -308,6 +308,7 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
                                 )}>
                                     <Link href="/" className="relative block">
                                         <div
+                                            suppressHydrationWarning
                                             className="relative transition-all duration-300"
                                             style={{ width: `${logoWidth}px`, height: `${logoWidth}px` }}
                                         >
@@ -462,7 +463,7 @@ export default function Navbar({ initialCategories = [], initialFeaturedProducts
 
                                     return (
                                         <Link key={item.id} href={`/shop/${item.slug}`} className="group col-span-1 block text-center" onClick={() => setIsMegaMenuOpen(false)}>
-                                            <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-50 mb-4 rounded-sm">
+                                            <div suppressHydrationWarning className="relative aspect-[4/5] w-full overflow-hidden bg-gray-50 mb-4 rounded-sm">
                                                 <Image
                                                     src={displayImage}
                                                     alt={item.name}
