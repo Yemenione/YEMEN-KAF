@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+require('dotenv').config(); // ⚡ Load .env file immediately
 
 const { createServer } = require('http')
 const { parse } = require('url')
