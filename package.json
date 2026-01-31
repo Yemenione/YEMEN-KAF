@@ -12,7 +12,7 @@
     "dev": "next dev",
     "build": "next build",
     "db:build": "node scripts/debug_prisma.js",
-    "start": "node server.js",
+    "start": "node --max-old-space-size=1536 server.js",
     "lint": "eslint",
     "postinstall": "prisma generate"
   },
