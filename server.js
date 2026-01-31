@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+// Reduce thread pool to minimize process usage on shared hosting
+process.env.UV_THREADPOOL_SIZE = 1;
+
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
