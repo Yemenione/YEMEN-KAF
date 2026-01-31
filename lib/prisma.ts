@@ -1,3 +1,4 @@
+import 'dotenv/config'; // ⚡ Force load .env
 import { PrismaClient } from '@prisma/client';
 
 // Prisma Client Singleton
@@ -6,6 +7,11 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 const getPrismaClient = () => {
     let url = process.env.DATABASE_URL || "";
+    console.log('[Prisma] Initializing client. URL present:', !!url);
+
+    if (!url) {
+        console.error('[Prisma] ❌ DATABASE_URL is missing!');
+    }
 
     // Force connection_limit=1 for shared hosting stability if not already specified
     if (url && !url.includes('connection_limit')) {
