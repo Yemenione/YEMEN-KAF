@@ -45,6 +45,7 @@ next-env.d.ts
 /lib/generated/prisma
 
 deploy/
+_archive/
 
 *.zip
 *.log
