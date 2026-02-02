@@ -140,7 +140,7 @@ const getCachedNavbarData = unstable_cache(
     }
   },
   ['navbar-data'],
-  { revalidate: 3600, tags: ['settings', 'categories', 'products'] }
+  { revalidate: 300, tags: ['settings', 'categories', 'products'] } // 5 minutes
 );
 
 export default async function ShopLayout({
@@ -185,6 +185,27 @@ export default async function ShopLayout({
             </ToastProvider>
           </LanguageProvider>
         </SettingsProvider>
+        {/* Suppress 404 errors for missing images in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const originalError = console.error;
+                console.error = function(...args) {
+                  const msg = args[0];
+                  if (typeof msg === 'string' && (
+                    msg.includes('Failed to load resource') ||
+                    msg.includes('404') ||
+                    msg.includes('/uploads/')
+                  )) {
+                    return;
+                  }
+                  originalError.apply(console, args);
+                };
+              })();
+            `
+          }} />
+        )}
       </body>
     </html>
   );

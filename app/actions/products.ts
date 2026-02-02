@@ -21,7 +21,7 @@ export const getProducts = unstable_cache(
         }
     },
     ['all-products'],
-    { revalidate: 3600, tags: ['products'] }
+    { revalidate: 300, tags: ['products'] } // 5 minutes
 );
 
 export const getProductBySlug = unstable_cache(
@@ -52,7 +52,7 @@ export const getProductBySlug = unstable_cache(
         }
     },
     ['product-detail'],
-    { revalidate: 3600, tags: ['products'] }
+    { revalidate: 300, tags: ['products'] } // 5 minutes
 );
 
 export const getRelatedProductsCached = unstable_cache(
@@ -69,7 +69,7 @@ export const getRelatedProductsCached = unstable_cache(
         }
     },
     ['related-products'],
-    { revalidate: 3600, tags: ['products'] }
+    { revalidate: 300, tags: ['products'] } // 5 minutes
 );
 
 export const getCarriersCached = unstable_cache(
@@ -85,5 +85,5 @@ export const getCarriersCached = unstable_cache(
         }
     },
     ['all-carriers'],
-    { revalidate: 3600, tags: ['settings'] }
+    { revalidate: 300, tags: ['settings'] } // 5 minutes
 );

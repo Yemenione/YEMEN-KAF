@@ -35,6 +35,8 @@ const nextConfig: any = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
+  // Empty turbopack config to silence webpack warning
+  turbopack: {},
   async headers() {
     return [
       {

@@ -36,5 +36,5 @@ export const getFeaturedReviews = unstable_cache(
         }
     },
     ['featured-reviews'],
-    { revalidate: 3600, tags: ['reviews'] }
+    { revalidate: 300, tags: ['reviews'] } // 5 minutes
 );

@@ -37,7 +37,7 @@ export const getBlogPosts = unstable_cache(
         }
     },
     ['home-blog-posts'],
-    { revalidate: 3600, tags: ['blog'] }
+    { revalidate: 300, tags: ['blog'] } // 5 minutes
 );
 
 export async function getAllBlogPosts() {

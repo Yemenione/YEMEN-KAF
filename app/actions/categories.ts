@@ -60,5 +60,5 @@ export const getFeaturedCategories = unstable_cache(
         }
     },
     ['featured-categories'],
-    { revalidate: 3600, tags: ['categories'] }
+    { revalidate: 300, tags: ['categories'] } // 5 minutes
 );

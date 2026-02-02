@@ -7,7 +7,7 @@ import { getProductBySlug, getRelatedProductsCached, getProducts, getCarriersCac
 import { getMainImage } from '@/lib/image-utils';
 
 // Enable ISR for product pages
-export const revalidate = 3600; // 1 hour
+export const revalidate = 300; // 5 minutes
 export const dynamicParams = true;
 
 async function getProduct(slug: string) {

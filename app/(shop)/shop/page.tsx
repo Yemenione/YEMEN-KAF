@@ -3,7 +3,7 @@ import { getProducts } from "@/app/actions/products";
 import ShopClient from "./ShopClient";
 
 // Enable ISR for the shop page
-export const revalidate = 3600; // 1 hour
+export const revalidate = 300; // 5 minutes
 
 export default async function ShopPage() {
     // Initial data fetch on server for faster first paint and SEO
